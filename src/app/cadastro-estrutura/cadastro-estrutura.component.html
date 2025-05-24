@@ -1,0 +1,399 @@
+<div fxLayout="row" fxLayoutAlign="center">
+  <div fxLayout="column" fxFlex="1000px">
+    <form class="mt-60" #lotesFrm="ngForm">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Estrutura</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="mt-20">
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Lote</mat-label>
+                <input type="text" placeholder="Ex: 00001" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>SNCR</mat-label>
+                <input type="text" placeholder="Ex: 1234567890" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Área (Ha)</mat-label>
+                <input type="text" placeholder="Ex: 2.0000" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Área Zona Urbana (Ha)</mat-label>
+                <input type="text" placeholder="Ex: 2.0000" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="800">
+              <mat-form-field class="full-width">
+                <mat-label>Denominação do imóvel</mat-label>
+                <input type="text" placeholder="Ex: Sítio..." matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Código Imóvel na Receita</mat-label>
+                <input type="text" placeholder="Ex: 123456" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="480px">
+              <mat-form-field class="full-width">
+                <mat-label>Comunidade</mat-label>
+                <input type="text" placeholder="Ex: Sítio..." matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="470px">
+              <mat-form-field class="full-width">
+                <mat-label>Localidade</mat-label>
+                <input type="text" placeholder="Ex: Lagoinha" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="360px">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Municipio</mat-label
+                ><mat-select>
+                  @for (municipio of municipios; track municipio) {
+                  <mat-option [value]="municipio.value">{{
+                    municipio.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Distrito</mat-label
+                ><mat-select>
+                  @for (distrito of distritos; track distrito) {
+                  <mat-option [value]="distrito.value">{{
+                    distrito.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="345px">
+              <mat-form-field class="full-width">
+                <mat-label>Ponto de Referência</mat-label>
+                <input type="text" placeholder="Ex: Próximo a..." matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Famílias Residentes</mat-label>
+                <input type="text" placeholder="Ex: 00001" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Pessoas Residentes</mat-label>
+                <input type="text" placeholder="Ex: 1234567890" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Assalariados com CLT</mat-label>
+                <input type="text" placeholder="Ex: 2.0000" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Assalariados sem CLT</mat-label>
+                <input type="text" placeholder="Ex: 2.0000" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Valor Total do Imóvel Rural</mat-label>
+                <input type="text" placeholder="Ex: 00001" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Benfeitorias</mat-label>
+                <input type="text" placeholder="Ex: 1234567890" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Cultura e Pastagens</mat-label>
+                <input type="text" placeholder="Ex: 2.0000" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Terra Nua</mat-label>
+                <input type="text" placeholder="Ex: 2.0000" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="480">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Destinação do Imóvel Rural</mat-label
+                ><mat-select>
+                  @for (destinacao of destinacoes; track destinacao) {
+                  <mat-option [value]="destinacao.value">{{
+                    destinacao.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="480px">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Litígio do Imóvel</mat-label
+                ><mat-select>
+                  @for (litigio of litigios; track litigio) {
+                  <mat-option [value]="litigio.value">{{
+                    litigio.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-label>Possui Planta e/ou Memorial?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            
+            <div fxFlex="230px">
+              <mat-label>Usa Irrigação?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>Fonte d'água externa?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>Rede de Abastecimento?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+            
+            <div fxFlex="230px">
+              <mat-label>Possui Açude?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>O Açude é Perene?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="300x">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Uso da Água do Açude</mat-label
+                ><mat-select>
+                  @for (usoDaAgua of aguas; track usoDaAgua) {
+                  <mat-option [value]="usoDaAgua.value">{{
+                    usoDaAgua.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+
+            <div fxFlex="230px">
+              <mat-label>Possui Lagoa?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>A Lagoa é Perene?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="300x">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Uso da Água da Lagoa</mat-label
+                ><mat-select>
+                  @for (usoDaAgua of aguas; track usoDaAgua) {
+                  <mat-option [value]="usoDaAgua.value">{{
+                    usoDaAgua.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-label>Possui Poço?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>O Poço é Perene?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="300x">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Uso da Água do Poço</mat-label
+                ><mat-select>
+                  @for (usoDaAgua of aguas; track usoDaAgua) {
+                  <mat-option [value]="usoDaAgua.value">{{
+                    usoDaAgua.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-label>Possui Rio ou Riacho?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>O Rio ou Riacho é Perene?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="300x">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Uso da Água do Rio ou Riacho</mat-label
+                ><mat-select>
+                  @for (usoDaAgua of aguas; track usoDaAgua) {
+                  <mat-option [value]="usoDaAgua.value">{{
+                    usoDaAgua.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="230px">
+              <mat-label>Possui Olho d'água?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="230px">
+              <mat-label>O Olho d'água é Perene?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <div fxFlex="300x">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Uso da Água do Olho d'água</mat-label
+                ><mat-select>
+                  @for (usoDaAgua of aguas; track usoDaAgua) {
+                  <mat-option [value]="usoDaAgua.value">{{
+                    usoDaAgua.viewValue
+                  }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <br>
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="480px">
+              <mat-label>Possui Energia alternativa?</mat-label>
+              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+                <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                <mat-button-toggle value="nao">Não</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+
+            <div fxFlex="300x">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Energia Alternativa</mat-label
+                  ><mat-select>
+                    @for (energia of energias; track energia) {
+                    <mat-option [value]="energia.value">{{
+                      energia.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </form>
+  </div>
+</div>

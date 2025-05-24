@@ -1,0 +1,15 @@
+.spacer {
+    flex: 1 1 auto;
+}
+
+mat-toolbar a {
+    color: white;
+    text-decoration: none;
+    margin-left: 16px; /* opcional, para espaçamento entre os links */
+    display: flex;
+    align-items: center;
+  }
+  
+  mat-toolbar a mat-icon {
+    margin-right: 4px; /* opcional, para dar espaço entre o ícone e o texto */
+  }

@@ -1,1 +1,66 @@
 /* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mt-40 {
+    margin-top: 40px;
+}
+
+.mt-60 {
+    margin-top: 60px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.main-container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: 220px;
+  background-color: #f5f5f5;
+  padding: 16px 8px;
+}
+
+.sidenav-title {
+  margin: 0 0 16px 8px;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.content {
+  padding: 16px;
+}
+
+/* Oculta o botão de menu em telas grandes */
+.hide-on-large {
+  display: none;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sidenav {
+    width: 200px;
+  }
+
+  .hide-on-large {
+    display: inline-flex;
+  }
+
+  mat-sidenav {
+    position: absolute;
+  }
+}
