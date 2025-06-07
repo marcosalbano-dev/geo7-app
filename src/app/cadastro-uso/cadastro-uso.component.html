@@ -1,1 +1,125 @@
-<p>cadastro-uso works!</p>
+<div fxLayout="row" fxLayoutAlign="center">
+    <div fxLayout="column" fxFlex="1000px">
+      <form class="mt-60" #usoFrm="ngForm">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Produto Vegetal</mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="mt-20">
+            <!-- Sempre visível: Seletor de Produto Vegetal -->
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="480px">
+                <mat-form-field class="full-width">
+                  <mat-label>Produto Vegetal (Isolado)</mat-label>
+                  <mat-select
+                    [(ngModel)]="produtoVegetalSelecionado"
+                    name="produtoVegetalSelecionado"
+                  >
+                    <mat-option
+                      *ngFor="let cultura of culturas"
+                      [value]="cultura.value"
+                    >
+                      {{ cultura.viewValue }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <!-- Campos: apenas se a situação for diferente de 'Indefinido' -->
+            <div *ngIf="isAreaProdutoVegetalIsolado()">
+              <div fxLayout="row" fxLayoutGap="16px">
+                <!-- Data da Posse e Área da Posse: visível se for Simples Ocupação ou Justo Título -->
+                <div fxFlex="230px" *ngIf="isAreaProdutoVegetalIsolado()">
+                  <mat-form-field class="full-width">
+                    <mat-label>Data da Posse</mat-label>
+                    <input type="text" matInput placeholder="Ex: 01/01/2025" />
+                  </mat-form-field>
+                </div>
+  
+                <div fxFlex="230px" *ngIf="isAreaProdutoVegetalIsolado()">
+                  <mat-form-field class="full-width">
+                    <mat-label>Área da Posse</mat-label>
+                    <input type="text" matInput placeholder="Ex: 2.0000" />
+                  </mat-form-field>
+                </div>
+              </div>
+  
+              <!-- Bloco restante: só se não for Simples Ocupação nem Justo Título -->
+              <div *ngIf="!isAreaProdutoVegetalIsolado()">
+                <div fxLayout="row" fxLayoutGap="16px" class="mt-20">
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Livro ou Ficha</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Área Registrada</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Nome do Cartório</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Município do Cartório</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                </div>
+  
+                <div fxLayout="row" fxLayoutGap="16px" class="mt-20">
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Data do Registro</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Ofício</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Matrícula</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="230px">
+                    <mat-form-field class="full-width">
+                      <mat-label>Número Registro</mat-label>
+                      <input type="text" matInput />
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <mat-card-actions>
+              <button mat-flat-button color="primary">
+                <mat-icon fontIcon="save"></mat-icon>
+                Salvar
+              </button>
+              <button mat-flat-button color="primary">
+                <mat-icon fontIcon="refresh"></mat-icon>
+                Atualizar
+              </button>
+              <button mat-flat-button color="accent" class="ml-5">
+                <mat-icon fontIcon="backspace"></mat-icon>
+                Limpar
+              </button>
+            </mat-card-actions>
+          </mat-card-content>
+        </mat-card>
+      </form>
+    </div>
+  </div>
+  
