@@ -6,6 +6,7 @@ import { CadastroPessoasComponent } from './cadastro-pessoas/cadastro-pessoas.co
 import { ConsultaLotesComponent } from './consulta-lotes/consulta-lotes.component';
 import { CadastroSituacaoJuridicaComponent } from './cadastro-situacao-juridica/cadastro-situacao-juridica.component';
 import { CadastroEnderecoLoteComponent } from './cadastro-endereco-lote/cadastro-endereco-lote.component';
+import { CadastroMunicipioComponent } from './cadastro-municipio/cadastro-municipio.component';
 
 export const routes: Routes = [
     { path: 'cadastro-endereco-lote', component: CadastroEnderecoLoteComponent },
@@ -14,5 +15,6 @@ export const routes: Routes = [
     { path: 'cadastro-uso', component: CadastroUsoComponent },
     { path: 'cadastro-pessoas', component: CadastroPessoasComponent },
     { path: 'cadastro-situacao-juridica', component: CadastroSituacaoJuridicaComponent },
-    { path: 'consulta-lotes', component: ConsultaLotesComponent }
+    { path: 'consulta-lotes', component: ConsultaLotesComponent },
+    { path: 'cadastro-municipio', component: CadastroMunicipioComponent },
 ];

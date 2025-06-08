@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
@@ -25,7 +26,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatDividerModule,
     MatListModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    CommonModule
   ],
   templateUrl: './cadastro-endereco-lote.component.html',
   styleUrl: './cadastro-endereco-lote.component.scss'

@@ -3,7 +3,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,6 +16,12 @@ import { EnderecoLote } from '../cadastro-endereco-lote/endereco-lote';
 import { Municipio } from '../models/municipio';
 import { MunicipioService } from '../services/municipio.service';
 import { EstruturaService } from '../services/estrutura.service';
+import { DistritoService } from '../services/distrito.service';
+import { Distrito } from '../models/distrito';
+import { NgFor } from '@angular/common'
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
 
 interface municipio {
   value: string;
@@ -61,7 +67,12 @@ interface usoDaAgua {
     MatDividerModule,
     MatListModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    NgFor,
+    NgxMatSelectSearchModule,
+    MatProgressSpinnerModule,
+    ReactiveFormsModule,
+    CommonModule
   ],
   changeDetection : ChangeDetectionStrategy.OnPush,
   templateUrl: './cadastro-estrutura.component.html',
@@ -69,35 +80,79 @@ interface usoDaAgua {
 })
 export class CadastroEstruturaComponent implements OnInit{
 
+  municipioControl = new FormControl();
+  distritoControl = new FormControl();
+
   estrutura: Estrutura = new Estrutura();
   lote: Lote = new Lote();
   enderecoLote: EnderecoLote = new EnderecoLote();
 
   municipios: Municipio[] = [];
-  isLoading = false;
+  distritos: Distrito[] = [];
+  filteredDistritos: Distrito[] = [];
+
+  isLoadingMunicipio = false;
   selectedMunicipio: number | null = null;
+
+  isLoadingDistrito = false;
+  selectedDistrito: number | null = null;
 
   constructor(
     private municipioService: MunicipioService, 
-    private estruturaService: EstruturaService
+    private estruturaService: EstruturaService,
+    private distritoService: DistritoService
   ) {}
 
   ngOnInit(): void {
     this.loadMunicipiosCe();
+    
+    // Observa mudanças no select de municípios
+    this.municipioControl.valueChanges.subscribe(municipio => {
+      if (municipio && municipio.id) {
+        this.loadDistritosByMunicipio(municipio.id);
+      } else {
+        this.filteredDistritos = [];
+        this.distritoControl.setValue(null);
+      }
+    });
+  }
+
+  loadDistritosByMunicipio(municipioId: number) {
+    this.isLoadingDistrito = true;
+    this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
+      next: distritos => {
+        this.filteredDistritos = distritos;
+        this.distritoControl.setValue(null); // limpa seleção anterior
+        this.isLoadingDistrito = false;
+      },
+      error: () => {
+        this.filteredDistritos = [];
+        this.distritoControl.setValue(null);
+        this.isLoadingDistrito = false;
+      }
+    });
   }
 
   loadMunicipiosCe(): void {
-    this.isLoading = true;
+    this.isLoadingMunicipio = true;
     this.municipioService.getMunicipiosCe().subscribe({
       next: (data) => {
         this.municipios = data;
-        this.isLoading = false;
+        this.isLoadingMunicipio = false;
       },
       error: (error) => {
         console.error('Erro ao carregar municípios:', error);
-        this.isLoading = false;
+        this.isLoadingMunicipio = false;
       }
     });
+  }
+
+  compareMunicipios(m1: Municipio, m2: Municipio): boolean {
+    return m1 && m2 ? m1.id === m2.id : m1 === m2;
+  }
+  
+  compareDistritos(d1: Distrito, d2: Distrito): boolean {
+    return d1 && d2 ? d1.id === d2.id : d1 === d2;
   }
 
   salvarEstrutura(): void {
@@ -129,11 +184,11 @@ export class CadastroEstruturaComponent implements OnInit{
   //   {value: 'Chorozinho', viewValue: 'Chorozinho'},
   // ];
 
-  distritos: distrito[] = [
-    {value: 'Distrito teste 1', viewValue: 'Teste 1'},
-    {value: 'Distrito teste 2', viewValue: 'Teste 2'},
-    {value: 'Distrito teste 3', viewValue: 'Teste 3'},
-  ];
+  // distritos: distrito[] = [
+  //   {value: 'Distrito teste 1', viewValue: 'Teste 1'},
+  //   {value: 'Distrito teste 2', viewValue: 'Teste 2'},
+  //   {value: 'Distrito teste 3', viewValue: 'Teste 3'},
+  // ];
 
   destinacoes: destinacao[] = [
     {value: 'Hortigranjeiro', viewValue: '01 - Hortigranjeiro'},
