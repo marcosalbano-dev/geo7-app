@@ -8,20 +8,22 @@ import { Municipio } from '../models/municipio';
 import { Estrutura } from '../cadastro-estrutura/estrutura';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class MunicipioService {
-  private apiUrl = `${environment.apiUrl}/municipios`;
+    private apiUrl = `${environment.apiUrl}/municipios`;
 
-  constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) { }
 
-  salvar(estrutura: Estrutura){
-    
-  }
+    salvar(estrutura: Estrutura) {
 
-  getMunicipiosCe(): Observable<Municipio[]> {
-    return this.http.get<Municipio[]>(this.apiUrl).pipe(
-      map(municipios => municipios.filter(m => m.uf === 'CE'))
-    );
-  }
+    }
+
+    getMunicipiosCe(): Observable<Municipio[]> {
+        return this.http.get<Municipio[]>(this.apiUrl).pipe(
+            map(municipios => municipios
+                .filter(m => m.uf === 'CE')
+                .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')))
+        );
+    }
 }

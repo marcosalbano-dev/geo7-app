@@ -3,7 +3,7 @@ import { SituacaoJuridica } from '../cadastro-situacao-juridica/situacao-juridic
 import { FormaObtencao } from '../cadastro-forma-obtencao/forma-obtencao';
 
 export class Lote {
-  id: number;
+  id?: number; // Não definido ao criar nova instância, será atribuído pelo backend
   proprietario: string;
   area: number;
   denominacaoImovel: string;
