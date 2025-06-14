@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Municipio } from '../models/municipio';
-import { Estrutura } from '../cadastro-estrutura/estrutura';
+import { Estrutura } from '../models/estrutura';
 
 @Injectable({
     providedIn: 'root'
@@ -15,9 +15,9 @@ export class MunicipioService {
 
     constructor(private http: HttpClient) { }
 
-    salvar(estrutura: Estrutura) {
+    // salvar(estrutura: Estrutura) {
 
-    }
+    // }
 
     getMunicipiosCe(): Observable<Municipio[]> {
         return this.http.get<Municipio[]>(this.apiUrl).pipe(

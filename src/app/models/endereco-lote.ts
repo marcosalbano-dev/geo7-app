@@ -1,6 +1,6 @@
 
 
-import { Lote } from '../cadastro-lotes/lote';
+import { Lote } from './lote';
 // import { Distrito } from '../ca';
 
 export class EnderecoLote {

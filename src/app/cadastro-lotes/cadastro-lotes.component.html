@@ -1,1 +1,170 @@
-<p>cadastro-lotes works!</p>
+<div fxLayout="row" fxLayoutAlign="center">
+    <div fxLayout="column" fxFlex="1000px">
+      <form class="mt-60" *ngIf="formLotes"  [formGroup]="formLotes" (ngSubmit)="onSubmit()">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Lotes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="mt-20">
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="300px">
+                <mat-form-field class="full-width">
+                  <mat-label>Controle de Campo</mat-label>
+                  <input
+                    type="text"
+                    formControlName="numero"
+                    placeholder="Ex: 00001"
+                    matInput
+                    required
+                  />
+                  <mat-error *ngIf="formLotes.get('numero')?.hasError('required')">
+                    O Controle de Campo é obrigatório
+                  </mat-error>
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="335px">
+                <mat-form-field class="full-width">
+                  <mat-label>SNCR</mat-label>
+                  <input
+                    type="text"
+                    formControlName="sncr"
+                    placeholder="Ex: 1234567890"
+                    matInput
+                  />
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="300px">
+                <mat-form-field class="full-width">
+                  <mat-label>Área (Ha)</mat-label>
+                  <input
+                    type="number"
+                    matInput
+                    formControlName="area"
+                    placeholder="Ex: 2.0000"
+                    required
+                  />
+                  <mat-error
+                    *ngIf="
+                      formLotes.get('area')?.hasError('required') &&
+                      formLotes.get('area')?.touched
+                    "
+                  >
+                    A área é obrigatória
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="970px">
+                <mat-form-field class="full-width">
+                  <mat-label>Proprietário</mat-label>
+                  <input matInput formControlName="proprietario" placeholder="Nome do proprietário" required>
+                  <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
+                    O nome do proprietário é obrigatório
+                  </mat-error>
+                </mat-form-field>
+              </div>
+              
+            </div>
+  
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="800">
+                <mat-form-field class="full-width">
+                  <mat-label>Denominação do imóvel</mat-label>
+                  <input
+                    type="text"
+                    formControlName="denominacaoImovel"
+                    placeholder="Ex: Sítio..."
+                    matInput
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="280px">
+                <mat-form-field class="full-width">
+                  <mat-label>Perímetro</mat-label>
+                  <input
+                    type="text"
+                    formControlName="perimetro"
+                    placeholder="Ex: 3.0000"
+                    matInput
+                  />
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="280px">
+                <mat-form-field class="full-width">
+                  <mat-label>Situação Jurídica</mat-label>
+                  <input
+                    type="text"
+                    formControlName="situacaoJuridicaId"
+                    placeholder="Ex: 1"
+                    matInput
+                  />
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="380px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>CPF</mat-label>
+                  <input matInput formControlName="cpf" />
+                </mat-form-field>
+              </div>
+            </div>
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="300px">
+                <mat-form-field class="full-width">
+                  <mat-label>Município</mat-label>
+                  <mat-select 
+                      formControlName="municipioId" 
+                      (selectionChange)="loadDistritosByMunicipio($event.value)"
+                      [errorStateMatcher]="errorStateMatcher">
+                    <mat-option *ngFor="let municipio of municipios" [value]="municipio.id">
+                      {{ municipio.nome }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="formLotes.get('municipioId')?.hasError('required')">
+                    Município é obrigatório
+                  </mat-error>
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="300px">
+                <mat-form-field class="full-width">
+                  <mat-label>Distrito</mat-label>
+                  <mat-select formControlName="distritoId" [errorStateMatcher]="errorStateMatcher">
+                    <mat-option *ngFor="let distrito of filteredDistritos" [value]="distrito.id">
+                      {{ distrito.nomeDistrito }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="formLotes.get('distritoId')?.hasError('required')">
+                    Distrito é obrigatório
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <mat-card-actions>
+              <button mat-flat-button color="primary" type="submit">
+                <mat-icon fontIcon="save"></mat-icon>
+                Salvar
+              </button>
+              <button mat-flat-button color="primary">
+                <mat-icon fontIcon="refresh"></mat-icon>
+                Atualizar
+              </button>
+              <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
+                <mat-icon fontIcon="backspace"></mat-icon>
+                Limpar
+              </button>
+            </mat-card-actions>
+          </mat-card-content>
+        </mat-card>
+      </form>
+    </div>
+  </div>
+  

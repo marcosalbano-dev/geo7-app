@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Estrutura } from '../cadastro-estrutura/estrutura';
+import { Estrutura } from '../models/estrutura';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
+import { EstruturaDTO } from '../models/estrutura-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -14,17 +15,13 @@ export class EstruturaService {
   constructor(private http: HttpClient) { }
 
   // Salvar estrutura na API
-  salvar(estrutura: Estrutura): Observable<Estrutura> {
-    return this.http.post<Estrutura>(this.apiUrl, estrutura).pipe(
-      catchError(this.handleError)
-    );
+  salvar(estrutura: EstruturaDTO): Observable<EstruturaDTO> {
+    return this.http.post<EstruturaDTO>(`${environment.apiUrl}/estrutura`, estrutura);
   }
 
   // Obter todas as estruturas da API
-  obterTodas(): Observable<Estrutura[]> {
-    return this.http.get<Estrutura[]>(this.apiUrl).pipe(
-      catchError(this.handleError)
-    );
+  obterTodas(): Observable<EstruturaDTO[]> {
+    return this.http.get<EstruturaDTO[]>(this.apiUrl);
   }
 
   // Obter estrutura por ID

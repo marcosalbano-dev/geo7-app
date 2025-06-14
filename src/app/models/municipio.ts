@@ -1,4 +1,4 @@
-import { Lote } from '../cadastro-lotes/lote';
+import { Lote } from './lote';
 
 export class Municipio {
   id!: number;

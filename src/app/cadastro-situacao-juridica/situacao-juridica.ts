@@ -1,4 +1,4 @@
-import { Lote } from '../cadastro-lotes/lote';
+import { Lote } from '../models/lote';
 
 export class SituacaoJuridica {
   id!: number;

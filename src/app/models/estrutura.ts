@@ -1,4 +1,4 @@
-﻿import { Lote } from '../cadastro-lotes/lote'; // Importe o modelo do Lote correspondente, se necessário
+﻿import { Lote } from './lote'; // Importe o modelo do Lote correspondente, se necessário
 
 export class Estrutura {
     id?: number; // Não definido ao criar nova instância, será atribuído pelo backend

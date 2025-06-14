@@ -1,6 +1,6 @@
 <div fxLayout="row" fxLayoutAlign="center">
   <div fxLayout="column" fxFlex="1000px">
-    <form class="mt-60" #estruturaFrm="ngForm" (ngSubmit)="salvarEstrutura()">
+    <form class="mt-60" [formGroup]="formEstrutura" (ngSubmit)="onSubmit()">
       <mat-card>
         <mat-card-header>
           <mat-card-title>Estrutura</mat-card-title>
@@ -9,15 +9,12 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="300px">
               <mat-form-field class="full-width">
-                <mat-label>Lote</mat-label>
-                <input
-                  type="text"
-                  [(ngModel)]="lote.numero"
-                  name="numero"
-                  placeholder="Ex: 00001"
-                  matInput
-                  required
-                />
+                <mat-label>Selecionar Lote</mat-label>
+                <mat-select (selectionChange)="preencherCamposLote($event.value)">
+                  <mat-option *ngFor="let lote of lotes" [value]="lote">
+                    {{ lote.numero }} 
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
 
@@ -26,8 +23,7 @@
                 <mat-label>SNCR</mat-label>
                 <input
                   type="text"
-                  [(ngModel)]="lote.sncr"
-                  name="sncr"
+                  formControlName="sncr"
                   placeholder="Ex: 1234567890"
                   matInput
                 />
@@ -39,21 +35,21 @@
                 <mat-label>Área (Ha)</mat-label>
                 <input
                   type="number"
-                  [(ngModel)]="lote.area"
-                  name="area"
-                  placeholder="Ex: 2.0000"
                   matInput
+                  formControlName="area"
+                  placeholder="Ex: 2.0000"
                   required
                 />
+                <mat-error
+                  *ngIf="
+                    formEstrutura.get('area')?.hasError('required') &&
+                    formEstrutura.get('area')?.touched
+                  "
+                >
+                  A área é obrigatória
+                </mat-error>
               </mat-form-field>
             </div>
-
-            <!-- <div fxFlex="230px">
-              <mat-form-field class="full-width">
-                <mat-label>Área Zona Urbana (Ha) Remover</mat-label>
-                <input type="number" placeholder="Ex: 2.0000" matInput />
-              </mat-form-field>
-            </div> -->
           </div>
 
           <div fxLayout="row" fxLayoutGap="16px">
@@ -62,8 +58,7 @@
                 <mat-label>Denominação do imóvel</mat-label>
                 <input
                   type="text"
-                  [(ngModel)]="lote.denominacaoImovel"
-                  name="denominacaoImovel"
+                  formControlName="denominacaoImovel"
                   placeholder="Ex: Sítio..."
                   matInput
                 />
@@ -75,8 +70,7 @@
                 <mat-label>Código Imóvel na Receita</mat-label>
                 <input
                   type="text"
-                  [(ngModel)]="enderecoLote.codImoReceita"
-                  name="codImoReceita"
+                  formControlName="codImoReceita"
                   placeholder="Ex: 123456"
                   matInput
                 />
@@ -90,8 +84,7 @@
                 <mat-label>Comunidade</mat-label>
                 <input
                   type="text"
-                  [(ngModel)]="enderecoLote.comunidade"
-                  name="comunidade"
+                  formControlName="comunidade"
                   placeholder="Ex: Sítio..."
                   matInput
                 />
@@ -103,8 +96,7 @@
                 <mat-label>Localidade</mat-label>
                 <input
                   type="text"
-                  [(ngModel)]="enderecoLote.localidade"
-                  name="comunidade"
+                  formControlName="localidade"
                   placeholder="Ex: Lagoinha"
                   matInput
                 />
@@ -115,57 +107,46 @@
             <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Município</mat-label>
-                <mat-select
-                  [formControl]="municipioControl"
-                  [compareWith]="compareMunicipios"
-                >
-                  <mat-option>
-                    <ngx-mat-select-search
-                      placeholder="Pesquisar município"
-                    ></ngx-mat-select-search>
-                  </mat-option>
-                  <mat-option
-                    *ngFor="let municipio of municipios"
-                    [value]="municipio"
-                  >
+                <mat-select 
+                    formControlName="municipioId" 
+                    (selectionChange)="loadDistritosByMunicipio($event.value)">
+                  <mat-option *ngFor="let municipio of municipios" [value]="municipio.id">
                     {{ municipio.nome }}
                   </mat-option>
-                  <mat-option *ngIf="isLoadingMunicipio">
-                    <mat-spinner diameter="30"></mat-spinner>
-                  </mat-option>
                 </mat-select>
+                <mat-error
+                  *ngIf="formEstrutura.get('municipio')?.hasError('required')"
+                >
+                  Município é obrigatório
+                </mat-error>
               </mat-form-field>
             </div>
 
             <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Distrito</mat-label>
-                <mat-select
-                  [formControl]="distritoControl"
-                  [compareWith]="compareDistritos"
-                  [disabled]="!municipioControl.value"
-                >
-                  <mat-option>
-                    <ngx-mat-select-search
-                      placeholder="Pesquisar distrito"
-                    ></ngx-mat-select-search>
-                  </mat-option>
-                  <mat-option
-                    *ngFor="let distrito of filteredDistritos"
-                    [value]="distrito"
-                  >
+                <mat-select formControlName="distritoId">
+                  <mat-option *ngFor="let distrito of filteredDistritos" [value]="distrito.id">
                     {{ distrito.nomeDistrito }}
                   </mat-option>
-                  <mat-option *ngIf="isLoadingDistrito">
-                    <mat-spinner diameter="30"></mat-spinner>
-                  </mat-option>
                 </mat-select>
+                <mat-error
+                  *ngIf="formEstrutura.get('distrito')?.hasError('required')"
+                >
+                  Distrito é obrigatório
+                </mat-error>
               </mat-form-field>
             </div>
+
             <div fxFlex="330px">
               <mat-form-field class="full-width">
                 <mat-label>Ponto de Referência</mat-label>
-                <input type="text" placeholder="Ex: Próximo a..." matInput />
+                <input
+                  type="text"
+                  formControlName="pontoReferencia"
+                  placeholder="Ex: Próximo a..."
+                  matInput
+                />
               </mat-form-field>
             </div>
           </div>
@@ -174,28 +155,48 @@
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Famílias Residentes</mat-label>
-                <input type="text" placeholder="Ex: 00001" matInput />
+                <input
+                  type="number"
+                  formControlName="familiasResidentes"
+                  placeholder="Ex: 3"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Pessoas Residentes</mat-label>
-                <input type="text" placeholder="Ex: 1234567890" matInput />
+                <input
+                  type="number"
+                  formControlName="pessoasResidentes"
+                  placeholder="Ex: 4"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Assalariados com CLT</mat-label>
-                <input type="text" placeholder="Ex: 2.0000" matInput />
+                <input
+                  type="number"
+                  formControlName="trabalhadoresComCarteira"
+                  placeholder="Ex: 2"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Assalariados sem CLT</mat-label>
-                <input type="text" placeholder="Ex: 2.0000" matInput />
+                <input
+                  type="number"
+                  formControlName="trabalhadoresSemCarteira"
+                  placeholder="Ex: 2"
+                  matInput
+                />
               </mat-form-field>
             </div>
           </div>
@@ -204,28 +205,48 @@
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Valor Total do Imóvel Rural</mat-label>
-                <input type="text" placeholder="Ex: 00001" matInput />
+                <input
+                  type="number"
+                  formControlName="valorTotal"
+                  placeholder="Ex: 00001"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Benfeitorias</mat-label>
-                <input type="text" placeholder="Ex: 1234567890" matInput />
+                <input
+                  type="number"
+                  formControlName="valorDasBenfeitorias"
+                  placeholder="Ex: 200"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Cultura e Pastagens</mat-label>
-                <input type="text" placeholder="Ex: 2.0000" matInput />
+                <input
+                  type="number"
+                  formControlName="valorOutrasAtividades"
+                  placeholder="Ex: 400"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Terra Nua</mat-label>
-                <input type="text" placeholder="Ex: 2.0000" matInput />
+                <input
+                  type="number"
+                  formControlName="valorTerraNua"
+                  placeholder="Ex: 20000"
+                  matInput
+                />
               </mat-form-field>
             </div>
           </div>
@@ -234,12 +255,13 @@
             <div fxFlex="480">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Destinação do Imóvel Rural</mat-label
-                ><mat-select>
-                  @for (destinacao of destinacoes; track destinacao) {
-                  <mat-option [value]="destinacao.value">{{
-                    destinacao.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="destinacaoDoImovel">
+                  <mat-option
+                    *ngFor="let destinacao of destinacoes"
+                    [value]="destinacao"
+                  >
+                    {{ destinacao.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -247,12 +269,13 @@
             <div fxFlex="480px">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Litígio do Imóvel</mat-label
-                ><mat-select>
-                  @for (litigio of litigios; track litigio) {
-                  <mat-option [value]="litigio.value">{{
-                    litigio.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="litigio">
+                  <mat-option
+                    *ngFor="let litigio of litigios"
+                    [value]="litigio"
+                  >
+                    {{ litigio.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -261,7 +284,13 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-label>Possui Planta e/ou Memorial?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="entregouMemorialPlanilha"
+                aria-label="Possui Planta e/ou Memorial?"
+                appearance="legacy"
+                color="primary"
+                name="entregouMemorialPlanilha"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -269,21 +298,39 @@
 
             <div fxFlex="230px">
               <mat-label>Usa Irrigação?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isIrrigacao"
+                aria-label="Usa Irrigação?"
+                appearance="legacy"
+                color="primary"
+                name="isIrrigacao"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
               <mat-label>Fonte d'água externa?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isFonteAguaExterna"
+                aria-label="Fonte d'água externa?"
+                appearance="legacy"
+                color="primary"
+                name="isFonteAguaExterna"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
               <mat-label>Rede de Abastecimento?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isRedeDeAbastecimento"
+                aria-label="Rede de Abastecimento?"
+                appearance="legacy"
+                color="primary"
+                name="isRedeDeAbastecimento"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -293,14 +340,26 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-label>Possui Açude?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isAcude"
+                aria-label="Possui Açude?"
+                appearance="legacy"
+                color="primary"
+                name="isAcude"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
               <mat-label>O Açude é Perene?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isAcudePerene"
+                aria-label="O Açude é Perene?"
+                appearance="legacy"
+                color="primary"
+                name="isAcudePerene"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -308,12 +367,13 @@
             <div fxFlex="300x">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Uso da Água do Açude</mat-label
-                ><mat-select>
-                  @for (usoDaAgua of aguas; track usoDaAgua) {
-                  <mat-option [value]="usoDaAgua.value">{{
-                    usoDaAgua.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="usoDaguaAcude">
+                  <mat-option
+                    *ngFor="let usoDaAgua of aguas"
+                    [value]="usoDaAgua"
+                  >
+                    {{ usoDaAgua.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -322,14 +382,26 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-label>Possui Lagoa?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isLagoa"
+                aria-label="Possui Lagoa?"
+                appearance="legacy"
+                color="primary"
+                name="isLagoa"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
-              <mat-label>A Lagoa é Perene?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-label>A lagoa é perene?</mat-label>
+              <mat-button-toggle-group
+                formControlName="isLagoaPerene"
+                aria-label="A lagoa é perene?"
+                appearance="legacy"
+                color="primary"
+                name="isLagoaPerene"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -337,12 +409,13 @@
             <div fxFlex="300x">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Uso da Água da Lagoa</mat-label
-                ><mat-select>
-                  @for (usoDaAgua of aguas; track usoDaAgua) {
-                  <mat-option [value]="usoDaAgua.value">{{
-                    usoDaAgua.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="usoDaguaLagoa">
+                  <mat-option
+                    *ngFor="let usoDaAgua of aguas"
+                    [value]="usoDaAgua"
+                  >
+                    {{ usoDaAgua.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -351,14 +424,26 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-label>Possui Poço?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isPoco"
+                aria-label="Possui Poço?"
+                appearance="legacy"
+                color="primary"
+                name="isPoco"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
               <mat-label>O Poço é Perene?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isPocoPerene"
+                aria-label="O Poço é Perene?"
+                appearance="legacy"
+                color="primary"
+                name="isPocoPerene"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -366,12 +451,13 @@
             <div fxFlex="300x">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Uso da Água do Poço</mat-label
-                ><mat-select>
-                  @for (usoDaAgua of aguas; track usoDaAgua) {
-                  <mat-option [value]="usoDaAgua.value">{{
-                    usoDaAgua.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="usoDaguaPoco">
+                  <mat-option
+                    *ngFor="let usoDaAgua of aguas"
+                    [value]="usoDaAgua"
+                  >
+                    {{ usoDaAgua.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -380,14 +466,26 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-label>Possui Rio ou Riacho?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isRioOuRiacho"
+                aria-label="Possui Rio ou Riacho?"
+                appearance="legacy"
+                color="primary"
+                name="isRioOuRiacho"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
               <mat-label>O Rio ou Riacho é Perene?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isRioOuRiachoPerene"
+                aria-label="O Rio ou Riacho é Perene?"
+                appearance="legacy"
+                color="primary"
+                name="isRioOuRiachoPerene"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -395,12 +493,13 @@
             <div fxFlex="300x">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Uso da Água do Rio ou Riacho</mat-label
-                ><mat-select>
-                  @for (usoDaAgua of aguas; track usoDaAgua) {
-                  <mat-option [value]="usoDaAgua.value">{{
-                    usoDaAgua.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="usoDaguaRioOuRiacho">
+                  <mat-option
+                    *ngFor="let usoDaAgua of aguas"
+                    [value]="usoDaAgua"
+                  >
+                    {{ usoDaAgua.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -409,14 +508,26 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-label>Possui Olho d'água?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isOlhoDagua"
+                aria-label="Possui Olho d'água?"
+                appearance="legacy"
+                color="primary"
+                name="isOlhoDagua"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
             </div>
             <div fxFlex="230px">
               <mat-label>O Olho d'água é Perene?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isOlhoDaguaPerene"
+                aria-label="O Olho d'água é Perene?"
+                appearance="legacy"
+                color="primary"
+                name="isOlhoDaguaPerene"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -424,12 +535,13 @@
             <div fxFlex="300x">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Uso da Água do Olho d'água</mat-label
-                ><mat-select>
-                  @for (usoDaAgua of aguas; track usoDaAgua) {
-                  <mat-option [value]="usoDaAgua.value">{{
-                    usoDaAgua.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="usoDaguaOlhoDagua">
+                  <mat-option
+                    *ngFor="let usoDaAgua of aguas"
+                    [value]="usoDaAgua"
+                  >
+                    {{ usoDaAgua.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -438,7 +550,13 @@
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="480px">
               <mat-label>Possui Energia alternativa?</mat-label>
-              <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
+              <mat-button-toggle-group
+                formControlName="isPossuiEnergiaAlternativa"
+                aria-label="Possui Energia alternativa?"
+                appearance="legacy"
+                color="primary"
+                name="isPossuiEnergiaAlternativa"
+              >
                 <mat-button-toggle value="sim">Sim</mat-button-toggle>
                 <mat-button-toggle value="nao">Não</mat-button-toggle>
               </mat-button-toggle-group>
@@ -447,12 +565,13 @@
             <div fxFlex="300x">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Energia Alternativa</mat-label
-                ><mat-select>
-                  @for (energia of energias; track energia) {
-                  <mat-option [value]="energia.value">{{
-                    energia.viewValue
-                  }}</mat-option>
-                  }
+                ><mat-select formControlName="tipoEnergiaEletrica">
+                  <mat-option
+                    *ngFor="let energia of energias"
+                    [value]="energia"
+                  >
+                    {{ energia.viewValue }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>

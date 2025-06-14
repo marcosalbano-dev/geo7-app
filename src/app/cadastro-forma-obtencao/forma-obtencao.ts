@@ -1,5 +1,5 @@
 import { SituacaoJuridica } from '../cadastro-situacao-juridica/situacao-juridica';
-import { Lote } from '../cadastro-lotes/lote';
+import { Lote } from '../models/lote';
 
 export class FormaObtencao {
   id!: number;

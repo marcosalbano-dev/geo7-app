@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Lote } from '../cadastro-lotes/lote';
+import { Lote } from '../models/lote';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
+import { LoteDTO } from '../models/lote-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -14,17 +15,13 @@ export class LoteService {
   constructor(private http: HttpClient) { }
 
   // Salvar lote na API
-  salvar(lote: Lote): Observable<Lote> {
-    return this.http.post<Lote>(this.apiUrl, lote).pipe(
-      catchError(this.handleError)
-    );
+  salvar(lote: LoteDTO): Observable<LoteDTO> {
+    return this.http.post<LoteDTO>(this.apiUrl, lote);
   }
 
   // Obter todas os lotes da API
-  obterTodas(): Observable<Lote[]> {
-    return this.http.get<Lote[]>(this.apiUrl).pipe(
-      catchError(this.handleError)
-    );
+  obterTodos(): Observable<LoteDTO[]> {
+    return this.http.get<LoteDTO[]>(this.apiUrl);
   }
 
   // Obter lote por ID
