@@ -1,142 +1,132 @@
-<div fxLayout="row" fxLayoutAlign="center">
-  <div fxLayout="column" fxFlex="1000px">
-    <form class="mt-60" #sitJuridicaFrm="ngForm">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Situação Jurídica</mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="mt-20">
-          <!-- Sempre visível: Seletor de Situação Jurídica -->
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="480px">
-              <mat-form-field class="full-width">
-                <mat-label>Situação Jurídica</mat-label>
-                <mat-select
-                  [(ngModel)]="situacaoSelecionada"
-                  name="situacaoSelecionada"
-                >
-                  <mat-option
-                    *ngFor="let situacao of situacoes"
-                    [value]="situacao.value"
-                  >
-                    {{ situacao.viewValue }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            <div *ngIf="situacaoSelecionada !== 'Indefinido'">
-              <div fxFlex="480px">
-                <mat-form-field class="full-width">
-                  <mat-label>Forma de Obtenção</mat-label>
-                  <mat-select
-                    [(ngModel)]="formaObtencaoSelecionada"
-                    name="formaObtencaoSelecionada"
-                  >
-                    <mat-option
-                      *ngFor="let obtencao of obtencoes"
-                      [value]="obtencao.value"
-                    >
-                      {{ obtencao.viewValue }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
-          </div>
+<div [formGroup]="formGroup">
+  <div fxLayout="row" fxLayoutGap="16px">
+    <div fxFlex="480px">
+      <mat-form-field class="full-width">
+        <mat-label>Situação Jurídica</mat-label>
+        <mat-select formControlName="situacaoSelecionada">
+          <mat-option
+            *ngFor="let situacao of situacoes"
+            [value]="situacao.value"
+          >
+            {{ situacao.viewValue }}
+          </mat-option>
+          <mat-error *ngIf="formGroup.get('situacaoSelecionada')?.hasError('required')">
+            Situação é obrigatória
+          </mat-error>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
 
-          <!-- Campos: apenas se a situação for diferente de 'Indefinido' -->
-          <div *ngIf="situacaoSelecionada !== 'Indefinido'">
-            <div fxLayout="row" fxLayoutGap="16px">
-              <!-- Data da Posse e Área da Posse: visível se for Simples Ocupação ou Justo Título -->
-              <div fxFlex="230px" *ngIf="isSimplesOuJustoTitulo()">
-                <mat-form-field class="full-width">
-                  <mat-label>Data da Posse</mat-label>
-                  <input type="text" matInput placeholder="Ex: 01/01/2025" />
-                </mat-form-field>
-              </div>
+  <div *ngIf="formGroup.get('situacaoSelecionada')?.value !== 'Indefinido'">
+    <div fxLayout="row" fxLayoutGap="16px">
+      <div fxFlex="480px">
+        <mat-form-field class="full-width">
+          <mat-label>Forma de Obtenção</mat-label>
+          <mat-select formControlName="formaObtencaoSelecionada">
+            <mat-option
+              *ngFor="let obtencao of obtencoes"
+              [value]="obtencao.value"
+            >
+              {{ obtencao.viewValue }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
 
-              <div fxFlex="230px" *ngIf="isSimplesOuJustoTitulo()">
-                <mat-form-field class="full-width">
-                  <mat-label>Área da Posse</mat-label>
-                  <input type="text" matInput placeholder="Ex: 2.0000" />
-                </mat-form-field>
-              </div>
-            </div>
+    <!-- Data da posse e área da posse -->
+    <div fxLayout="row" fxLayoutGap="16px" *ngIf="isSimplesOuJustoTitulo()">
+      <div fxFlex="230px">
+        <mat-form-field class="full-width">
+          <mat-label>Data da Posse</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="dataPosse"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <div fxFlex="230px">
+        <mat-form-field class="full-width">
+          <mat-label>Área da Posse</mat-label>
+          <input
+            matInput
+            type="number"
+            step="0.0001"
+            formControlName="areaPosse"
+            placeholder="Ex: 2.0000"
+            
+          />
+        </mat-form-field>
+      </div>
+    </div>
 
-            <!-- Bloco restante: só se não for Simples Ocupação nem Justo Título -->
-            <div *ngIf="!isSimplesOuJustoTitulo()">
-              <div fxLayout="row" fxLayoutGap="16px" class="mt-20">
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Livro ou Ficha</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Área Registrada</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Nome do Cartório</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Município do Cartório</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-              </div>
+    <!-- Campos de cartório (somente para Área Registrada) -->
+    <div *ngIf="isRegistrada()">
+      <div fxLayout="row" fxLayoutGap="16px">
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Livro ou Ficha</mat-label>
+            <input matInput formControlName="livro" />
+          </mat-form-field>
+        </div>
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Área Registrada</mat-label>
+            <input 
+              matInput 
+              formControlName="areaRegistrada"
+              type="number"
+              step="0.0001"
+              />
+          </mat-form-field>
+        </div>
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Nome do Cartório</mat-label>
+            <input matInput formControlName="nomeCartorio" />
+          </mat-form-field>
+        </div>
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Município do Cartório</mat-label>
+            <input matInput formControlName="municipioCartorio" />
+          </mat-form-field>
+        </div>
+      </div>
 
-              <div fxLayout="row" fxLayoutGap="16px" class="mt-20">
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Data do Registro</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Ofício</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Matrícula</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Número Registro</mat-label>
-                    <input type="text" matInput />
-                  </mat-form-field>
-                </div>
-              </div>
-            </div>
-          </div>
-          <mat-divider></mat-divider>
-          <mat-card-actions>
-            <button mat-flat-button color="primary">
-              <mat-icon fontIcon="save"></mat-icon>
-              Salvar
-            </button>
-            <button mat-flat-button color="primary">
-              <mat-icon fontIcon="refresh"></mat-icon>
-              Atualizar
-            </button>
-            <button mat-flat-button color="accent" class="ml-5">
-              <mat-icon fontIcon="backspace"></mat-icon>
-              Limpar
-            </button>
-          </mat-card-actions>
-        </mat-card-content>
-      </mat-card>
-    </form>
+      <div fxLayout="row" fxLayoutGap="16px">
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Data do Registro</mat-label>
+            <input matInput formControlName="dataRegistro" />
+          </mat-form-field>
+        </div>
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Ofício</mat-label>
+            <input matInput formControlName="oficio" />
+          </mat-form-field>
+        </div>
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Matrícula</mat-label>
+            <input matInput formControlName="matricula" />
+          </mat-form-field>
+        </div>
+        <div fxFlex="230px">
+          <mat-form-field class="full-width">
+            <mat-label>Número Registro</mat-label>
+            <input matInput formControlName="numeroRegistro" />
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

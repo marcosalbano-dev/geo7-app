@@ -1,4 +1,4 @@
-import { Lote } from '../models/lote';
+import { Lote } from './lote';
 
 export class SituacaoJuridica {
   id!: number;

@@ -1,5 +1,5 @@
 import { Municipio } from './municipio';
-import { SituacaoJuridica } from '../cadastro-situacao-juridica/situacao-juridica';
+import { SituacaoJuridica } from './situacao-juridica';
 import { FormaObtencao } from '../cadastro-forma-obtencao/forma-obtencao';
 
 export class Lote {

@@ -1,4 +1,4 @@
-import { SituacaoJuridica } from '../cadastro-situacao-juridica/situacao-juridica';
+import { SituacaoJuridica } from '../models/situacao-juridica';
 import { Lote } from '../models/lote';
 
 export class FormaObtencao {

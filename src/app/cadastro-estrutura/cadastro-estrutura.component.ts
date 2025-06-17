@@ -26,6 +26,7 @@ import { CommonModule } from '@angular/common';
 import { EstruturaDTO } from '../models/estrutura-dto';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CadastroSituacaoJuridicaComponent } from "../cadastro-situacao-juridica/cadastro-situacao-juridica.component";
 
 interface destinacaoDoImovel {
   value: string;
@@ -48,6 +49,8 @@ interface usoDaAgua {
 }
 
 
+
+
 @Component({
   selector: 'app-cadastro-estrutura',
   imports: [
@@ -66,7 +69,8 @@ interface usoDaAgua {
     NgxMatSelectSearchModule,
     MatProgressSpinnerModule,
     ReactiveFormsModule,
-    CommonModule
+    CommonModule,
+    CadastroSituacaoJuridicaComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cadastro-estrutura.component.html',
@@ -81,7 +85,13 @@ export class CadastroEstruturaComponent implements OnInit {
   isLoadingDistrito = false;
   isLoadingMunicipio = false;
 
+  lotesFiltrados: LoteDTO[] = [];
 
+  onMunicipioChange(municipioId: number): void {
+    this.loadDistritosByMunicipio(municipioId);
+    this.lotesFiltrados = this.lotes.filter(l => l.municipioId === municipioId);
+    console.log('📌 Lotes filtrados:', this.lotesFiltrados);
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -97,61 +107,114 @@ export class CadastroEstruturaComponent implements OnInit {
     this.carregarLotes();
     this.carregarMunicipios();
 
+    // Esse trecho escuta mudança no campo municipioId
+    this.formEstrutura.get('municipioId')?.valueChanges.subscribe((municipioId: number) => {
+      console.log('🟡 Município selecionado:', municipioId);
+      if (municipioId) {
+        this.loadDistritosByMunicipio(municipioId);
+        this.filtrarLotesPorMunicipio(municipioId);
+      } else {
+        this.lotesFiltrados = [];
+      }
+    });
+
     this.formEstrutura = this.fb.group({
-      loteId: [null],
-      numero: ['', Validators.required],
-      sncr: [''],
-      area: ['', Validators.required],
-      denominacaoImovel: [''],
       municipioId: [null, Validators.required],
       distritoId: [null, Validators.required],
+      loteId: [null, Validators.required],
+    
+      // Situação Jurídica
+      situacaoSelecionada: [null, Validators.required],
+      formaObtencaoSelecionada: [null],
+      dataPosse: [null],
+      areaPosse: [null],
+      livro: [''],
+      areaRegistrada: [''],
+      nomeCartorio: [''],
+      municipioCartorio: [''],
+      dataRegistro: [''],
+      oficio: [''],
+      matricula: [''],
+      numeroRegistro: [''],
+    
+      // Dados gerais
+      denominacaoImovel: [''],
       codImoReceita: [''],
       comunidade: [''],
       localidade: [''],
+      area: [null, Validators.required],
+      sncr: [''],
       pontoReferencia: [''],
+    
+      // População e trabalho
       familiasResidentes: [0],
       pessoasResidentes: [0],
       trabalhadoresComCarteira: [0],
       trabalhadoresSemCarteira: [0],
-      maoDeObraFamiliar: [0],
+    
+      // Valores
       valorTotal: [0],
       valorDasBenfeitorias: [0],
       valorOutrasAtividades: [0],
       valorTerraNua: [0],
-      areaIrrigada: [0],
-      numeroHerdeiros: [0],
-      porcentagemDetencao: [0],
-      obsLitigio: [''],
-      entregouMemorialPlanilha: [''],
-      isIrrigacao: [''],
-      isFonteAguaExterna: [''],
-      isRedeDeAbastecimento: [''],
-      isAcude: [''],
-      isAcudePerene: [''],
-      isLagoa: [''],
-      isLagoaPerene: [''],
-      isPoco: [''],
-      isPocoPerene: [''],
-      isRioOuRiacho: [''],
-      isRioOuRiachoPerene: [''],
-      isOlhoDagua: [''],
-      isOlhoDaguaPerene: [''],
-      isPossuiEnergiaAlternativa: [''],
-      tipoEnergiaEletrica: [null],
-      usoDaguaAcude: [null],
-      usoDaguaLagoa: [null],
-      usoDaguaPoco: [null],
-      usoDaguaRioOuRiacho: [null],
-      usoDaguaOlhoDagua: [null],
+    
+      // Outros
       destinacaoDoImovel: [null],
-      litigio: [null]
+      litigio: [null],
+      entregouMemorialPlanilha: [false],
+      isIrrigacao: [false],
+      isFonteAguaExterna: [false],
+      isRedeDeAbastecimento: [false],
+      isAcude: [false],
+      isAcudePerene: [false],
+      usoDaguaAcude: [null],
+      isLagoa: [false],
+      isLagoaPerene: [false],
+      usoDaguaLagoa: [null],
+      isPoco: [false],
+      isPocoPerene: [false],
+      usoDaguaPoco: [null],
+      isRioOuRiacho: [false],
+      isRioOuRiachoPerene: [false],
+      usoDaguaRioOuRiacho: [null],
+      isOlhoDagua: [false],
+      isOlhoDaguaPerene: [false],
+      usoDaguaOlhoDagua: [null],
+      isPossuiEnergiaAlternativa: [false],
+      tipoEnergiaEletrica: [null]
     });
+  }
+
+  filtrarLotesPorMunicipio(municipioId: number): void {
+    console.log('🔍 Tentando filtrar lotes pelo município ID:', municipioId);
+    debugger; // <- Coloque esse ponto de parada no navegador para inspecionar
+    this.lotesFiltrados = this.lotes.filter(lote => {
+      console.log(`➡️ Lote ${lote.numero} com municípioId:`, lote.municipioId);
+      return lote.municipioId === municipioId;
+    });
+    console.log('✅ Lotes filtrados:', this.lotesFiltrados);
   }
 
   private prepararEstruturaDTO(formValue: any): any {
     function toBoolean(value: any): boolean {
       return value === 'sim';
     }
+
+    const formatDate = (date: Date | string | null): string | null => {
+      if (!date) return null;
+      const d = new Date(date);
+      return d.toISOString().split('T')[0]; // yyyy-MM-dd
+    };
+
+    const formatDecimal = (value: any): string | null => {
+      if (value === null || value === undefined || value === '') return null;
+      return parseFloat(value).toString(); // força string numérica simples
+    };
+
+    // ⚠️ Certifique-se que `this.situacoes` está acessível no componente pai.
+    const situacaoSelecionada = this.situacoes.find(
+      s => s.value === formValue.situacaoSelecionada
+    )?.viewValue ?? formValue.situacaoSelecionada;
 
     return {
       loteId: formValue.loteId,
@@ -200,11 +263,9 @@ export class CadastroEstruturaComponent implements OnInit {
       usoDaguaRioOuRiacho: formValue.usoDaguaRioOuRiacho?.value || null,
       usoDaguaOlhoDagua: formValue.usoDaguaOlhoDagua?.value || null,
       destinacaoDoImovel: formValue.destinacaoDoImovel?.value || null,
-      litigio: formValue.litigio?.value || null
+      litigio: formValue.litigio?.value || null,
     };
   }
-
-
 
   preencherCamposLote(lote: LoteDTO): void {
     this.formEstrutura.patchValue({
@@ -299,14 +360,16 @@ export class CadastroEstruturaComponent implements OnInit {
     });
   }
 
+  get loteIdSelecionado(): number | null {
+    return this.formEstrutura.get('loteId')?.value ?? null;
+  }
+
   carregarMunicipios(): void {
     this.municipioService.getMunicipiosCe().subscribe({
       next: (res) => (this.municipios = res),
       error: (err) => console.error('Erro ao carregar municípios:', err)
     });
   }
-
-
 
   carregarLoteParaEstrutura(loteId: number) {
     this.loteService.obterPorId(loteId).subscribe(lote => {
@@ -367,11 +430,25 @@ export class CadastroEstruturaComponent implements OnInit {
   }
 
   salvarEstrutura(): void {
-    const formValue = this.formEstrutura.value;
-    const estruturaDTO = this.prepararEstruturaDTO(formValue);
+    const raw = this.formEstrutura.getRawValue();
+  
+    // Verifica campo obrigatório
+    if (!raw.situacaoSelecionada) {
+      console.warn('⚠️ Campo situacaoSelecionada está faltando!');
+      this.snackBar.open('Situação Jurídica é obrigatória.', 'Fechar', { duration: 4000 });
+      return;
+    }
+  
+    const estruturaDTO = {
+      ...raw,
+      dataPosse: this.formatToISO(raw.dataPosse),
+      dataRegistro: this.formatToISO(raw.dataRegistro)
+    };
+  
+    console.log('✅ EstruturaDTO para envio:', estruturaDTO);
 
-    console.log('Estrutura pronta para envio:', estruturaDTO);
-
+    console.log('🧪 Payload enviado ao backend:', estruturaDTO);
+  
     this.estruturaService.salvar(estruturaDTO).subscribe({
       next: (res) => {
         console.log('✅ Estrutura salva com sucesso!', res);
@@ -383,6 +460,13 @@ export class CadastroEstruturaComponent implements OnInit {
       }
     });
   }
+
+  private formatToISO(date: Date | string | null): string | null {
+    if (!date) return null;
+    const d = new Date(date);
+    return d.toISOString().split('T')[0]; // yyyy-MM-dd
+  }
+  
 
   carregarEstruturas(): void {
     this.estruturaService.obterTodas().subscribe({
@@ -397,7 +481,10 @@ export class CadastroEstruturaComponent implements OnInit {
 
   carregarLotes(): void {
     this.loteService.obterTodos().subscribe({
-      next: (res) => (this.lotes = res),
+      next: (res) => {
+        this.lotes = res;
+        console.log('📦 Todos os lotes carregados:', this.lotes);
+      },
       error: (err) => console.error('Erro ao carregar lotes:', err)
     });
   }
@@ -418,73 +505,85 @@ export class CadastroEstruturaComponent implements OnInit {
       this.salvarEstrutura();
     } else {
       this.formEstrutura.markAllAsTouched();
+      console.warn('⚠️ Formulário inválido. Corrija os campos.');
     }
   }
 
-energias: energia[] = [
-  { value: 'solar', viewValue: 'SOLAR' },
-  { value: 'eolica', viewValue: 'EÓLICA' },
-];
+  energias: energia[] = [
+    { value: 'solar', viewValue: 'SOLAR' },
+    { value: 'eolica', viewValue: 'EÓLICA' },
+  ];
 
-destinacoes: destinacaoDoImovel[] = [
-  { value: 'hortigranjeiro', viewValue: '01 - Hortigranjeiro' },
-  { value: 'producaoGraos', viewValue: '02 - Produção Grãos (Temporários)' },
-  { value: 'agriculturaPermanente', viewValue: '03 - Agricultura (Permanente)' },
-  { value: 'reflorestamento', viewValue: '04 - Reflorestamento' },
-  { value: 'extrativismo', viewValue: '05 - Extrativismo' },
-  { value: 'pecuaria', viewValue: '06 - Pecuária' },
-  { value: 'industrial', viewValue: '07 - Industrial' },
-  { value: 'comercial', viewValue: '08 - Comercial' },
-  { value: 'pesquisa', viewValue: '09 - Pesquisa' },
-  { value: 'educacaoCentroDeTreinamento', viewValue: '10 - Educação Centro de Treinamento' },
-  { value: 'colonizacaoAssentamento', viewValue: '11 - Colonização/Assentamento' },
-  { value: 'readaptacao', viewValue: '12 - Readaptação' },
-  { value: 'mineracao', viewValue: '13 - Mineração' },
-  { value: 'areaIndigena', viewValue: '14 - Área Indígena' },
-  { value: 'unidadeConservacaoAmbiental', viewValue: '15 - Unidade de Conservação Ambiental' },
-  { value: 'armazenamento', viewValue: '16 - Armazenamento' },
-  { value: 'oleodutoGasoduto', viewValue: '17 - Oleoduto/Gasoduto' },
-  { value: 'ferroviaRodovia', viewValue: '18 - Ferrovia/Rodovia' },
-  { value: 'linhaTransmissaoRepetidora', viewValue: '19 - Linha de Transmissão/Estação Repetidora' },
-  { value: 'tratamentoAguaEsgoto', viewValue: '20 - Tratamento Água/Esgoto/Resíduo' },
-  { value: 'barragemRepresaAcude', viewValue: '21 - Barragem/Represa/Açude' },
-  { value: 'exploracaoPetrolifera', viewValue: '22 - Exploração Petrolífera' },
-  { value: 'infraestruturaAeroportuaria', viewValue: '23 - Infra-Estrutura Aeroportuárea' },
-  { value: 'entidadeBancaria', viewValue: '24 - Entidade Bancária' },
-  { value: 'areaUsoMilitar', viewValue: '25 - Área de Uso Militar' },
-  { value: 'recreacao', viewValue: '26 - Recreação' },
-  { value: 'assistencialHospitalar', viewValue: '27 - Assistencial ou Hospitalar' },
-  { value: 'olaria', viewValue: '28 - Olaria' },
-  { value: 'outraAtividade', viewValue: '29 - Outra Atividade' },
-  { value: 'fomento', viewValue: '30 - Fomento' },
-  { value: 'semDestinacao', viewValue: '31 - Sem Destinação' }
-];
+  destinacoes: destinacaoDoImovel[] = [
+    { value: 'hortigranjeiro', viewValue: '01 - Hortigranjeiro' },
+    { value: 'producaoGraos', viewValue: '02 - Produção Grãos (Temporários)' },
+    { value: 'agriculturaPermanente', viewValue: '03 - Agricultura (Permanente)' },
+    { value: 'reflorestamento', viewValue: '04 - Reflorestamento' },
+    { value: 'extrativismo', viewValue: '05 - Extrativismo' },
+    { value: 'pecuaria', viewValue: '06 - Pecuária' },
+    { value: 'industrial', viewValue: '07 - Industrial' },
+    { value: 'comercial', viewValue: '08 - Comercial' },
+    { value: 'pesquisa', viewValue: '09 - Pesquisa' },
+    { value: 'educacaoCentroDeTreinamento', viewValue: '10 - Educação Centro de Treinamento' },
+    { value: 'colonizacaoAssentamento', viewValue: '11 - Colonização/Assentamento' },
+    { value: 'readaptacao', viewValue: '12 - Readaptação' },
+    { value: 'mineracao', viewValue: '13 - Mineração' },
+    { value: 'areaIndigena', viewValue: '14 - Área Indígena' },
+    { value: 'unidadeConservacaoAmbiental', viewValue: '15 - Unidade de Conservação Ambiental' },
+    { value: 'armazenamento', viewValue: '16 - Armazenamento' },
+    { value: 'oleodutoGasoduto', viewValue: '17 - Oleoduto/Gasoduto' },
+    { value: 'ferroviaRodovia', viewValue: '18 - Ferrovia/Rodovia' },
+    { value: 'linhaTransmissaoRepetidora', viewValue: '19 - Linha de Transmissão/Estação Repetidora' },
+    { value: 'tratamentoAguaEsgoto', viewValue: '20 - Tratamento Água/Esgoto/Resíduo' },
+    { value: 'barragemRepresaAcude', viewValue: '21 - Barragem/Represa/Açude' },
+    { value: 'exploracaoPetrolifera', viewValue: '22 - Exploração Petrolífera' },
+    { value: 'infraestruturaAeroportuaria', viewValue: '23 - Infra-Estrutura Aeroportuárea' },
+    { value: 'entidadeBancaria', viewValue: '24 - Entidade Bancária' },
+    { value: 'areaUsoMilitar', viewValue: '25 - Área de Uso Militar' },
+    { value: 'recreacao', viewValue: '26 - Recreação' },
+    { value: 'assistencialHospitalar', viewValue: '27 - Assistencial ou Hospitalar' },
+    { value: 'olaria', viewValue: '28 - Olaria' },
+    { value: 'outraAtividade', viewValue: '29 - Outra Atividade' },
+    { value: 'fomento', viewValue: '30 - Fomento' },
+    { value: 'semDestinacao', viewValue: '31 - Sem Destinação' }
+  ];
 
-litigios: litigio[] = [
-  { value: 'areaComPosseiros', viewValue: '09 - Área com Posseiros' },
-  { value: 'limite', viewValue: '17 - Questão de Limite' },
-  { value: 'titulacao', viewValue: '25 - Questão de Titulação' },
-  { value: 'posse', viewValue: '25 - Questão quanto à Posse' },
-  { value: 'posseDominio', viewValue: '41 - Questão quanto à Posse a ao Domínio' },
-  { value: 'dominio', viewValue: '50 - Questão quanto ao Domínio' },
-  { value: 'restricaoAoUsoDaTerra', viewValue: '68 - Questão de Restrição ao Uso da Terra' },
-  { value: 'servidao', viewValue: '76 - Servidão do Acesso' },
-  { value: 'servidaoUsoAgua', viewValue: '84 - Servidão do Uso da Água' },
-  { value: 'outras', viewValue: '92 - Outras' },
-  { value: 'inexistente', viewValue: '99 - Inexistente' },
-];
+  litigios: litigio[] = [
+    { value: 'areaComPosseiros', viewValue: '09 - Área com Posseiros' },
+    { value: 'limite', viewValue: '17 - Questão de Limite' },
+    { value: 'titulacao', viewValue: '25 - Questão de Titulação' },
+    { value: 'posse', viewValue: '25 - Questão quanto à Posse' },
+    { value: 'posseDominio', viewValue: '41 - Questão quanto à Posse a ao Domínio' },
+    { value: 'dominio', viewValue: '50 - Questão quanto ao Domínio' },
+    { value: 'restricaoAoUsoDaTerra', viewValue: '68 - Questão de Restrição ao Uso da Terra' },
+    { value: 'servidao', viewValue: '76 - Servidão do Acesso' },
+    { value: 'servidaoUsoAgua', viewValue: '84 - Servidão do Uso da Água' },
+    { value: 'outras', viewValue: '92 - Outras' },
+    { value: 'inexistente', viewValue: '99 - Inexistente' },
+  ];
 
-aguas: usoDaAgua[] = [
-  { value: 'usoHumano', viewValue: 'Uso Humano' },
-  { value: 'aplicacaoAgricola', viewValue: 'Aplicação Agrícola' },
-  { value: 'usoHumanoAgricola', viewValue: 'Uso Humano e Agrícola' },
-  { value: 'usoAnimal', viewValue: 'Uso Animal' },
-  { value: 'usoHumanoAnimalAgricola', viewValue: 'Uso Humano/Animal e Agrícola' },
-  { value: 'usoHumanoEAnimal', viewValue: 'Uso Humano e Animal' },
-  { value: 'usoAnimalAgricola', viewValue: 'Uso Animal e Agrícola' },
-  { value: 'semUso', viewValue: 'Sem Uso' },
-];
+  aguas: usoDaAgua[] = [
+    { value: 'usoHumano', viewValue: 'Uso Humano' },
+    { value: 'aplicacaoAgricola', viewValue: 'Aplicação Agrícola' },
+    { value: 'usoHumanoAgricola', viewValue: 'Uso Humano e Agrícola' },
+    { value: 'usoAnimal', viewValue: 'Uso Animal' },
+    { value: 'usoHumanoAnimalAgricola', viewValue: 'Uso Humano/Animal e Agrícola' },
+    { value: 'usoHumanoEAnimal', viewValue: 'Uso Humano e Animal' },
+    { value: 'usoAnimalAgricola', viewValue: 'Uso Animal e Agrícola' },
+    { value: 'semUso', viewValue: 'Sem Uso' },
+  ];
 
+  situacoes = [
+    { value: 'PossePorSimplesOcupacao', viewValue: 'Posse Por Simples Ocupação' },
+    { value: 'PosseJustoTitulo', viewValue: 'Posse a Justo Título' },
+    { value: 'Dominio', viewValue: 'Área Registrada (Domínio)' },
+    { value: 'Indefinido', viewValue: 'Indefinido' }
+  ];
 
+  obtencoes = [
+    { value: 'AquisicaoGovEstadual', viewValue: '01 - Aquisição do Governo Estadual' },
+    { value: 'Adjudicacao', viewValue: '02 - Adjudicação' },
+    { value: 'AquisicaoGovFederal', viewValue: '03 - Aquisição do Governo Federal' }
+  ];
 
 }
