@@ -12,6 +12,7 @@ export interface LoteDTO {
   cpf: string;
   proprietario?: string;
   municipioId: number;
+  distritoId: number;
   situacaoJuridicaId?: number | null;
   dataTerminoPeriodoDeUso?: string | null; // ou Date, dependendo do formato esperado
   formaObtencao: FormaObtencaoDTO[];

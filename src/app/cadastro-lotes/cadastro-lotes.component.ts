@@ -116,19 +116,6 @@ export class CadastroLotesComponent implements OnInit {
     console.log('Valid:', this.formLotes.valid);
     console.log('Form Value:', this.formLotes.value);
 
-  // // Diagnóstico detalhado dos erros do formulário
-  // Object.keys(this.formLotes.controls).forEach(key => {
-  //   const control = this.formLotes.get(key);
-  //   const touched = control?.touched;
-  //   const valid = control?.valid;
-  //   const errors = control?.errors;
-
-  //   console.log(`🔍 Campo: ${key}`);
-  //   console.log(`   - Válido: ${valid}`);
-  //   console.log(`   - Tocou: ${touched}`);
-  //   console.log(`   - Erros:`, errors);
-  // });
-
   if (this.formLotes.valid) {
     this.salvarLote();
   } else {
@@ -148,6 +135,7 @@ export class CadastroLotesComponent implements OnInit {
       cpf: formValue.cpf,
       proprietario: formValue.proprietario || '',
       municipioId: formValue.municipioId,
+      distritoId: formValue.distritoId,
       situacaoJuridicaId: formValue.situacaoJuridicaId || null,
       dataTerminoPeriodoDeUso: formValue.dataTerminoPeriodoDeUso || null,
       formaObtencao: [] // preencha se necessário
@@ -155,19 +143,22 @@ export class CadastroLotesComponent implements OnInit {
 
     console.log('🔄 Enviando loteDTO:', loteDTO);
 
-    this.loteService.salvar(loteDTO).subscribe({
-      next: (res) => {
-        console.log('✅ Lote salvo com sucesso:', res);
-        this.snackBar.open('Lote salvo com sucesso!', 'Fechar', { duration: 3000 });
-        this.formLotes.reset();
-        this.carregarLotes(); // se quiser atualizar a lista
-      },
-      error: (err) => {
-        console.error('❌ Erro ao salvar lote:', err);
-        this.snackBar.open('Erro ao salvar o lote. Tente novamente.', 'Fechar', { duration: 4000 });
-      }
+    this.loteService.salvar(loteDTO).subscribe(saved => {
+      this.snackBar.open('Lote cadastrado com sucesso!', 'Fechar', { duration: 3000 });
+  
+      // 🚀 Navegar para cadastro de estrutura com dados do lote via query params
+      this.router.navigate(['/cadastro-estrutura'], {
+        queryParams: {
+          loteId: saved.id,
+          numero: saved.numero,
+          municipioId: saved.municipioId,
+          distritoId: saved.distritoId,
+          area: saved.area,
+          denominacaoImovel: saved.denominacaoImovel,
+          sncr: saved.sncr
+        }
+      });
     });
-
   }
 
   irParaCadastroEstrutura(): void {
@@ -178,7 +169,7 @@ export class CadastroLotesComponent implements OnInit {
           numero: lote.numero,
           sncr: lote.sncr,
           area: lote.area,
-          denominacaoImovel: lote.denominacaoImovel,
+          denominacaoImovel: lote.denomincaoImovel,
           municipioId: lote.municipioId,
           distritoId: lote.distritoId
         }

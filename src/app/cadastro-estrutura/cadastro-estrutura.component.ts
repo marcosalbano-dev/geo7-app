@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ChangeDetectorRef, Input, OnInit } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,9 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
-import { Estrutura } from '../models/estrutura';
 import { LoteDTO } from '../models/lote-dto';
-import { EnderecoLote } from '../models/endereco-lote';
 import { Municipio } from '../models/municipio';
 import { MunicipioService } from '../services/municipio.service';
 import { EstruturaService } from '../services/estrutura.service';
@@ -99,31 +97,21 @@ export class CadastroEstruturaComponent implements OnInit {
     private municipioService: MunicipioService,
     private distritoService: DistritoService,
     private estruturaService: EstruturaService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private cd: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.inicializarFormulario();
-    this.carregarLotes();
     this.carregarMunicipios();
-
-    // Esse trecho escuta mudança no campo municipioId
-    this.formEstrutura.get('municipioId')?.valueChanges.subscribe((municipioId: number) => {
-      console.log('🟡 Município selecionado:', municipioId);
-      if (municipioId) {
-        this.loadDistritosByMunicipio(municipioId);
-        this.filtrarLotesPorMunicipio(municipioId);
-      } else {
-        this.lotesFiltrados = [];
-      }
-    });
-
+    console.log('Construindo formEstrutura...');
+    // 1. Crie o form ANTES de qualquer coisa!
     this.formEstrutura = this.fb.group({
       municipioId: [null, Validators.required],
       distritoId: [null, Validators.required],
       loteId: [null, Validators.required],
-    
-      // Situação Jurídica
+      numero: ['01236'],
+      denominacaoImovel: [''],
       situacaoSelecionada: [null, Validators.required],
       formaObtencaoSelecionada: [null],
       dataPosse: [null],
@@ -136,29 +124,20 @@ export class CadastroEstruturaComponent implements OnInit {
       oficio: [''],
       matricula: [''],
       numeroRegistro: [''],
-    
-      // Dados gerais
-      denominacaoImovel: [''],
       codImoReceita: [''],
       comunidade: [''],
       localidade: [''],
       area: [null, Validators.required],
       sncr: [''],
       pontoReferencia: [''],
-    
-      // População e trabalho
       familiasResidentes: [0],
       pessoasResidentes: [0],
       trabalhadoresComCarteira: [0],
       trabalhadoresSemCarteira: [0],
-    
-      // Valores
       valorTotal: [0],
       valorDasBenfeitorias: [0],
       valorOutrasAtividades: [0],
       valorTerraNua: [0],
-    
-      // Outros
       destinacaoDoImovel: [null],
       litigio: [null],
       entregouMemorialPlanilha: [false],
@@ -183,7 +162,64 @@ export class CadastroEstruturaComponent implements OnInit {
       isPossuiEnergiaAlternativa: [false],
       tipoEnergiaEletrica: [null]
     });
+
+    console.log('Inicial:', this.formEstrutura.value);
+
+    // 2. Agora sim, patchValue, subs, tudo mais:
+    //this.inicializarFormulario();
+    //this.carregarLotes();
+    // this.carregarMunicipios();
+
+    this.route.queryParams.subscribe(params => {
+      console.log('🟢 Recebi params:', params); // <-- Veja se imprime!
+      // Faça o patchValue SEM depender de params['loteId']!
+      this.formEstrutura.patchValue({
+        loteId: params['loteId'] ? +params['loteId'] : null,
+        numero: params['numero'] || '',
+        municipioId: params['municipioId'] ? +params['municipioId'] : null,
+        distritoId: params['distritoId'] ? +params['distritoId'] : null,
+        area: params['area'] ? +params['area'] : null,
+        denominacaoImovel: params['denominacaoImovel'] || '',
+        sncr: params['sncr'] || ''
+      });
+
+      console.log('🔵 Após patchValue:', this.formEstrutura.value);
+
+      this.formEstrutura.get('municipioId')?.disable();
+      this.formEstrutura.get('numero')?.disable();
+      this.formEstrutura.get('distritoId')?.disable();
+      this.formEstrutura.get('denominacaoImovel')?.disable();
+
+      this.cd.detectChanges();
+
+      // Carregue distritos se tiver municipioId
+      if (params['municipioId']) {
+        this.loadDistritosByMunicipio(+params['municipioId']);
+      }
+    });
+
+    this.formEstrutura.get('municipioId')?.valueChanges.subscribe(municipioId => {
+      this.loadDistritosByMunicipio(municipioId);
+      this.filtrarLotesPorMunicipio(municipioId);
+    });
   }
+
+  getNomeMunicipio(): string {
+    const id = this.formEstrutura.get('municipioId')?.value;
+    const mun = this.municipios.find(m => m.id === id);
+    return mun ? mun.nome : '';
+  }
+  getNomeDistrito(): string {
+    const id = this.formEstrutura.get('distritoId')?.value;
+    return this.filteredDistritos.find(d => d.id === id)?.nomeDistrito ?? '';
+  }
+
+  logForm() {
+    console.log('Form Value:', this.formEstrutura.value);
+    console.log('Form Raw Value:', this.formEstrutura.getRawValue());
+    console.log('Status:', this.formEstrutura.status);
+  }
+
 
   filtrarLotesPorMunicipio(municipioId: number): void {
     console.log('🔍 Tentando filtrar lotes pelo município ID:', municipioId);
@@ -284,81 +320,81 @@ export class CadastroEstruturaComponent implements OnInit {
     }
   }
 
-  inicializarFormulario(): void {
-    this.formEstrutura = this.fb.group({
-      // Identificação do lote
-      loteId: [null, Validators.required],
-      numero: ['', Validators.required],
-      sncr: [''],
-      area: ['', Validators.required],
-      denominacaoImovel: [''],
-      municipioId: [null, Validators.required],
-      distritoId: [null, Validators.required],
-      cpf: [''],
-      perimetro: [''],
+  // inicializarFormulario(): void {
+  //   this.formEstrutura = this.fb.group({
+  //     // Identificação do lote
+  //     loteId: [null, Validators.required],
+  //     numero: ['', Validators.required],
+  //     sncr: [''],
+  //     area: ['', Validators.required],
+  //     denominacaoImovel: [''],
+  //     municipioId: [null, Validators.required],
+  //     distritoId: [null, Validators.required],
+  //     cpf: [''],
+  //     perimetro: [''],
 
-      // Endereço e localização
-      codImoReceita: [''],
-      comunidade: [''],
-      localidade: [''],
-      pontoReferencia: [''],
+  //     // Endereço e localização
+  //     codImoReceita: [''],
+  //     comunidade: [''],
+  //     localidade: [''],
+  //     pontoReferencia: [''],
 
-      // Informações socioeconômicas
-      familiasResidentes: [null],
-      pessoasResidentes: [null],
-      trabalhadoresComCarteira: [null],
-      trabalhadoresSemCarteira: [null],
-      maoDeObraFamiliar: [null],
+  //     // Informações socioeconômicas
+  //     familiasResidentes: [null],
+  //     pessoasResidentes: [null],
+  //     trabalhadoresComCarteira: [null],
+  //     trabalhadoresSemCarteira: [null],
+  //     maoDeObraFamiliar: [null],
 
-      // Valores
-      valorTotal: [null],
-      valorDasBenfeitorias: [null],
-      valorOutrasAtividades: [null],
-      valorTerraNua: [null],
-      areaIrrigada: [null],
+  //     // Valores
+  //     valorTotal: [null],
+  //     valorDasBenfeitorias: [null],
+  //     valorOutrasAtividades: [null],
+  //     valorTerraNua: [null],
+  //     areaIrrigada: [null],
 
-      // Litígios e domínio
-      litigio: [''],
-      obsLitigio: [''],
-      numeroHerdeiros: [null],
-      porcentagemDetencao: [null],
+  //     // Litígios e domínio
+  //     litigio: [''],
+  //     obsLitigio: [''],
+  //     numeroHerdeiros: [null],
+  //     porcentagemDetencao: [null],
 
-      // Destinação
-      destinacaoDoImovel: [''],
-      entregouMemorialPlanilha: [null],
+  //     // Destinação
+  //     destinacaoDoImovel: [''],
+  //     entregouMemorialPlanilha: [null],
 
-      // Energia e água
-      isFonteAguaExterna: [null],
-      isPossuiElergiaEletrica: [null],
-      isPossuiEnergiaAlternativa: [null],
-      tipoEnergiaEletrica: [''],
+  //     // Energia e água
+  //     isFonteAguaExterna: [null],
+  //     isPossuiElergiaEletrica: [null],
+  //     isPossuiEnergiaAlternativa: [null],
+  //     tipoEnergiaEletrica: [''],
 
-      // Recursos hídricos - agrupados por tipo
-      isIrrigacao: [null],
+  //     // Recursos hídricos - agrupados por tipo
+  //     isIrrigacao: [null],
 
-      isAcude: [null],
-      isAcudePerene: [null],
-      usoDaguaAcude: [''],
+  //     isAcude: [null],
+  //     isAcudePerene: [null],
+  //     usoDaguaAcude: [''],
 
-      isLagoa: [null],
-      isLagoaPerene: [null],
-      usoDaguaLagoa: [''],
+  //     isLagoa: [null],
+  //     isLagoaPerene: [null],
+  //     usoDaguaLagoa: [''],
 
-      isPoco: [null],
-      isPocoPerene: [null],
-      usoDaguaPoco: [''],
+  //     isPoco: [null],
+  //     isPocoPerene: [null],
+  //     usoDaguaPoco: [''],
 
-      isRioOuRiacho: [null],
-      isRioOuRiachoPerene: [null],
-      usoDaguaRioOuRiacho: [''],
+  //     isRioOuRiacho: [null],
+  //     isRioOuRiachoPerene: [null],
+  //     usoDaguaRioOuRiacho: [''],
 
-      isOlhoDagua: [null],
-      isOlhoDaguaPerene: [null],
-      usoDaguaOlhoDagua: [''],
+  //     isOlhoDagua: [null],
+  //     isOlhoDaguaPerene: [null],
+  //     usoDaguaOlhoDagua: [''],
 
-      isRedeDeAbastecimento: [null]
-    });
-  }
+  //     isRedeDeAbastecimento: [null]
+  //   });
+  // }
 
   get loteIdSelecionado(): number | null {
     return this.formEstrutura.get('loteId')?.value ?? null;
@@ -391,19 +427,23 @@ export class CadastroEstruturaComponent implements OnInit {
   }
 
 
-  loadDistritosByMunicipio(municipioId: number): void {
+  loadDistritosByMunicipio(municipioId: number): Promise<void> {
     this.isLoadingDistrito = true;
-    this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
-      next: (distritos) => {
-        this.filteredDistritos = distritos;
-        this.formEstrutura.get('distritoId')?.setValue(null);
-        this.isLoadingDistrito = false;
-      },
-      error: () => {
-        this.filteredDistritos = [];
-        this.formEstrutura.get('distritoId')?.setValue(null);
-        this.isLoadingDistrito = false;
-      }
+    return new Promise((resolve, reject) => {
+      this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
+        next: (distritos) => {
+          this.filteredDistritos = distritos;
+          this.formEstrutura.get('distritoId')?.setValue(null);
+          this.isLoadingDistrito = false;
+          resolve();
+        },
+        error: () => {
+          this.filteredDistritos = [];
+          this.formEstrutura.get('distritoId')?.setValue(null);
+          this.isLoadingDistrito = false;
+          reject();
+        }
+      });
     });
   }
 
@@ -431,24 +471,24 @@ export class CadastroEstruturaComponent implements OnInit {
 
   salvarEstrutura(): void {
     const raw = this.formEstrutura.getRawValue();
-  
+
     // Verifica campo obrigatório
     if (!raw.situacaoSelecionada) {
       console.warn('⚠️ Campo situacaoSelecionada está faltando!');
       this.snackBar.open('Situação Jurídica é obrigatória.', 'Fechar', { duration: 4000 });
       return;
     }
-  
+
     const estruturaDTO = {
       ...raw,
       dataPosse: this.formatToISO(raw.dataPosse),
       dataRegistro: this.formatToISO(raw.dataRegistro)
     };
-  
+
     console.log('✅ EstruturaDTO para envio:', estruturaDTO);
 
     console.log('🧪 Payload enviado ao backend:', estruturaDTO);
-  
+
     this.estruturaService.salvar(estruturaDTO).subscribe({
       next: (res) => {
         console.log('✅ Estrutura salva com sucesso!', res);
@@ -466,7 +506,7 @@ export class CadastroEstruturaComponent implements OnInit {
     const d = new Date(date);
     return d.toISOString().split('T')[0]; // yyyy-MM-dd
   }
-  
+
 
   carregarEstruturas(): void {
     this.estruturaService.obterTodas().subscribe({

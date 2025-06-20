@@ -1,6 +1,6 @@
 <div fxLayout="row" fxLayoutAlign="center">
     <div fxLayout="column" fxFlex="1000px">
-      <form class="mt-60" *ngIf="formLotes"  [formGroup]="formLotes" (ngSubmit)="onSubmit()">
+      <form class="mt-60" [formGroup]="formLotes" (ngSubmit)="onSubmit()">
         <mat-card>
           <mat-card-header>
             <mat-card-title>Lotes</mat-card-title>
@@ -160,6 +160,9 @@
               <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
                 <mat-icon fontIcon="backspace"></mat-icon>
                 Limpar
+              </button>
+              <button mat-flat-button color="primary" (click)="irParaCadastroEstrutura()">
+                <mat-icon>arrow_forward</mat-icon> Cadastrar Estrutura
               </button>
             </mat-card-actions>
           </mat-card-content>
