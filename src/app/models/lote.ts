@@ -17,6 +17,7 @@ export class Lote {
   formaObtencao: FormaObtencao[];
   situacaoJuridica: SituacaoJuridica;
   dataTerminoPeriodoDeUso: string;
+  distritoId: number;
 
   constructor(init?: Partial<Lote>) {
       this.id = init?.id ?? 0;
@@ -33,6 +34,7 @@ export class Lote {
       this.formaObtencao = init?.formaObtencao ?? [];
       this.situacaoJuridica = init?.situacaoJuridica ?? {} as SituacaoJuridica;
       this.dataTerminoPeriodoDeUso = init?.dataTerminoPeriodoDeUso ?? '';
+      this.distritoId = init?.distritoId ?? 0;
   }
 
   static newLote(): Lote {

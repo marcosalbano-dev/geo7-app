@@ -10,8 +10,11 @@
             <div fxFlex="330px">
               <mat-form-field class="full-width">
                 <mat-label>Município</mat-label>
-                <!-- <input matInput formControlName="municipioId" readonly> -->
-                <input matInput [value]="getNomeMunicipio()" readonly>
+                <mat-select formControlName="municipioId">
+                  <mat-option *ngFor="let municipio of municipios" [value]="municipio.id">
+                    {{ municipio.nome }}
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
             <div fxFlex="300px">

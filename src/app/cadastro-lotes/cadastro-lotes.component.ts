@@ -178,7 +178,6 @@ export class CadastroLotesComponent implements OnInit {
       this.snackBar.open('Preencha corretamente os dados do lote antes de continuar.', 'Fechar', { duration: 3000 });
     }
   }
-  
 
   carregarLotes(): void {
     this.loteService.obterTodos().subscribe({
