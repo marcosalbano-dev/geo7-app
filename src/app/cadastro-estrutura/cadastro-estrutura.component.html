@@ -27,7 +27,7 @@
             <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Distrito</mat-label>
-                <mat-select formControlName="distritoId">
+                <mat-select formControlName="distritoId" [disabled]="true">
                   <mat-option *ngFor="let distrito of filteredDistritos" [value]="distrito.id">
                     {{ distrito.nomeDistrito }}
                   </mat-option>
@@ -98,7 +98,7 @@
                   matInput
                   formControlName="area"
                   placeholder="Ex: 2.0000"
-                  required
+                  readonly
                 />
                 <mat-error
                   *ngIf="
@@ -119,6 +119,7 @@
                   formControlName="sncr"
                   placeholder="Ex: 1234567890"
                   matInput
+                  readonly
                 />
               </mat-form-field>
             </div>

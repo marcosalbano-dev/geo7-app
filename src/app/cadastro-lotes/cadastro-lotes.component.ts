@@ -145,7 +145,7 @@ export class CadastroLotesComponent implements OnInit {
 
     this.loteService.salvar(loteDTO).subscribe(saved => {
       this.snackBar.open('Lote cadastrado com sucesso!', 'Fechar', { duration: 3000 });
-  
+      console.log('🚦 Lote salvo:', saved);
       // 🚀 Navegar para cadastro de estrutura com dados do lote via query params
       this.router.navigate(['/cadastro-estrutura'], {
         queryParams: {
@@ -161,23 +161,23 @@ export class CadastroLotesComponent implements OnInit {
     });
   }
 
-  irParaCadastroEstrutura(): void {
-    if (this.formLotes.valid) {
-      const lote = this.formLotes.value;
-      this.router.navigate(['/cadastro-estrutura'], {
-        queryParams: {
-          numero: lote.numero,
-          sncr: lote.sncr,
-          area: lote.area,
-          denominacaoImovel: lote.denomincaoImovel,
-          municipioId: lote.municipioId,
-          distritoId: lote.distritoId
-        }
-      });
-    } else {
-      this.snackBar.open('Preencha corretamente os dados do lote antes de continuar.', 'Fechar', { duration: 3000 });
-    }
-  }
+  // irParaCadastroEstrutura(): void {
+  //   if (this.formLotes.valid) {
+  //     const lote = this.formLotes.value;
+  //     this.router.navigate(['/cadastro-estrutura'], {
+  //       queryParams: {
+  //         numero: lote.numero,
+  //         sncr: lote.sncr,
+  //         area: lote.area,
+  //         denominacaoImovel: lote.denomincaoImovel,
+  //         municipioId: lote.municipioId,
+  //         distritoId: lote.distritoId
+  //       }
+  //     });
+  //   } else {
+  //     this.snackBar.open('Preencha corretamente os dados do lote antes de continuar.', 'Fechar', { duration: 3000 });
+  //   }
+  // }
 
   carregarLotes(): void {
     this.loteService.obterTodos().subscribe({
