@@ -78,7 +78,7 @@ export class CadastroLotesComponent implements OnInit {
     private distritoService: DistritoService,
     private snackBar: MatSnackBar,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.formLotes = this.fb.group({
@@ -110,18 +110,18 @@ export class CadastroLotesComponent implements OnInit {
       }
     });
   }
-  
+
 
   onSubmit(): void {
     console.log('Valid:', this.formLotes.valid);
     console.log('Form Value:', this.formLotes.value);
 
-  if (this.formLotes.valid) {
-    this.salvarLote();
-  } else {
-    this.formLotes.markAllAsTouched();
+    if (this.formLotes.valid) {
+      this.salvarLote();
+    } else {
+      this.formLotes.markAllAsTouched();
+    }
   }
-}
 
   salvarLote(): void {
     const formValue = this.formLotes.value;
