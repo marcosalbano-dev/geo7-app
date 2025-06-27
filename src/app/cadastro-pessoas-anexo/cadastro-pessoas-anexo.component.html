@@ -1,0 +1,99 @@
+<div fxLayout="row" fxLayoutAlign="center">
+    <div fxLayout="column" fxFlex="1000px">
+      <form [formGroup]="formGroup" (ngSubmit)="onSalvar()">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Informações do Anexo</mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="mt-20">
+  
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="250px">
+                <mat-form-field class="full-width">
+                  <mat-label>UTM - Este</mat-label>
+                  <input matInput formControlName="utmEste" />
+                </mat-form-field>
+              </div>
+              <div fxFlex="250px">
+                <mat-form-field class="full-width">
+                  <mat-label>UTM - Norte</mat-label>
+                  <input matInput formControlName="utmNorte" />
+                </mat-form-field>
+              </div>
+              <div fxFlex="400px">
+                <mat-form-field class="full-width">
+                  <mat-label>Atividade Principal</mat-label>
+                  <mat-select formControlName="atividadePrincipal">
+                    <mat-option *ngFor="let a of atividadesPrincipais" [value]="a.value">
+                      {{ a.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayoutGap="16px" style="margin-top: 10px;">
+              <div fxFlex="200px">
+                <mat-label>Recebe PRONAF?</mat-label>
+                <mat-button-toggle-group formControlName="recebePronaf">
+                  <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+                  <mat-button-toggle [value]="false">Não</mat-button-toggle>
+                </mat-button-toggle-group>
+              </div>
+              <div fxFlex="100px">
+                <mat-form-field class="full-width">
+                  <mat-label>Quantos</mat-label>
+                  <input matInput type="number" formControlName="qtdPronaf" />
+                </mat-form-field>
+              </div>
+              <div fxFlex="400px">
+                <mat-form-field class="full-width">
+                  <mat-label>Tipos</mat-label>
+                  <mat-select formControlName="tiposPronaf" multiple>
+                    <mat-option *ngFor="let t of tiposPronaf" [value]="t.value">
+                      {{ t.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div fxFlex="180px">
+                <mat-form-field class="full-width">
+                  <mat-label>Valor Total</mat-label>
+                  <input matInput formControlName="valorTotalPronafs" />
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayoutGap="16px" style="margin-top: 10px;">
+              <div fxFlex="240px">
+                <mat-label>Recebe ajuda de algum programa de governo?</mat-label>
+                <mat-button-toggle-group formControlName="recebeProgramaGoverno">
+                  <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+                  <mat-button-toggle [value]="false">Não</mat-button-toggle>
+                </mat-button-toggle-group>
+              </div>
+              <div fxFlex="480px">
+                <mat-form-field class="full-width">
+                  <mat-label>Selecione os Programas do Governo</mat-label>
+                  <mat-select formControlName="programasSelecionados" multiple>
+                    <mat-option *ngFor="let p of programasGoverno" [value]="p.value">
+                      {{ p.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+  
+          </mat-card-content>
+          <!-- <mat-divider></mat-divider>
+          <mat-card-actions>
+            <button mat-flat-button color="primary" type="submit">
+              <mat-icon fontIcon="save"></mat-icon>
+              Salvar Informações Pessoais
+            </button>
+          </mat-card-actions> -->
+        </mat-card>
+      </form>
+    </div>
+  </div>
+  

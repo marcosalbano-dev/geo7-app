@@ -5,7 +5,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 
 import { LOCALE_ID } from '@angular/core';
-import { MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+import { MAT_DATE_LOCALE, MAT_DATE_FORMATS, provideNativeDateAdapter, MatNativeDateModule } from '@angular/material/core';
 
 export const MY_DATE_FORMATS = {
   parse: { dateInput: 'DD/MM/YYYY' },
@@ -22,6 +22,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }), 
     provideRouter(routes), 
     provideHttpClient(),
+    provideNativeDateAdapter(),
 
     // ⬇️ Locale para pt-BR
     { provide: LOCALE_ID, useValue: 'pt' },

@@ -1,0 +1,114 @@
+<div [formGroup]="formPessoaLote">
+  <div fxLayout="row" fxLayoutGap="16px">
+    <div fxFlex="450px">
+      <mat-form-field class="full-width">
+        <mat-label>Condição da Pessoa no Imóvel Rural</mat-label>
+        <mat-select formControlName="condicaoPessoaImovelRural">
+          <mat-option
+            *ngFor="let condicao of CONDICOES"
+            [value]="condicao.value"
+          >
+            {{ condicao.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div fxFlex="140px">
+      <mat-form-field class="full-width">
+        <mat-label>% Detenção</mat-label>
+        <input matInput formControlName="detencao" />
+      </mat-form-field>
+    </div>
+    <div fxFlex="160px" style="margin-top: 30px">
+      <mat-label>É Declarante?</mat-label>
+      <mat-button-toggle-group formControlName="isDeclarante">
+        <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+        <mat-button-toggle [value]="false">Não</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+    <div fxFlex="170px" style="margin-top: 30px">
+      <mat-label>Reside no Imóvel?</mat-label>
+      <mat-button-toggle-group formControlName="isResideNoImovel">
+        <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+        <mat-button-toggle [value]="false">Não</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+  <h3>Ato Estrangeiro (Preencher somente em caso de estrangeiro)</h3>
+  <div fxLayout="row" fxLayoutGap="16px">
+    <div fxFlex="300px">
+      <mat-form-field class="full-width">
+        <mat-label>Tipo do Ato</mat-label>
+        <mat-select formControlName="tiposAtos">
+          <mat-option
+            *ngFor="let tiposAtos of TIPOS_ATOS"
+            [value]="tiposAtos.value"
+          >
+            {{ tiposAtos.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div fxFlex="300px">
+      <mat-form-field class="full-width">
+        <mat-label>Número do Ato</mat-label>
+        <input matInput formControlName="numeroAto" />
+      </mat-form-field>
+    </div>
+    <div fxFlex="300px">
+      <mat-form-field class="full-width">
+        <mat-label>Data do Ato</mat-label>
+        <input matInput formControlName="dataAto" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Exploração: exibe só para Parceiro, Comodatário, Concessionário -->
+  <div *ngIf="isExploracao()" fxLayout="row" fxLayoutGap="16px">
+    <div fxFlex="170px">
+      <mat-form-field class="full-width">
+        <mat-label>Área Cedida</mat-label>
+        <input matInput formControlName="qtdAreaCedida" />
+      </mat-form-field>
+    </div>
+    <div fxFlex="200px">
+      <mat-form-field class="full-width">
+        <mat-label>Atividade Principal de Exploração</mat-label>
+        <mat-select formControlName="atividadePrincipal">
+          <mat-option
+            *ngFor="let atividade of ATIVIDADES"
+            [value]="atividade.value"
+          >
+            {{ atividade.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div fxFlex="160px">
+      <mat-form-field class="full-width">
+        <mat-label>Tipo de Contrato</mat-label>
+        <mat-select formControlName="tipoContrato">
+          <mat-option *ngFor="let tipo of tiposContratos" [value]="tipo.value">
+            {{ tipo.viewValue }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div fxFlex="200px">
+      <mat-form-field class="full-width">
+        <mat-label>Data Término do Contrato</mat-label>
+        <input matInput type="date" formControlName="dataTerminoContrato" />
+      </mat-form-field>
+    </div>
+    <div fxFlex="170px">
+      <mat-label>Prazo Indeterminado?</mat-label>
+      <mat-button-toggle-group formControlName="prazoIndeterminado">
+        <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+        <mat-button-toggle [value]="false">Não</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+
+</div>

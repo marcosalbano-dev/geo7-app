@@ -15,10 +15,6 @@ export class MunicipioService {
 
     constructor(private http: HttpClient) { }
 
-    // salvar(estrutura: Estrutura) {
-
-    // }
-
     getMunicipiosCe(): Observable<Municipio[]> {
         return this.http.get<Municipio[]>(this.apiUrl).pipe(
             map(municipios => municipios
@@ -26,4 +22,22 @@ export class MunicipioService {
                 .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')))
         );
     }
+
+    getUfs(): Observable<string[]> {
+        return this.http.get<Municipio[]>(this.apiUrl).pipe(
+          map(municipios => [...new Set(municipios.map(m => m.uf))].sort())
+        );
+      }
+      
+      getMunicipiosPorUf(uf: string): Observable<Municipio[]> {
+        return this.http.get<Municipio[]>(this.apiUrl).pipe(
+          map(municipios =>
+            municipios
+              .filter(m => m.uf === uf)
+              .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+          )
+        );
+      }
+      
+
 }

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Municipio } from '../models/municipio';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-cadastro-municipio',
@@ -11,5 +12,8 @@ import { Municipio } from '../models/municipio';
 export class CadastroMunicipioComponent {
 
   municipio: Municipio = new Municipio();
+
+
+  
 
 }

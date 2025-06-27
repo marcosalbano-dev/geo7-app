@@ -111,7 +111,6 @@ export class CadastroLotesComponent implements OnInit {
     });
   }
 
-
   onSubmit(): void {
     console.log('Valid:', this.formLotes.valid);
     console.log('Form Value:', this.formLotes.value);
@@ -161,24 +160,6 @@ export class CadastroLotesComponent implements OnInit {
     });
   }
 
-  // irParaCadastroEstrutura(): void {
-  //   if (this.formLotes.valid) {
-  //     const lote = this.formLotes.value;
-  //     this.router.navigate(['/cadastro-estrutura'], {
-  //       queryParams: {
-  //         numero: lote.numero,
-  //         sncr: lote.sncr,
-  //         area: lote.area,
-  //         denominacaoImovel: lote.denomincaoImovel,
-  //         municipioId: lote.municipioId,
-  //         distritoId: lote.distritoId
-  //       }
-  //     });
-  //   } else {
-  //     this.snackBar.open('Preencha corretamente os dados do lote antes de continuar.', 'Fechar', { duration: 3000 });
-  //   }
-  // }
-
   carregarLotes(): void {
     this.loteService.obterTodos().subscribe({
       next: (lotes: LoteDTO[]) => {
@@ -218,6 +199,7 @@ export class CadastroLotesComponent implements OnInit {
       }
     });
   }
+  
 
   limparFormulario(): void {
     this.formLotes.reset();

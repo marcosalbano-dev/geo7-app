@@ -76,4 +76,5 @@ export enum DestinacaoDoImovel {
     Adjudicacao = '02 - Adjudicação',
     AquisicaoGovFederal = '03 - Aquisição do Governo Federal'
   }
+
   

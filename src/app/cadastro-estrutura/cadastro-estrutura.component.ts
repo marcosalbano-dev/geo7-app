@@ -22,7 +22,7 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { EstruturaDTO } from '../models/estrutura-dto';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CadastroSituacaoJuridicaComponent } from "../cadastro-situacao-juridica/cadastro-situacao-juridica.component";
 
@@ -99,7 +99,8 @@ export class CadastroEstruturaComponent implements OnInit {
     private estruturaService: EstruturaService,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -168,7 +169,7 @@ export class CadastroEstruturaComponent implements OnInit {
     this.carregarMunicipios();
 
     // Guarde o valor do distrito vindo do params
-   // let distritoIdParam: number | null = null;
+    // let distritoIdParam: number | null = null;
 
     // Escuta params da rota
     this.route.queryParams.subscribe(params => {
@@ -286,77 +287,77 @@ export class CadastroEstruturaComponent implements OnInit {
     console.log('✅ Lotes filtrados:', this.lotesFiltrados);
   }
 
-  private prepararEstruturaDTO(formValue: any): any {
-    function toBoolean(value: any): boolean {
-      return value === 'sim';
-    }
+  // private prepararEstruturaDTO(formValue: any): any {
+  //   function toBoolean(value: any): boolean {
+  //     return value === 'sim';
+  //   }
 
-    const formatDate = (date: Date | string | null): string | null => {
-      if (!date) return null;
-      const d = new Date(date);
-      return d.toISOString().split('T')[0]; // yyyy-MM-dd
-    };
+  //   const formatDate = (date: Date | string | null): string | null => {
+  //     if (!date) return null;
+  //     const d = new Date(date);
+  //     return d.toISOString().split('T')[0]; // yyyy-MM-dd
+  //   };
 
-    const formatDecimal = (value: any): string | null => {
-      if (value === null || value === undefined || value === '') return null;
-      return parseFloat(value).toString(); // força string numérica simples
-    };
+  //   const formatDecimal = (value: any): string | null => {
+  //     if (value === null || value === undefined || value === '') return null;
+  //     return parseFloat(value).toString(); // força string numérica simples
+  //   };
 
-    // ⚠️ Certifique-se que `this.situacoes` está acessível no componente pai.
-    const situacaoSelecionada = this.situacoes.find(
-      s => s.value === formValue.situacaoSelecionada
-    )?.viewValue ?? formValue.situacaoSelecionada;
+  //   // ⚠️ Certifique-se que `this.situacoes` está acessível no componente pai.
+  //   const situacaoSelecionada = this.situacoes.find(
+  //     s => s.value === formValue.situacaoSelecionada
+  //   )?.viewValue ?? formValue.situacaoSelecionada;
 
-    return {
-      loteId: formValue.loteId,
-      numero: formValue.numero,
-      sncr: formValue.sncr,
-      area: formValue.area,
-      denominacaoImovel: formValue.denominacaoImovel,
-      municipioId: formValue.municipioId,
-      distritoId: formValue.distritoId,
-      codImoReceita: formValue.codImoReceita,
-      comunidade: formValue.comunidade,
-      localidade: formValue.localidade,
-      pontoReferencia: formValue.pontoReferencia,
-      familiasResidentes: formValue.familiasResidentes,
-      pessoasResidentes: formValue.pessoasResidentes,
-      trabalhadoresComCarteira: formValue.trabalhadoresComCarteira,
-      trabalhadoresSemCarteira: formValue.trabalhadoresSemCarteira,
-      maoDeObraFamiliar: formValue.maoDeObraFamiliar,
-      valorTotal: formValue.valorTotal,
-      valorDasBenfeitorias: formValue.valorDasBenfeitorias,
-      valorOutrasAtividades: formValue.valorOutrasAtividades,
-      valorTerraNua: formValue.valorTerraNua,
-      areaIrrigada: formValue.areaIrrigada,
-      numeroHerdeiros: formValue.numeroHerdeiros,
-      porcentagemDetencao: formValue.porcentagemDetencao,
-      obsLitigio: formValue.obsLitigio,
-      entregouMemorialPlanilha: toBoolean(formValue.entregouMemorialPlanilha),
-      isIrrigacao: toBoolean(formValue.isIrrigacao),
-      isFonteAguaExterna: toBoolean(formValue.isFonteAguaExterna),
-      isRedeDeAbastecimento: toBoolean(formValue.isRedeDeAbastecimento),
-      isAcude: toBoolean(formValue.isAcude),
-      isAcudePerene: toBoolean(formValue.isAcudePerene),
-      isLagoa: toBoolean(formValue.isLagoa),
-      isLagoaPerene: toBoolean(formValue.isLagoaPerene),
-      isPoco: toBoolean(formValue.isPoco),
-      isPocoPerene: toBoolean(formValue.isPocoPerene),
-      isRioOuRiacho: toBoolean(formValue.isRioOuRiacho),
-      isRioOuRiachoPerene: toBoolean(formValue.isRioOuRiachoPerene),
-      isOlhoDagua: toBoolean(formValue.isOlhoDagua),
-      isOlhoDaguaPerene: toBoolean(formValue.isOlhoDaguaPerene),
-      isPossuiEnergiaAlternativa: toBoolean(formValue.isPossuiEnergiaAlternativa),
-      tipoEnergiaEletrica: formValue.tipoEnergiaEletrica?.value || null,
-      usoDaguaAcude: formValue.usoDaguaAcude?.value || null,
-      usoDaguaLagoa: formValue.usoDaguaLagoa?.value || null,
-      usoDaguaPoco: formValue.usoDaguaPoco?.value || null,
-      usoDaguaRioOuRiacho: formValue.usoDaguaRioOuRiacho?.value || null,
-      usoDaguaOlhoDagua: formValue.usoDaguaOlhoDagua?.value || null,
-      destinacaoDoImovel: formValue.destinacaoDoImovel?.value || null,
-      litigio: formValue.litigio?.value || null,
-    };
-  }
+  //   return {
+  //     loteId: formValue.loteId,
+  //     numero: formValue.numero,
+  //     sncr: formValue.sncr,
+  //     area: formValue.area,
+  //     denominacaoImovel: formValue.denominacaoImovel,
+  //     municipioId: formValue.municipioId,
+  //     distritoId: formValue.distritoId,
+  //     codImoReceita: formValue.codImoReceita,
+  //     comunidade: formValue.comunidade,
+  //     localidade: formValue.localidade,
+  //     pontoReferencia: formValue.pontoReferencia,
+  //     familiasResidentes: formValue.familiasResidentes,
+  //     pessoasResidentes: formValue.pessoasResidentes,
+  //     trabalhadoresComCarteira: formValue.trabalhadoresComCarteira,
+  //     trabalhadoresSemCarteira: formValue.trabalhadoresSemCarteira,
+  //     maoDeObraFamiliar: formValue.maoDeObraFamiliar,
+  //     valorTotal: formValue.valorTotal,
+  //     valorDasBenfeitorias: formValue.valorDasBenfeitorias,
+  //     valorOutrasAtividades: formValue.valorOutrasAtividades,
+  //     valorTerraNua: formValue.valorTerraNua,
+  //     areaIrrigada: formValue.areaIrrigada,
+  //     numeroHerdeiros: formValue.numeroHerdeiros,
+  //     porcentagemDetencao: formValue.porcentagemDetencao,
+  //     obsLitigio: formValue.obsLitigio,
+  //     entregouMemorialPlanilha: toBoolean(formValue.entregouMemorialPlanilha),
+  //     isIrrigacao: toBoolean(formValue.isIrrigacao),
+  //     isFonteAguaExterna: toBoolean(formValue.isFonteAguaExterna),
+  //     isRedeDeAbastecimento: toBoolean(formValue.isRedeDeAbastecimento),
+  //     isAcude: toBoolean(formValue.isAcude),
+  //     isAcudePerene: toBoolean(formValue.isAcudePerene),
+  //     isLagoa: toBoolean(formValue.isLagoa),
+  //     isLagoaPerene: toBoolean(formValue.isLagoaPerene),
+  //     isPoco: toBoolean(formValue.isPoco),
+  //     isPocoPerene: toBoolean(formValue.isPocoPerene),
+  //     isRioOuRiacho: toBoolean(formValue.isRioOuRiacho),
+  //     isRioOuRiachoPerene: toBoolean(formValue.isRioOuRiachoPerene),
+  //     isOlhoDagua: toBoolean(formValue.isOlhoDagua),
+  //     isOlhoDaguaPerene: toBoolean(formValue.isOlhoDaguaPerene),
+  //     isPossuiEnergiaAlternativa: toBoolean(formValue.isPossuiEnergiaAlternativa),
+  //     tipoEnergiaEletrica: formValue.tipoEnergiaEletrica?.value || null,
+  //     usoDaguaAcude: formValue.usoDaguaAcude?.value || null,
+  //     usoDaguaLagoa: formValue.usoDaguaLagoa?.value || null,
+  //     usoDaguaPoco: formValue.usoDaguaPoco?.value || null,
+  //     usoDaguaRioOuRiacho: formValue.usoDaguaRioOuRiacho?.value || null,
+  //     usoDaguaOlhoDagua: formValue.usoDaguaOlhoDagua?.value || null,
+  //     destinacaoDoImovel: formValue.destinacaoDoImovel?.value || null,
+  //     litigio: formValue.litigio?.value || null,
+  //   };
+  // }
 
   preencherCamposLote(lote: LoteDTO): void {
     this.formEstrutura.patchValue({
@@ -400,27 +401,6 @@ export class CadastroEstruturaComponent implements OnInit {
     });
   }
 
-
-  // loadDistritosByMunicipio(municipioId: number): Promise<void> {
-  //   this.isLoadingDistrito = true;
-  //   return new Promise((resolve, reject) => {
-  //     this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
-  //       next: (distritos) => {
-  //         this.filteredDistritos = distritos;
-  //         this.formEstrutura.get('distritoId')?.setValue(null);
-  //         this.isLoadingDistrito = false;
-  //         resolve();
-  //       },
-  //       error: () => {
-  //         this.filteredDistritos = [];
-  //         this.formEstrutura.get('distritoId')?.setValue(null);
-  //         this.isLoadingDistrito = false;
-  //         reject();
-  //       }
-  //     });
-  //   });
-  // }
-
   loadMunicipiosCe(): void {
     this.isLoadingMunicipio = true;
     this.municipioService.getMunicipiosCe().subscribe({
@@ -455,6 +435,11 @@ export class CadastroEstruturaComponent implements OnInit {
 
     const estruturaDTO = {
       ...raw,
+      // Garante que vai apenas o value:
+      usoDaguaLagoa: raw.usoDaguaLagoa ? raw.usoDaguaLagoa.value : null,
+      usoDaguaOlhoDagua: raw.usoDaguaOlhoDagua ? raw.usoDaguaOlhoDagua.value : null,
+      usoDaguaPoco: raw.usoDaguaPoco ? raw.usoDaguaPoco.value : null,
+      usoDaguaRioOuRiacho: raw.usoDaguaRioOuRiacho ? raw.usoDaguaRioOuRiacho.value : null,
       dataPosse: this.formatToISO(raw.dataPosse),
       dataRegistro: this.formatToISO(raw.dataRegistro)
     };
@@ -467,6 +452,8 @@ export class CadastroEstruturaComponent implements OnInit {
       next: (res) => {
         console.log('✅ Estrutura salva com sucesso!', res);
         this.snackBar.open('Estrutura salva com sucesso!', 'Fechar', { duration: 3000 });
+        const loteId = this.formEstrutura.get('loteId')?.value;
+        this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId } });
       },
       error: (err) => {
         console.error('❌ Erro ao salvar estrutura:', err);
@@ -522,7 +509,7 @@ export class CadastroEstruturaComponent implements OnInit {
       console.warn('⚠️ Formulário inválido. Corrija os campos.');
     }
   }
-
+  
   energias: energia[] = [
     { value: 'solar', viewValue: 'SOLAR' },
     { value: 'eolica', viewValue: 'EÓLICA' },

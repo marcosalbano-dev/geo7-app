@@ -1,23 +1,34 @@
 <div fxLayout="row" fxLayoutAlign="center">
   <div fxLayout="column" fxFlex="1000px">
-    <form class="mt-60" #pessoasFrm="ngForm">
+    <form class="mt-60" [formGroup]="formPessoas" (ngSubmit)="onSalvar()">
       <mat-card>
         <mat-card-header>
           <mat-card-title>Dados Pessoais</mat-card-title>
         </mat-card-header>
         <mat-card-content class="mt-20">
+          <!-- Campos fixos -->
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="480px">
               <mat-form-field class="full-width">
                 <mat-label>Nome do Detentor</mat-label>
-                <input type="text" placeholder="Ex: José.." matInput />
+                <input
+                  type="text"
+                  placeholder="Ex: José.."
+                  matInput
+                  formControlName="nome"
+                />
               </mat-form-field>
             </div>
 
             <div fxFlex="470px">
               <mat-form-field class="full-width">
                 <mat-label>Endereço de Correspondência</mat-label>
-                <input type="text" placeholder="Ex: Avenida..." matInput />
+                <input
+                  type="text"
+                  placeholder="Ex: Avenida..."
+                  matInput
+                  formControlName="endereco"
+                />
               </mat-form-field>
             </div>
           </div>
@@ -26,71 +37,102 @@
             <div fxFlex="120px">
               <mat-form-field class="full-width">
                 <mat-label>Número</mat-label>
-                <input type="text" placeholder="Ex: 231" matInput />
+                <input
+                  type="text"
+                  placeholder="Ex: 231"
+                  matInput
+                  formControlName="numero"
+                />
               </mat-form-field>
             </div>
 
-            <div fxFlex="310px">
+            <div fxFlex="350px">
               <mat-form-field class="full-width">
                 <mat-label>Complemento</mat-label>
-                <input type="text" placeholder="Ex: Altos" matInput />
+                <input
+                  type="text"
+                  placeholder="Ex: Altos"
+                  formControlName="complemento"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
-            <div fxFlex="230px">
+            <div fxFlex="250px">
               <mat-form-field class="full-width">
                 <mat-label>Bairro</mat-label>
-                <input type="text" placeholder="Ex: Bairro" matInput />
+                <input
+                  type="text"
+                  placeholder="Ex: Bairro"
+                  matInput
+                  formControlName="bairro"
+                />
               </mat-form-field>
             </div>
-
-            <div fxFlex="260px">
-              <mat-form-field mat-form-field class="full-width">
-                <mat-label>Municipio de Residência</mat-label
-                ><mat-select>
-                  @for (municipio of municipios; track municipio) {
-                  <mat-option [value]="municipio.value">{{
-                    municipio.viewValue
-                  }}</mat-option>
-                  }
-                </mat-select>
+            <div fxFlex="190px">
+              <mat-form-field class="full-width">
+                <mat-label>CEP</mat-label>
+                <input
+                  type="text"
+                  placeholder="Ex: 231"
+                  matInput
+                  formControlName="cep"
+                />
               </mat-form-field>
             </div>
           </div>
+
           <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="260px">
+            <div fxFlex="120px">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Estado (UF)</mat-label
-                ><mat-select>
-                  @for (estado of estados; track estado) {
-                  <mat-option [value]="estado.value">{{
-                    estado.viewValue
+                ><mat-select
+                  (selectionChange)="onUfChange($event.value)"
+                  formControlName="uf"
+                >
+                  <mat-option *ngFor="let uf of ufs" [value]="uf">{{
+                    uf
                   }}</mat-option>
-                  }
                 </mat-select>
               </mat-form-field>
             </div>
-            <div fxFlex="150px">
-              <mat-form-field class="full-width">
-                <mat-label>CEP</mat-label>
-                <input type="text" placeholder="Ex: 231" matInput />
+            <div fxFlex="260px">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Municipio de Residência</mat-label
+                ><mat-select
+                  formControlName="municipioResidencia"
+                  [disabled]="!municipios.length"
+                >
+                  <mat-option
+                    *ngFor="let municipio of municipios"
+                    [value]="municipio.id"
+                  >
+                    {{ municipio.nome }}
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
 
             <div fxFlex="250px">
               <mat-form-field class="full-width">
                 <mat-label>Telefone</mat-label>
-                <input type="text" placeholder="Ex: Bairro" matInput />
+                <input
+                  type="text"
+                  placeholder="Ex: Bairro"
+                  formControlName="telefone"
+                  matInput
+                />
               </mat-form-field>
             </div>
 
-            <div fxFlex="260px">
+            <div fxFlex="280px">
               <mat-form-field class="full-width">
                 <mat-label>Email</mat-label>
                 <input
                   type="text"
                   placeholder="Ex: fulano@email.com"
                   matInput
+                  formControlName="email"
                 />
               </mat-form-field>
             </div>
@@ -101,455 +143,400 @@
               <mat-form-field class="full-width">
                 <mat-label>Tipo de Pessoa</mat-label>
                 <mat-select
-                  [value]="tipoPessoaSelecionada()"
+                  formControlName="tipoPessoa"
                   (selectionChange)="onTipoPessoaChange($event.value)"
                 >
-                  @for (tipoPessoa of tiposPessoas; track tipoPessoa) {
-                  <mat-option [value]="tipoPessoa.value">
-                    {{ tipoPessoa.viewValue }}
-                  </mat-option>
+                  @for (tipo of tiposPessoas; track tipo) {
+                  <mat-option [value]="tipo.value">{{
+                    tipo.viewValue
+                  }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
             </div>
           </div>
           <!-- Pessoa Física -->
-          <mat-card *ngIf="tipoPessoaSelecionada() === 'FISICA'" class="mt-4">
-            <form [formGroup]="formFisica">
-              <h3>Pessoa Física</h3>
+          <mat-card
+            *ngIf="tipoPessoaSelecionada() === 'FISICA'"
+            class="mt-4"
+            [formGroup]="formFisica"
+          >
+            <h3>Pessoa Física</h3>
 
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="250px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>CPF</mat-label>
-                    <input matInput formControlName="cpf" />
-                  </mat-form-field>
-                </div>
+            <div>{{ tipoPessoaSelecionada() }}</div>
 
-                <div fxFlex="250px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Data de Nascimento</mat-label>
-                    <input matInput type="date" formControlName="nascimento" />
-                  </mat-form-field>
-                </div>
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="250px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>CPF</mat-label>
+                  <input matInput formControlName="cpf" />
+                </mat-form-field>
+              </div>
 
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Sexo</mat-label
-                    ><mat-select>
-                      @for (sexo of sexos; track sexo) {
-                      <mat-option [value]="sexo.value">{{
-                        sexo.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
+              <div fxFlex="250px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Data de Nascimento</mat-label>
+                  <input
+                    matInput
+                    [matDatepicker]="picker"
+                    formControlName="nascimento"
+                  />
+                  <mat-datepicker-toggle
+                    matSuffix
+                    [for]="picker"
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+              </div>
 
-                <div fxFlex="230px">
-                  <mat-label>É espólio?</mat-label>
-                  <mat-button-toggle-group
-                    name="fontStyle"
-                    aria-label="Font Style"
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Sexo</mat-label
+                  ><mat-select>
+                    @for (sexo of sexos; track sexo) {
+                    <mat-option [value]="sexo.value">{{
+                      sexo.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="230px">
+                <mat-label>É espólio?</mat-label>
+                <mat-button-toggle-group
+                  name="fontStyle"
+                  aria-label="Font Style"
+                >
+                  <mat-button-toggle value="sim">Sim</mat-button-toggle>
+                  <mat-button-toggle value="nao">Não</mat-button-toggle>
+                </mat-button-toggle-group>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Raça/Cor</mat-label
+                  ><mat-select>
+                    @for (raca of racas; track raca) {
+                    <mat-option [value]="raca.value">{{
+                      raca.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Estado Civil</mat-label
+                  ><mat-select>
+                    @for (estadoCivil of estadosCivis; track estadoCivil) {
+                    <mat-option [value]="estadoCivil.value">{{
+                      estadoCivil.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="250px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Data de Casamento</mat-label>
+                  <input
+                    matInput
+                    [matDatepicker]="picker_casamento"
+                    formControlName="casamento"
+                  />
+                  <mat-datepicker-toggle
+                    matSuffix
+                    [for]="picker_casamento"
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #picker_casamento></mat-datepicker>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Regime de Bens</mat-label
+                  ><mat-select>
+                    @for (regimeBens of regimesBens; track regimeBens) {
+                    <mat-option [value]="regimeBens.value">{{
+                      regimeBens.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Tipo de Documento</mat-label
+                  ><mat-select>
+                    @for (tipoDocumento of tiposDocumentos; track tipoDocumento)
+                    {
+                    <mat-option [value]="tipoDocumento.value">{{
+                      tipoDocumento.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="220px">
+                <mat-form-field class="full-width">
+                  <mat-label>Número do Documento</mat-label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 23145"
+                    matInput
+                    formControlName="numeroDocumento"
+                  />
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="250px">
+                <mat-form-field class="full-width">
+                  <mat-label>Órgão Emissor</mat-label>
+                  <input
+                    type="text"
+                    placeholder="Ex: SSPCE"
+                    matInput
+                    formControlName="orgaoEmissor"
+                  />
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>UF Órgão Emissor</mat-label
+                  ><mat-select>
+                    @for (uf of ufs; track uf) {
+                    <mat-option [value]="uf">{{ uf }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="220px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Nacionalidade</mat-label
+                  ><mat-select>
+                    @for (nacionalidade of nacionalidades; track nacionalidade)
+                    {
+                    <mat-option [value]="nacionalidade.value">{{
+                      nacionalidade.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="120px">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>UF Naturalidade</mat-label
+                  ><mat-select
+                    (selectionChange)="onUfChange($event.value)"
+                    formControlName="ufNaturalidade"
                   >
-                    <mat-button-toggle value="sim">Sim</mat-button-toggle>
-                    <mat-button-toggle value="nao">Não</mat-button-toggle>
-                  </mat-button-toggle-group>
-                </div>
+                    <mat-option *ngFor="let ufNaturalidade of ufs" [value]="ufNaturalidade">{{
+                      ufNaturalidade
+                    }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div fxFlex="250px">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Municipio de Naturalidade</mat-label
+                  ><mat-select
+                    formControlName="municipioNaturalidade"
+                    [disabled]="!municipios.length"
+                  >
+                    <mat-option
+                      *ngFor="let municipio of municipios"
+                      [value]="municipio.id"
+                    >
+                      {{ municipio.nome }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
               </div>
 
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Raça/Cor</mat-label
-                    ><mat-select>
-                      @for (raca of racas; track raca) {
-                      <mat-option [value]="raca.value">{{
-                        raca.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Estado Civil</mat-label
-                    ><mat-select>
-                      @for (estadoCivil of estadosCivis; track estadoCivil) {
-                      <mat-option [value]="estadoCivil.value">{{
-                        estadoCivil.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
+              <div fxFlex="150px">
+                <mat-form-field class="full-width">
+                  <mat-label>Código País de Origem</mat-label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 931"
+                    matInput
+                    formControlName="codPaisOrigem"
+                  />
+                </mat-form-field>
+              </div>
+              <div fxFlex="150px">
+                <mat-form-field class="full-width">
+                  <mat-label>Código País de Residência</mat-label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 931"
+                    matInput
+                    formControlName="codPaisResidencia"
+                  />
+                </mat-form-field>
+              </div>
+            </div>
 
-                <div fxFlex="250px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Data de Casamento</mat-label>
-                    <input matInput type="date" formControlName="nascimento" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Regime de Bens</mat-label
-                    ><mat-select>
-                      @for (regimeBens of regimesBens; track regimeBens) {
-                      <mat-option [value]="regimeBens.value">{{
-                        regimeBens.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="467px">
+                <mat-form-field class="full-width">
+                  <mat-label>Nome do Pai </mat-label>
+                  <input
+                    type="text"
+                    placeholder="Ex: João..."
+                    matInput
+                    formControlName="nomePai"
+                  />
+                </mat-form-field>
               </div>
 
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Tipo de Documento</mat-label
-                    ><mat-select>
-                      @for (tipoDocumento of tiposDocumentos; track
-                      tipoDocumento) {
-                      <mat-option [value]="tipoDocumento.value">{{
-                        tipoDocumento.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="220px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Número do Documento</mat-label>
-                    <input
-                      type="text"
-                      placeholder="Ex: 23145"
-                      matInput
-                      formControlName="numeroDocumento"
-                    />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="250px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Órgão Emissor</mat-label>
-                    <input
-                      type="text"
-                      placeholder="Ex: SSPCE"
-                      matInput
-                      formControlName="orgaoEmissor"
-                    />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>UF Órgão Emissor</mat-label
-                    ><mat-select>
-                      @for (uf of ufs; track uf) {
-                      <mat-option [value]="uf.value">{{
-                        uf.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
+              <div fxFlex="467px">
+                <mat-form-field class="full-width">
+                  <mat-label>Nome da Mãe</mat-label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Maria..."
+                    matInput
+                    formControlName="nomeMae"
+                  />
+                </mat-form-field>
               </div>
-
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="220px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Nacionalidade</mat-label
-                    ><mat-select>
-                      @for (nacionalidade of nacionalidades; track
-                      nacionalidade) {
-                      <mat-option [value]="nacionalidade.value">{{
-                        nacionalidade.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="120px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>UF Naturalidade</mat-label
-                    ><mat-select>
-                      @for (uf of ufs; track uf) {
-                      <mat-option [value]="uf.value">{{
-                        uf.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="200px">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Municipio de Naturalidade</mat-label
-                    ><mat-select>
-                      @for (municipio of municipios; track municipio) {
-                      <mat-option [value]="municipio.value">{{
-                        municipio.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="175px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Código País de Origem</mat-label>
-                    <input
-                      type="text"
-                      placeholder="Ex: 931"
-                      matInput
-                      formControlName="codPaisOrigem"
-                    />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="175px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Código País de Residência</mat-label>
-                    <input
-                      type="text"
-                      placeholder="Ex: 931"
-                      matInput
-                      formControlName="codPaisResidencia"
-                    />
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="467px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Nome do Pai </mat-label>
-                    <input
-                      type="text"
-                      placeholder="Ex: João..."
-                      matInput
-                      formControlName="nomePai"
-                    />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="467px">
-                  <mat-form-field class="full-width">
-                    <mat-label>Nome da Mãe</mat-label>
-                    <input
-                      type="text"
-                      placeholder="Ex: Maria..."
-                      matInput
-                      formControlName="nomeMae"
-                    />
-                  </mat-form-field>
-                </div>
-              </div>
-            </form>
+            </div>
           </mat-card>
 
           <!-- Pessoa Jurídica -->
-          <mat-card *ngIf="tipoPessoaSelecionada() === 'JURIDICA'" class="mt-4">
-            <form [formGroup]="formJuridica">
-              <h3>Pessoa Jurídica</h3>
-
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="250px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>CNPJ - CGC</mat-label>
-                    <input matInput formControlName="cnpj" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="240px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Natureza Jurídica</mat-label>
-                    <input matInput formControlName="natureza" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="210px">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Tipo de Poder</mat-label
-                    ><mat-select>
-                      @for (tipoPoder of tiposPoderes; track tipoPoder) {
-                      <mat-option [value]="tipoPoder.value">{{
-                        tipoPoder.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="210px">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Tipo de Governo</mat-label
-                    ><mat-select>
-                      @for (tipoGoverno of tiposGovernos; track tipoGoverno) {
-                      <mat-option [value]="tipoGoverno.value">{{
-                        tipoGoverno.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
+          <mat-card
+            *ngIf="tipoPessoaSelecionada() === 'JURIDICA'"
+            class="mt-4"
+            [formGroup]="formJuridica"
+          >
+            <h3>Pessoa Jurídica</h3>
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="250px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>CNPJ - CGC</mat-label>
+                  <input matInput formControlName="cnpj" />
+                </mat-form-field>
               </div>
 
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="130px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>UF País Sede</mat-label
-                    ><mat-select>
-                      @for (uf of ufs; track uf) {
-                      <mat-option [value]="uf.value">{{
-                        uf.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="180px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Código País Sede</mat-label>
-                    <input matInput formControlName="codPaisSede" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="200px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Porcentagem Capital Nacional</mat-label>
-                    <input matInput formControlName="capitalNacional" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="210px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Porcentagem Capital Estrangeiro</mat-label>
-                    <input matInput formControlName="capitalEstrangeiro" />
-                  </mat-form-field>
-                </div>
-                <div fxFlex="175px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Registro Junta Comercial</mat-label>
-                    <input matInput formControlName="regJuntaComercial" />
-                  </mat-form-field>
-                </div>
+              <div fxFlex="240px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Natureza Jurídica</mat-label>
+                  <input matInput formControlName="natureza" />
+                </mat-form-field>
               </div>
-            </form>
+
+              <div fxFlex="210px">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Tipo de Poder</mat-label
+                  ><mat-select>
+                    @for (tipoPoder of tiposPoderes; track tipoPoder) {
+                    <mat-option [value]="tipoPoder.value">{{
+                      tipoPoder.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="210px">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>Tipo de Governo</mat-label
+                  ><mat-select>
+                    @for (tipoGoverno of tiposGovernos; track tipoGoverno) {
+                    <mat-option [value]="tipoGoverno.value">{{
+                      tipoGoverno.viewValue
+                    }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayoutGap="16px">
+              <div fxFlex="130px" fxFlex.xs="100%">
+                <mat-form-field mat-form-field class="full-width">
+                  <mat-label>UF País Sede</mat-label
+                  ><mat-select>
+                    @for (uf of ufs; track uf) {
+                    <mat-option [value]="uf">{{ uf }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="180px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Código País Sede</mat-label>
+                  <input matInput formControlName="codPaisSede" />
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="200px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Porcentagem Capital Nacional</mat-label>
+                  <input matInput formControlName="capitalNacional" />
+                </mat-form-field>
+              </div>
+
+              <div fxFlex="210px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Porcentagem Capital Estrangeiro</mat-label>
+                  <input matInput formControlName="capitalEstrangeiro" />
+                </mat-form-field>
+              </div>
+              <div fxFlex="175px" fxFlex.xs="100%">
+                <mat-form-field class="full-width">
+                  <mat-label>Registro Junta Comercial</mat-label>
+                  <input matInput formControlName="regJuntaComercial" />
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card>
+          <mat-card class="mt-4">
+            <h3>Vinculação com o Imóvel Rural</h3>
+            <app-cadastro-pessoa-lote 
+            [formPessoaLote]="formPessoaLote"
+            [loteId]="formPessoaLote.get('loteId')?.value"
+            >
+            </app-cadastro-pessoa-lote>
           </mat-card>
 
           <mat-card class="mt-4">
-            <form [formGroup]="formVinculacao">
-              <h3>Vinculação com Imóvel Rural</h3>
-
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="210px">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Condição da Pessoa no Imóvel Rural</mat-label
-                    ><mat-select>
-                      @for (condicao of condicoes; track condicao) {
-                      <mat-option [value]="condicao.value">{{
-                        condicao.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="230px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>% Detenção</mat-label>
-                    <input matInput formControlName="detencao" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="240px">
-                  <mat-label>É Declarante?</mat-label>
-                  <mat-button-toggle-group
-                    name="fontStyle"
-                    aria-label="Font Style"
-                  >
-                    <mat-button-toggle value="sim">Sim</mat-button-toggle>
-                    <mat-button-toggle value="nao">Não</mat-button-toggle>
-                  </mat-button-toggle-group>
-                </div>
-
-                <div fxFlex="240px">
-                  <mat-label>Reside no Imóvel?</mat-label>
-                  <mat-button-toggle-group
-                    name="fontStyle"
-                    aria-label="Font Style"
-                  >
-                    <mat-button-toggle value="sim">Sim</mat-button-toggle>
-                    <mat-button-toggle value="nao">Não</mat-button-toggle>
-                  </mat-button-toggle-group>
-                </div>
-              </div>
-
-              <div fxLayout="row" fxLayoutGap="16px">
-                <div fxFlex="210px" fxFlex.xs="100%">
-                  <mat-form-field mat-form-field class="full-width">
-                    <mat-label>Atividade Principal</mat-label
-                    ><mat-select>
-                      @for (atividade of atividades; track atividade) {
-                      <mat-option [value]="atividade.value">{{
-                        atividade.viewValue
-                      }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="230px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Quantidade de Área Cedida</mat-label>
-                    <input matInput formControlName="qtdAreaCedida" />
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="250px" fxFlex.xs="100%">
-                  <mat-form-field class="full-width">
-                    <mat-label>Data Término do Contrato</mat-label>
-                    <input
-                      matInput
-                      type="date"
-                      formControlName="terminoContrato"
-                    />
-                  </mat-form-field>
-                </div>
-
-                <div fxLayout="row" fxLayoutGap="16px">
-                  <div fxFlex="210px" fxFlex.xs="100%">
-                    <mat-form-field mat-form-field class="full-width">
-                      <mat-label>Tipo de Contrato</mat-label
-                      ><mat-select>
-                        @for (tipoContrato of tiposContratos; track tipoContrato) {
-                        <mat-option [value]="tipoContrato.value">{{
-                          tipoContrato.viewValue
-                        }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                </div>
-              </div>
-            </form>
+            <app-cadastro-pessoas-anexo
+              [formGroup]="formAnexo"
+            ></app-cadastro-pessoas-anexo>
           </mat-card>
 
-          <mat-divider></mat-divider>
           <mat-card-actions>
-            <button mat-flat-button color="primary">
+            <button mat-flat-button color="primary" type="submit">
               <mat-icon fontIcon="save"></mat-icon>
               Salvar
             </button>
-            <button mat-flat-button color="primary">
+            <button mat-flat-button color="primary" type="button">
               <mat-icon fontIcon="refresh"></mat-icon>
               Atualizar
             </button>
-            <button mat-flat-button color="accent" class="ml-5">
+            <button
+              mat-flat-button
+              color="accent"
+              class="ml-5"
+              type="button"
+              (click)="onLimpar()"
+            >
               <mat-icon fontIcon="backspace"></mat-icon>
               Limpar
             </button>
