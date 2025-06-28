@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,6 +24,8 @@ import { DistritoService } from '../services/distrito.service';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
+import { CadastroSituacaoJuridicaComponent } from '../cadastro-situacao-juridica/cadastro-situacao-juridica.component';
 
 @Component({
   selector: 'app-cadastro-lotes',
@@ -46,7 +48,8 @@ import { Router } from '@angular/router';
     NgxMatSelectSearchModule,
     MatProgressSpinnerModule,
     ReactiveFormsModule,
-    CommonModule
+    CommonModule,
+    CadastroSituacaoJuridicaComponent
   ]
 })
 export class CadastroLotesComponent implements OnInit {
@@ -71,10 +74,18 @@ export class CadastroLotesComponent implements OnInit {
   isLoadingDistrito = false;
   isLoadingMunicipio = false;
 
+  situacoes = [
+    { value: 'PossePorSimplesOcupacao', viewValue: 'Posse Por Simples Ocupação' },
+    { value: 'PosseJustoTitulo', viewValue: 'Posse a Justo Título' },
+    { value: 'Dominio', viewValue: 'Área Registrada (Domínio)' },
+    { value: 'Indefinido', viewValue: 'Indefinido' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private municipioService: MunicipioService,
     private loteService: LoteService,
+    private situacaoService: SituacaoJuridicaService,
     private distritoService: DistritoService,
     private snackBar: MatSnackBar,
     private router: Router

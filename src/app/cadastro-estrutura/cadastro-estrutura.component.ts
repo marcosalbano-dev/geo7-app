@@ -287,78 +287,6 @@ export class CadastroEstruturaComponent implements OnInit {
     console.log('✅ Lotes filtrados:', this.lotesFiltrados);
   }
 
-  // private prepararEstruturaDTO(formValue: any): any {
-  //   function toBoolean(value: any): boolean {
-  //     return value === 'sim';
-  //   }
-
-  //   const formatDate = (date: Date | string | null): string | null => {
-  //     if (!date) return null;
-  //     const d = new Date(date);
-  //     return d.toISOString().split('T')[0]; // yyyy-MM-dd
-  //   };
-
-  //   const formatDecimal = (value: any): string | null => {
-  //     if (value === null || value === undefined || value === '') return null;
-  //     return parseFloat(value).toString(); // força string numérica simples
-  //   };
-
-  //   // ⚠️ Certifique-se que `this.situacoes` está acessível no componente pai.
-  //   const situacaoSelecionada = this.situacoes.find(
-  //     s => s.value === formValue.situacaoSelecionada
-  //   )?.viewValue ?? formValue.situacaoSelecionada;
-
-  //   return {
-  //     loteId: formValue.loteId,
-  //     numero: formValue.numero,
-  //     sncr: formValue.sncr,
-  //     area: formValue.area,
-  //     denominacaoImovel: formValue.denominacaoImovel,
-  //     municipioId: formValue.municipioId,
-  //     distritoId: formValue.distritoId,
-  //     codImoReceita: formValue.codImoReceita,
-  //     comunidade: formValue.comunidade,
-  //     localidade: formValue.localidade,
-  //     pontoReferencia: formValue.pontoReferencia,
-  //     familiasResidentes: formValue.familiasResidentes,
-  //     pessoasResidentes: formValue.pessoasResidentes,
-  //     trabalhadoresComCarteira: formValue.trabalhadoresComCarteira,
-  //     trabalhadoresSemCarteira: formValue.trabalhadoresSemCarteira,
-  //     maoDeObraFamiliar: formValue.maoDeObraFamiliar,
-  //     valorTotal: formValue.valorTotal,
-  //     valorDasBenfeitorias: formValue.valorDasBenfeitorias,
-  //     valorOutrasAtividades: formValue.valorOutrasAtividades,
-  //     valorTerraNua: formValue.valorTerraNua,
-  //     areaIrrigada: formValue.areaIrrigada,
-  //     numeroHerdeiros: formValue.numeroHerdeiros,
-  //     porcentagemDetencao: formValue.porcentagemDetencao,
-  //     obsLitigio: formValue.obsLitigio,
-  //     entregouMemorialPlanilha: toBoolean(formValue.entregouMemorialPlanilha),
-  //     isIrrigacao: toBoolean(formValue.isIrrigacao),
-  //     isFonteAguaExterna: toBoolean(formValue.isFonteAguaExterna),
-  //     isRedeDeAbastecimento: toBoolean(formValue.isRedeDeAbastecimento),
-  //     isAcude: toBoolean(formValue.isAcude),
-  //     isAcudePerene: toBoolean(formValue.isAcudePerene),
-  //     isLagoa: toBoolean(formValue.isLagoa),
-  //     isLagoaPerene: toBoolean(formValue.isLagoaPerene),
-  //     isPoco: toBoolean(formValue.isPoco),
-  //     isPocoPerene: toBoolean(formValue.isPocoPerene),
-  //     isRioOuRiacho: toBoolean(formValue.isRioOuRiacho),
-  //     isRioOuRiachoPerene: toBoolean(formValue.isRioOuRiachoPerene),
-  //     isOlhoDagua: toBoolean(formValue.isOlhoDagua),
-  //     isOlhoDaguaPerene: toBoolean(formValue.isOlhoDaguaPerene),
-  //     isPossuiEnergiaAlternativa: toBoolean(formValue.isPossuiEnergiaAlternativa),
-  //     tipoEnergiaEletrica: formValue.tipoEnergiaEletrica?.value || null,
-  //     usoDaguaAcude: formValue.usoDaguaAcude?.value || null,
-  //     usoDaguaLagoa: formValue.usoDaguaLagoa?.value || null,
-  //     usoDaguaPoco: formValue.usoDaguaPoco?.value || null,
-  //     usoDaguaRioOuRiacho: formValue.usoDaguaRioOuRiacho?.value || null,
-  //     usoDaguaOlhoDagua: formValue.usoDaguaOlhoDagua?.value || null,
-  //     destinacaoDoImovel: formValue.destinacaoDoImovel?.value || null,
-  //     litigio: formValue.litigio?.value || null,
-  //   };
-  // }
-
   preencherCamposLote(lote: LoteDTO): void {
     this.formEstrutura.patchValue({
       loteId: lote.id,
@@ -582,9 +510,26 @@ export class CadastroEstruturaComponent implements OnInit {
   ];
 
   obtencoes = [
-    { value: 'AquisicaoGovEstadual', viewValue: '01 - Aquisição do Governo Estadual' },
-    { value: 'Adjudicacao', viewValue: '02 - Adjudicação' },
-    { value: 'AquisicaoGovFederal', viewValue: '03 - Aquisição do Governo Federal' }
+    { value: 'aquisicaoGovEstadual', viewValue: '01 - Aquisição do Governo Estadual' },
+    { value: 'adjudicacao', viewValue: '02 - Adjudicação' },
+    { value: 'aquisicaoGovFederal', viewValue: '03 - Aquisição do Governo Federal' },
+    { value: 'aquisicaoIncra', viewValue: '04 - Aquisição INCRA' },
+    { value: 'aquisicaoGovMunicipal', viewValue: '05 - Aquisição do Governo Municipal' },
+    { value: 'cartaArrecadacao', viewValue: '06 - Carta de Arrecadação' },
+    { value: 'compraVendaParticular', viewValue: '07 - Compra e Venda de Particular' },
+    { value: 'cartaArrecadacao', viewValue: '08 - Carta de Arrecadação' },
+    { value: 'concessaoUsoGovFederal', viewValue: '09 - Concessão de Uso/Governo Federal' },
+    { value: 'concessaoUsoIncra', viewValue: '10 - Concessão de Uso/INCRA' },
+    { value: 'concessaoUsoMunicipal', viewValue: '11 - Concessão de Uso/Municipal' },
+    { value: 'doacao', viewValue: '12 - Doação' },
+    { value: 'foroOuEnfiteuse', viewValue: '13 - Foro ou Enfiteuse' },
+    { value: 'incorporacao', viewValue: '14 - Incorporação' },
+    { value: 'recebimentoHeranca', viewValue: '15 - Recebimento de Herança' },
+    { value: 'usucapiao', viewValue: '16 - Usucapião' },
+    { value: 'usufruto', viewValue: '17 - Usufruto' },
+    { value: 'doacaoEmPagamento', viewValue: '18 - Doação em Pagamento' },
+    { value: 'desapropriacao', viewValue: '19 - Desapropriação' },
+    { value: 'outras', viewValue: '20 - Outros' }
   ];
 
 }
