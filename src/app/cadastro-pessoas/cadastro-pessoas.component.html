@@ -2,11 +2,22 @@
   <div fxLayout="column" fxFlex="1000px">
     <form class="mt-60" [formGroup]="formPessoas" (ngSubmit)="onSalvar()">
       <mat-card>
-        <mat-card-header>
-          <mat-card-title>Dados Pessoais</mat-card-title>
-        </mat-card-header>
         <mat-card-content class="mt-20">
           <!-- Campos fixos -->
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="250px">
+              <!-- Número do Lote apenas para exibição -->
+              <mat-form-field appearance="fill">
+                <mat-label>Número do Lote</mat-label>
+                <input matInput [value]="numeroLote" disabled>
+                <!-- Campo oculto para garantir o envio do loteId -->
+                <input type="hidden" formControlName="loteId" />
+              </mat-form-field>"
+            </div>
+          </div>
+          <mat-card-header>
+            <mat-card-title>Dados Pessoais</mat-card-title>
+          </mat-card-header>
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="480px">
               <mat-form-field class="full-width">
@@ -343,9 +354,11 @@
                     (selectionChange)="onUfChange($event.value)"
                     formControlName="ufNaturalidade"
                   >
-                    <mat-option *ngFor="let ufNaturalidade of ufs" [value]="ufNaturalidade">{{
-                      ufNaturalidade
-                    }}</mat-option>
+                    <mat-option
+                      *ngFor="let ufNaturalidade of ufs"
+                      [value]="ufNaturalidade"
+                      >{{ ufNaturalidade }}</mat-option
+                    >
                   </mat-select>
                 </mat-form-field>
               </div>
@@ -508,9 +521,9 @@
           </mat-card>
           <mat-card class="mt-4">
             <h3>Vinculação com o Imóvel Rural</h3>
-            <app-cadastro-pessoa-lote 
-            [formPessoaLote]="formPessoaLote"
-            [loteId]="formPessoaLote.get('loteId')?.value"
+            <app-cadastro-pessoa-lote
+              [formPessoaLote]="formPessoaLote"
+              [loteId]="formPessoaLote.get('loteId')?.value"
             >
             </app-cadastro-pessoa-lote>
           </mat-card>

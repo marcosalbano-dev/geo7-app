@@ -77,13 +77,21 @@ interface usoDaAgua {
 export class CadastroEstruturaComponent implements OnInit {
 
   formEstrutura!: FormGroup;
-  lotes: LoteDTO[] = [];
+
   municipios: Municipio[] = [];
-  filteredDistritos: Distrito[] = [];
-  isLoadingDistrito = false;
   isLoadingMunicipio = false;
 
+  filteredDistritos: Distrito[] = [];
+  isLoadingDistrito = false;
+
+  lotes: LoteDTO[] = [];
   lotesFiltrados: LoteDTO[] = [];
+  loteSelecionado!: LoteDTO;
+  numeroLote: string | null = null;
+
+  preencherPessoasComLote(lote: LoteDTO) {
+    this.loteSelecionado = lote;
+  }
 
   onMunicipioChange(municipioId: number): void {
     this.loadDistritosByMunicipio(municipioId);
@@ -308,8 +316,6 @@ export class CadastroEstruturaComponent implements OnInit {
     return this.formEstrutura.get('loteId')?.value ?? null;
   }
 
-
-
   carregarLoteParaEstrutura(loteId: number) {
     this.loteService.obterPorId(loteId).subscribe(lote => {
       this.formEstrutura.patchValue({
@@ -373,7 +379,6 @@ export class CadastroEstruturaComponent implements OnInit {
     };
 
     console.log('✅ EstruturaDTO para envio:', estruturaDTO);
-
     console.log('🧪 Payload enviado ao backend:', estruturaDTO);
 
     this.estruturaService.salvar(estruturaDTO).subscribe({

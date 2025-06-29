@@ -49,7 +49,6 @@ import { CadastroSituacaoJuridicaComponent } from '../cadastro-situacao-juridica
     MatProgressSpinnerModule,
     ReactiveFormsModule,
     CommonModule,
-    CadastroSituacaoJuridicaComponent
   ]
 })
 export class CadastroLotesComponent implements OnInit {
@@ -75,10 +74,10 @@ export class CadastroLotesComponent implements OnInit {
   isLoadingMunicipio = false;
 
   situacoes = [
-    { value: 'PossePorSimplesOcupacao', viewValue: 'Posse Por Simples Ocupação' },
-    { value: 'PosseJustoTitulo', viewValue: 'Posse a Justo Título' },
-    { value: 'Dominio', viewValue: 'Área Registrada (Domínio)' },
-    { value: 'Indefinido', viewValue: 'Indefinido' }
+    { value: '1', viewValue: 'Posse Por Simples Ocupação' },
+    { value: '2', viewValue: 'Posse a Justo Título' },
+    { value: '3', viewValue: 'Área Registrada (Domínio)' },
+    { value: '99', viewValue: 'Indefinido' }
   ];
 
   constructor(

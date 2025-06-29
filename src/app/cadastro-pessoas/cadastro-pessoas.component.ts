@@ -21,6 +21,9 @@ import { ErrorStateMatcher, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { CadastroPessoaLoteComponent } from '../cadastro-pessoa-lote/cadastro-pessoa-lote.component';
 import { ActivatedRoute } from '@angular/router';
+import { LoteService } from '../services/lote.service';
+import { PessoaLoteDTO } from '../models/pessoa-lote.dto';
+import { PessoaLoteService } from '../services/pessoa-lote.service';
 
 
 interface distrito {
@@ -190,6 +193,7 @@ export class CadastroPessoasComponent {
   isLoadingUf = false;
   isLoadingMunicipio = false;
   @Input() loteId: number | null = null;
+  numeroLote: string | null = null;
 
   tipoPessoaSelecionada = signal<string>('FISICA');
 
@@ -202,9 +206,11 @@ export class CadastroPessoasComponent {
   constructor(
     private fb: FormBuilder,
     private pessoasService: PessoasService,
-    private estadoService: EstadoService,
+    private loteService: LoteService,
     private municipioService: MunicipioService,
-    private route: ActivatedRoute) {
+    private route: ActivatedRoute,
+    private pessoaLoteService: PessoaLoteService
+  ) {
 
     this.formAnexo = this.fb.group({
       utmEste: [''],
@@ -220,6 +226,7 @@ export class CadastroPessoasComponent {
 
     this.formPessoas = this.fb.group({
       municipioId: [null, Validators.required],
+      loteId: [null, Validators.required],
       nome: [''],
       endereco: [''],
       numero: [''],
@@ -269,11 +276,12 @@ export class CadastroPessoasComponent {
 
     this.formPessoaLote = this.fb.group({
       loteId: [null, Validators.required],
+      //numeroLote: [{ value: '', disabled: true }],
       condicaoPessoaImovelRural: [''],
       detencao: [null],
       isDeclarante: [false],
       isResideNoImovel: [false],
-      atividadePrincipal: [null],
+      atividadePrincipalExploracao: [null],
       qtdAreaCedida: [null],
       terminoContrato: [null],
       tipoContrato: [null],
@@ -295,10 +303,12 @@ export class CadastroPessoasComponent {
 
     this.route.queryParams.subscribe(params => {
       const loteId = params['loteId'];
+      this.formPessoaLote.get('loteId')?.setValue(loteId);
+
       if (loteId) {
-        this.formPessoaLote.get('loteId')?.setValue(loteId);
-        // se quiser atualizar o input, pode também:
-        this.loteId = loteId;
+        this.loteService.obterPorId(loteId).subscribe(lote => {
+          this.numeroLote = lote.numero; // <-- só preenche a variável
+        });
       }
     });
   }
@@ -344,23 +354,69 @@ export class CadastroPessoasComponent {
         : this.formJuridica.value),
       ...this.formPessoaLote.value
     };
-    console.log('Dados para salvar:', dados);
 
+    //...this.formPessoaLote.value
+    console.log('Dados para salvar:', dados);
     console.log('formPessoaLote:', this.formPessoaLote.value);
     console.log('loteId:', this.formPessoaLote.get('loteId')?.value);
 
+    // Salva pessoa
     this.pessoasService.salvarPessoa(dados).subscribe({
-      next: (resp) => {
-        alert('Salvo com sucesso!');
-        // Pode resetar ou navegar
+      next: (pessoaSalva) => {
+
+        if (!pessoaSalva.id) {
+          alert('Pessoa sem id, algo deu errado!');
+          return;
+        }
+
+        const condicao = this.formPessoaLote.get('condicaoPessoaImovelRural')?.value;
+        let isContratoPrazoIndeterminado = this.formPessoaLote.get('isContratoPrazoIndeterminado')?.value;
+
+        // Só é permitido marcar “Prazo Indeterminado” se for Comodatário
+        if (condicao !== CondicaoPessoaImovel.Comodatario || condicao !== CondicaoPessoaImovel.Parceiro || condicao !== CondicaoPessoaImovel.Concessionario) {
+          isContratoPrazoIndeterminado = false;
+        }
+
+        // Agora vincula pessoa e lote
+        const pessoaLote: PessoaLoteDTO = {
+          pessoaId: pessoaSalva.id!, // O id gerado pelo backend!
+          loteId: this.formPessoaLote.get('loteId')?.value,
+          // demais campos opcionais (pode usar outros dados do form)
+          condicaoPessoaImovelRural: this.formPessoaLote.get('condicaoPessoaImovelRural')?.value,
+          percentDetencao: this.formPessoaLote.get('percentDetencao')?.value,
+          isDeclarante: this.formPessoaLote.get('isDeclarante')?.value,
+          isResideNoImovel: this.formPessoaLote.get('isResideNoImovel')?.value,
+          tipoDoAto: this.formPessoaLote.get('tipoDoAto')?.value,
+          numeroAto: this.formPessoaLote.get('numeroAto')?.value,
+          dataAto: this.formPessoaLote.get('dataAto')?.value,
+          quantidadeAreaCedida: this.formPessoaLote.get('quantidadeAreaCedida')?.value,
+          atividadePrincipalExploracao: this.formPessoaLote.get('atividadePrincipalExploracao')?.value,
+          contrato: this.formPessoaLote.get('contrato')?.value,
+          dataTerminoContrato: this.formPessoaLote.get('dataTerminoContrato')?.value,
+          isContratoPrazoIndeterminado: isContratoPrazoIndeterminado ?? false 
+        };
+
+        // Só adiciona o campo se for Comodatário (ajuste o valor exato do select se necessário)
+        if (condicao && condicao.includes('Comodatário')) {
+          pessoaLote.isContratoPrazoIndeterminado = this.formPessoaLote.get('isContratoPrazoIndeterminado')?.value;
+        }
+
+        this.pessoaLoteService.salvar(pessoaLote).subscribe({
+          next: (pessoaLote) => {
+            alert('Pessoa e vínculo salvos com sucesso!');
+          },
+          error: (err) => {
+            alert('Erro ao salvar vínculo!');
+            console.error('Erro salvar PessoaLote:', err);
+          }
+        });
       },
       error: (e) => {
-        alert('Erro ao salvar!');
+        alert('Erro ao salvar pessoa!');
         console.error(e);
       }
     });
   }
-
 
   onLimpar() {
     this.formAnexo.reset();
@@ -370,7 +426,6 @@ export class CadastroPessoasComponent {
     this.formPessoaLote.reset();
     this.tipoPessoaSelecionada.set('FISICA');
   }
-
 
   onTipoPessoaChange(value: string) {
     this.tipoPessoaSelecionada.set(value);

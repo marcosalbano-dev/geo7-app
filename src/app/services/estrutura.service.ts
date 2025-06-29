@@ -16,6 +16,7 @@ export class EstruturaService {
 
   // Salvar estrutura na API
   salvar(estrutura: EstruturaDTO): Observable<EstruturaDTO> {
+    console.log("Payload enviado:", estrutura);
     return this.http.post<EstruturaDTO>(`${environment.apiUrl}/estrutura`, estrutura);
   }
 

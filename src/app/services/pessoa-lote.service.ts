@@ -16,7 +16,7 @@ export class PessoaLoteService {
   // Salvar PessoaLote na API
   salvar(pessoaLote: PessoaLoteDTO): Observable<PessoaLoteDTO> {
    
-    return this.http.post<PessoaLoteDTO>(`${this.apiUrl}/pessoa-lote`, pessoaLote);
+    return this.http.post<PessoaLoteDTO>(`${this.apiUrl}`, pessoaLote);
   }
 
   // Obter todos os PessoaLote da API

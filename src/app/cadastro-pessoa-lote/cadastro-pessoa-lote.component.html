@@ -3,7 +3,7 @@
     <div fxFlex="450px">
       <mat-form-field class="full-width">
         <mat-label>Condição da Pessoa no Imóvel Rural</mat-label>
-        <mat-select formControlName="condicaoPessoaImovelRural">
+        <mat-select formControlName="condicaoPessoaImovelRural" required>
           <mat-option
             *ngFor="let condicao of CONDICOES"
             [value]="condicao.value"

@@ -78,7 +78,7 @@
           </div>
 
           <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="800">
+            <div fxFlex="600px">
               <mat-form-field class="full-width">
                 <mat-label>Denominação do imóvel</mat-label>
                 <input
@@ -87,6 +87,20 @@
                   placeholder="Ex: Sítio..."
                   matInput
                 />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="350px">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Situação Jurídica</mat-label
+                ><mat-select formControlName="situacaoJuridicaId">
+                  <mat-option
+                    *ngFor="let situacao of situacoes"
+                    [value]="situacao.value"
+                  >
+                    {{ situacao.viewValue }}
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
           </div>
