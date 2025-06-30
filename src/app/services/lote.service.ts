@@ -31,6 +31,11 @@ export class LoteService {
     );
   }
 
+  // Obter lote por Proprietário
+  obterPorProprietario(proprietario: string): Observable<Lote[]> {
+    return this.http.get<Lote[]>(`${this.apiUrl}?proprietario=${proprietario}`);
+  }
+
   // Atualizar lote
   atualizar(id: number, lote: Lote): Observable<Lote> {
     return this.http.put<Lote>(`${this.apiUrl}/${id}`, lote).pipe(

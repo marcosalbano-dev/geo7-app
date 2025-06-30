@@ -10,7 +10,7 @@ export interface LoteDTO {
   denominacaoImovel?: string;
   perimetro?: string;
   cpf: string;
-  proprietario?: string;
+  proprietario: string;
   municipioId: number;
   distritoId: number;
   situacaoJuridicaId?: number | null;
