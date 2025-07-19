@@ -1,72 +1,138 @@
 <div fxLayout="row" fxLayoutAlign="center">
-    <div fxLayout="column" fxFlex="1000px">
-      <form class="mt-60" [formGroup]="consultaForm" (ngSubmit)="pesquisar()">
-        <mat-card appearance="outlined">
-          <mat-card-header>
-            <mat-card-title>Consulta</mat-card-title>
-          </mat-card-header>
-          <mat-card-content class="mt-20">
-            <div fxLayout="row" fxLayoutGap="16px">
-              <div fxLayout="column" fxFlex="950px">
-                <mat-form-field class="full-width">
-                  <mat-label>Nome do Detentor</mat-label>
-                  <input
-                    type="text"
-                    formControlName="proprietario"
-                    placeholder="Ex: José.."
-                    matInput
-                  />
-                </mat-form-field>
-              </div>
+  <div fxLayout="column" fxFlex="1000px">
+    <form class="mt-60" [formGroup]="consultaForm">
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Consulta</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="mt-20">
+          <div fxLayout="row" fxLayoutGap="16px">
+            <div fxFlex="130px">
+              <mat-form-field class="full-width">
+                <mat-label>Controle de Campo</mat-label>
+                <input
+                  type="text"
+                  formControlName="numero"
+                  placeholder="Ex: 00001"
+                  matInput
+                />
+              </mat-form-field>
             </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button type="submit" mat-flat-button color="primary">
-              <mat-icon fontIcon="search"></mat-icon>
-              Pesquisar
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </form>
-  
-      <!-- TABELA RESULTADO -->
-      <mat-card *ngIf="listaLotes.length > 0" class="mt-20">
-        <mat-card-content>
-          <table mat-table [dataSource]="listaLotes" class="mat-elevation-z2" fxFlex>
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef>Id</th>
-              <td mat-cell *matCellDef="let lote">{{ lote.id }}</td>
-            </ng-container>
-            <ng-container matColumnDef="numero">
-              <th mat-header-cell *matHeaderCellDef>Número</th>
-              <td mat-cell *matCellDef="let lote">{{ lote.numero }}</td>
-            </ng-container>
-            <ng-container matColumnDef="proprietario">
-              <th mat-header-cell *matHeaderCellDef>Proprietário</th>
-              <td mat-cell *matCellDef="let lote">{{ lote.proprietario }}</td>
-            </ng-container>
-            <ng-container matColumnDef="denominacaoImovel">
-              <th mat-header-cell *matHeaderCellDef>Denominação</th>
-              <td mat-cell *matCellDef="let lote">{{ lote.denominacaoImovel }}</td>
-            </ng-container>
-            <ng-container matColumnDef="area">
-              <th mat-header-cell *matHeaderCellDef>Área</th>
-              <td mat-cell *matCellDef="let lote">{{ lote.area }}</td>
-            </ng-container>
-            <ng-container matColumnDef="acoes">
-              <th mat-header-cell *matHeaderCellDef>Ações</th>
-              <td mat-cell *matCellDef="let lote">
-                <button mat-icon-button color="primary">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-            <!-- (click)="verDetalhes(lote)" -->
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
+            <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>Proprietário</mat-label>
+                <input
+                  type="text"
+                  formControlName="proprietario"
+                  placeholder="Ex: José..."
+                  matInput
+                />
+              </mat-form-field>
+            </div>
+            <div fxFlex="230px">
+              <mat-form-field class="full-width">
+                <mat-label>Município</mat-label>
+                <mat-select formControlName="municipioId">
+                  <mat-option>
+                  <ngx-mat-select-search
+                    [formControl]="municipioFiltroCtrl"
+                  ></ngx-mat-select-search>
+                </mat-option>
+                  <mat-option
+                    *ngFor="let municipio of municipiosFiltrados"
+                    [value]="municipio.id"
+                  >
+                    {{ municipio.nome }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div fxFlex="250px">
+              <mat-form-field mat-form-field class="full-width">
+                <mat-label>Situação Jurídica</mat-label
+                ><mat-select formControlName="situacaoJuridicaId">
+                  <mat-option
+                    *ngFor="let situacao of situacoes"
+                    [value]="situacao.viewValue"
+                  >
+                    {{ situacao.viewValue }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
         </mat-card-content>
+        <mat-card-actions>
+          <button
+            type="submit"
+            mat-flat-button
+            color="primary"
+            (click)="pesquisar()"
+          >
+            <mat-icon fontIcon="search"></mat-icon>
+            Pesquisar
+          </button>
+        </mat-card-actions>
       </mat-card>
-    </div>
+    </form>
+
+    <!-- TABELA RESULTADO -->
+    <mat-card *ngIf="listaLotes.length > 0" class="mt-20" appearance="outlined">
+      <mat-card-content>
+        <table
+          mat-table
+          [dataSource]="listaLotes"
+          class="mat-elevation-z2"
+          fxFlex
+        >
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>Id</th>
+            <td mat-cell *matCellDef="let lote">{{ lote.id }}</td>
+          </ng-container>
+          <ng-container matColumnDef="numero">
+            <th mat-header-cell *matHeaderCellDef>Número</th>
+            <td mat-cell *matCellDef="let lote">{{ lote.numero }}</td>
+          </ng-container>
+          <ng-container matColumnDef="proprietario">
+            <th mat-header-cell *matHeaderCellDef>Proprietário</th>
+            <td mat-cell *matCellDef="let lote">{{ lote.proprietario }}</td>
+          </ng-container>
+          <ng-container matColumnDef="denominacaoImovel">
+            <th mat-header-cell *matHeaderCellDef>Denominação</th>
+            <td mat-cell *matCellDef="let lote">
+              {{ lote.denominacaoImovel }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="area">
+            <th mat-header-cell *matHeaderCellDef>Área</th>
+            <td mat-cell *matCellDef="let lote">{{ lote.area }}</td>
+          </ng-container>
+          <ng-container matColumnDef="situacaoJuridicaId">
+            <th mat-header-cell *matHeaderCellDef>Situação Jurídica</th>
+            <td mat-cell *matCellDef="let lote">{{ lote.situacaoJuridicaId}}</td>
+          </ng-container>
+          <ng-container matColumnDef="acoes">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let lote">
+              <button type="button" mat-button color="primary" (click)="preparaEditarLote(lote.id)">
+                <mat-icon fontIcon="edit">visibility</mat-icon>
+                Editar Imóvel
+              </button>
+              <button type="button" mat-button color="primary" (click)="preparaEditarEstrutura(lote.id)">
+                <mat-icon fontIcon="edit">visibility</mat-icon>
+                Editar Estrutura
+              </button>
+              <button type="button" mat-button color="primary" (click)="preparaEditarDadosPessoais(lote.id)">
+                <mat-icon fontIcon="edit">visibility</mat-icon>
+                Editar Dados Pessoais
+              </button>
+            </td>
+          </ng-container>
+          <!-- (click)="verDetalhes(lote)" -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
   </div>
-  
+</div>

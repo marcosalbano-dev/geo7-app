@@ -16,17 +16,6 @@ import { SituacaoJuridicaDTO } from '../models/situacao-juridica.dto';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 
-
-interface Situacao {
-  value: string;
-  viewValue: string;
-}
-
-interface Obtencao {
-  value: string;
-  viewValue: string;
-}
-
 @Component({
   selector: 'app-cadastro-situacao-juridica',
   standalone: true,
@@ -55,7 +44,7 @@ export class CadastroSituacaoJuridicaComponent implements OnInit, OnChanges {
   formSituacaoJuridica!: FormGroup;
 
   @Input() loteId: number | null = null;
-  @Input() situacoes: { value: string, viewValue: string }[] = [];
+  @Input() situacoes: { value: number, viewValue: string }[] = [];
   @Input() obtencoes: { value: string, viewValue: string }[] = [];
 
   constructor(
@@ -99,14 +88,12 @@ export class CadastroSituacaoJuridicaComponent implements OnInit, OnChanges {
   }
 
   isSimplesOuJustoTitulo(): boolean {
-    const val = this.formGroup.get('situacaoSelecionada')?.value;
-    return val === 'PossePorSimplesOcupacao' || val === 'PosseJustoTitulo';
+    return this.situacaoSelecionada === 'Posse Por Simples Ocupação' || this.situacaoSelecionada === 'Posse a Justo Título';
   }
 
   isRegistrada(): boolean {
-    return this.formGroup.get('situacaoSelecionada')?.value === 'Dominio';
+    return this.situacaoSelecionada === 'Área Registrada (Domínio)';
   }
-
   private formatDate(date: Date | null): string | null {
     if (!date) return null;
     const day = String(date.getDate()).padStart(2, '0');

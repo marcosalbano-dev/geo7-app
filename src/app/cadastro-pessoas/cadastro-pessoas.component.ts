@@ -24,7 +24,13 @@ import { ActivatedRoute } from '@angular/router';
 import { LoteService } from '../services/lote.service';
 import { PessoaLoteDTO } from '../models/pessoa-lote.dto';
 import { PessoaLoteService } from '../services/pessoa-lote.service';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  pessoaDtoToFormPessoas,
+  pessoaDtoToFormFisica,
+  pessoaDtoToFormJuridica,
+  pessoaDtoToFormPessoaLote
+} from '../helpers/pessoa-mapper';
 
 interface distrito {
   value: string;
@@ -193,7 +199,7 @@ export class CadastroPessoasComponent {
   isLoadingUf = false;
   isLoadingMunicipio = false;
   @Input() loteId: number | null = null;
-  numeroLote: string | null = null;
+  numero: string = '';
 
   tipoPessoaSelecionada = signal<string>('FISICA');
 
@@ -209,7 +215,8 @@ export class CadastroPessoasComponent {
     private loteService: LoteService,
     private municipioService: MunicipioService,
     private route: ActivatedRoute,
-    private pessoaLoteService: PessoaLoteService
+    private pessoaLoteService: PessoaLoteService,
+    private snackBar: MatSnackBar
   ) {
 
     this.formAnexo = this.fb.group({
@@ -276,7 +283,7 @@ export class CadastroPessoasComponent {
 
     this.formPessoaLote = this.fb.group({
       loteId: [null, Validators.required],
-      //numeroLote: [{ value: '', disabled: true }],
+      numero: [{ value: '', disabled: true }],
       condicaoPessoaImovelRural: [''],
       detencao: [null],
       isDeclarante: [false],
@@ -301,13 +308,17 @@ export class CadastroPessoasComponent {
   ngOnInit(): void {
     this.loadUfs();
 
+    const loteId = Number(this.route.snapshot.queryParamMap.get('id'));
+
     this.route.queryParams.subscribe(params => {
       const loteId = params['loteId'];
       this.formPessoaLote.get('loteId')?.setValue(loteId);
 
       if (loteId) {
+        this.formPessoaLote.get('loteId')?.setValue(+loteId);
+        console.log('👥 LoteId recebido para cadastro de pessoas:', loteId);
         this.loteService.obterPorId(loteId).subscribe(lote => {
-          this.numeroLote = lote.numero; // <-- só preenche a variável
+          this.numero = lote.numero; // <-- só preenche a variável
         });
       }
     });
@@ -410,6 +421,8 @@ export class CadastroPessoasComponent {
             console.error('Erro salvar PessoaLote:', err);
           }
         });
+        alert('Pessoa vinculada com sucesso ao lote!');
+        this.onLimpar(); // ← limpa os dados para novo cadastro
       },
       error: (e) => {
         alert('Erro ao salvar pessoa!');
@@ -418,12 +431,18 @@ export class CadastroPessoasComponent {
     });
   }
 
+  
+
   onLimpar() {
+    const loteId = this.formPessoaLote.get('loteId')?.value;
+
     this.formAnexo.reset();
     this.formPessoas.reset({ tipoPessoa: 'FISICA' });
     this.formFisica.reset();
     this.formJuridica.reset();
     this.formPessoaLote.reset();
+
+    this.formPessoaLote.get('loteId')?.setValue(loteId); // ← mantém o lote selecionado
     this.tipoPessoaSelecionada.set('FISICA');
   }
 

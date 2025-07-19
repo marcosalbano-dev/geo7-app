@@ -4,6 +4,7 @@ import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { EstruturaDTO } from '../models/estrutura-dto';
+import { EnderecoLoteDTO } from '../models/endereco-lote-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,10 @@ export class EstruturaService {
     return this.http.post<EstruturaDTO>(`${environment.apiUrl}/estrutura`, estrutura);
   }
 
+  buscarPorLoteId(loteId: number): Observable<EstruturaDTO> {
+    return this.http.get<EstruturaDTO>(`${this.apiUrl}/estruturas/por-lote/${loteId}`);
+  }
+
   // Obter todas as estruturas da API
   obterTodas(): Observable<EstruturaDTO[]> {
     return this.http.get<EstruturaDTO[]>(this.apiUrl);
@@ -33,8 +38,8 @@ export class EstruturaService {
   }
 
   // Atualizar estrutura
-  atualizar(id: number, estrutura: Estrutura): Observable<Estrutura> {
-    return this.http.put<Estrutura>(`${this.apiUrl}/${id}`, estrutura).pipe(
+  atualizar(id: number, estrutura: EstruturaDTO): Observable<EstruturaDTO> {
+    return this.http.put<EstruturaDTO>(`${this.apiUrl}/${id}`,estrutura).pipe(
       catchError(this.handleError)
     );
   }

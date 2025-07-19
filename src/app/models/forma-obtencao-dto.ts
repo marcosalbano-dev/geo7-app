@@ -1,3 +1,5 @@
+import { FormaObtencao } from '../models/forma-obtencao'
+
 export interface FormaObtencaoDTO {
     id?: number;
     descricaoFormaDeObtencao: string;

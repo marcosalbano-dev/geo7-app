@@ -8,12 +8,13 @@ export interface LoteDTO {
   sncr?: string;
   area: number;
   denominacaoImovel?: string;
-  perimetro?: string;
+  perimetro?: number;
   cpf: string;
   proprietario: string;
   municipioId: number;
   distritoId: number;
   situacaoJuridicaId?: number | null;
+  situacaoJuridica?: string;
   dataTerminoPeriodoDeUso?: string | null; // ou Date, dependendo do formato esperado
   formaObtencao: FormaObtencaoDTO[];
 }

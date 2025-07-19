@@ -1,8 +1,11 @@
 // src/app/models/estrutura-dto.ts
 
 export interface EstruturaDTO {
-    id?: number;
+    id: number;
     loteId: number;
+    situacaoJuridicaId?: number,
+    situacaoJuridica?: string;
+    formaObtencaoSelecionada?: string,
     ativo?: boolean;
     dhc?: Date;
     dhm?: Date;
@@ -54,5 +57,7 @@ export interface EstruturaDTO {
     usoDaguaOlhoDagua?: string;
   
     isRedeDeAbastecimento?: boolean;
+    municipioId: number; 
+    area: number;
   }
   

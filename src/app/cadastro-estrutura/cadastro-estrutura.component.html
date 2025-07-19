@@ -1,7 +1,7 @@
 <div fxLayout="row" fxLayoutAlign="center">
   <div fxLayout="column" fxFlex="1000px">
     <form class="mt-60" *ngIf="formEstrutura" [formGroup]="formEstrutura" (ngSubmit)="onSubmit()">
-      <mat-card>
+      <mat-card appearance="outlined">
         <mat-card-header>
           <mat-card-title>Estrutura</mat-card-title>
         </mat-card-header>
@@ -36,6 +36,7 @@
               </mat-form-field>
             </div>
           </div>
+          
           <app-cadastro-situacao-juridica
             *ngIf="formEstrutura"
             [formGroup]="formEstrutura"
@@ -399,7 +400,7 @@
                 ><mat-select formControlName="usoDaguaLagoa">
                   <mat-option
                     *ngFor="let usoDaAgua of aguas"
-                    [value]="usoDaAgua"
+                    [value]="usoDaAgua.value"
                   >
                     {{ usoDaAgua.viewValue }}
                   </mat-option>
@@ -441,7 +442,7 @@
                 ><mat-select formControlName="usoDaguaPoco">
                   <mat-option
                     *ngFor="let usoDaAgua of aguas"
-                    [value]="usoDaAgua"
+                    [value]="usoDaAgua.value"
                   >
                     {{ usoDaAgua.viewValue }}
                   </mat-option>
@@ -483,7 +484,7 @@
                 ><mat-select formControlName="usoDaguaRioOuRiacho">
                   <mat-option
                     *ngFor="let usoDaAgua of aguas"
-                    [value]="usoDaAgua"
+                    [value]="usoDaAgua.value"
                   >
                     {{ usoDaAgua.viewValue }}
                   </mat-option>
@@ -525,7 +526,7 @@
                 ><mat-select formControlName="usoDaguaOlhoDagua">
                   <mat-option
                     *ngFor="let usoDaAgua of aguas"
-                    [value]="usoDaAgua"
+                    [value]="usoDaAgua.value"
                   >
                     {{ usoDaAgua.viewValue }}
                   </mat-option>
@@ -565,19 +566,22 @@
           </div>
           <mat-divider></mat-divider>
           <mat-card-actions>
+            @if(!atualizando){
             <button mat-flat-button color="primary" type="submit">
               <mat-icon fontIcon="save"></mat-icon>
               Salvar
             </button>
-            <button mat-flat-button color="primary" type="button">
+          } @else {
+            <button mat-flat-button color="primary" type="button" (click)="atualizarEstrutura()">
               <mat-icon fontIcon="refresh"></mat-icon>
               Atualizar
             </button>
+          }
             <button mat-flat-button color="accent" class="ml-5" type="button">
               <mat-icon fontIcon="backspace"></mat-icon>
               Limpar
             </button>
-            <button type="button" (click)="logForm()">Log Form</button>
+            <!-- <button type="button" (click)="logForm()">Log Form</button> -->
           </mat-card-actions>
         </mat-card-content>
       </mat-card>

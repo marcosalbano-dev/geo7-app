@@ -1,5 +1,5 @@
-import { SituacaoJuridica } from '../models/situacao-juridica';
-import { Lote } from '../models/lote';
+import { SituacaoJuridica } from './situacao-juridica';
+import { Lote } from './lote';
 
 export class FormaObtencao {
   id!: number;

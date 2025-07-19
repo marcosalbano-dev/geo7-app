@@ -23,9 +23,9 @@ import { LoteService } from '../services/lote.service';
 import { DistritoService } from '../services/distrito.service';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
-import { CadastroSituacaoJuridicaComponent } from '../cadastro-situacao-juridica/cadastro-situacao-juridica.component';
+import { mapFormToLoteDTO, mapLoteDTOToForm } from '../helpers/lote-mapper';
 
 @Component({
   selector: 'app-cadastro-lotes',
@@ -73,11 +73,13 @@ export class CadastroLotesComponent implements OnInit {
   isLoadingDistrito = false;
   isLoadingMunicipio = false;
 
+  atualizando = false;
+
   situacoes = [
-    { value: '1', viewValue: 'Posse Por Simples Ocupação' },
-    { value: '2', viewValue: 'Posse a Justo Título' },
-    { value: '3', viewValue: 'Área Registrada (Domínio)' },
-    { value: '99', viewValue: 'Indefinido' }
+    { value: 1, viewValue: 'Posse Por Simples Ocupação' },
+    { value: 2, viewValue: 'Posse a Justo Título' },
+    { value: 3, viewValue: 'Área Registrada (Domínio)' },
+    { value: 99, viewValue: 'Indefinido' }
   ];
 
   constructor(
@@ -87,11 +89,13 @@ export class CadastroLotesComponent implements OnInit {
     private situacaoService: SituacaoJuridicaService,
     private distritoService: DistritoService,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute // Captura dados da rota que foi acessada
   ) { }
 
   ngOnInit(): void {
     this.formLotes = this.fb.group({
+      id: [null],
       proprietario: ['', Validators.required],
       area: ['', Validators.required],
       denominacaoImovel: [''],
@@ -102,14 +106,26 @@ export class CadastroLotesComponent implements OnInit {
       municipioId: [null, Validators.required],
       distritoId: [null, Validators.required],
       formaObtencao: [''],
-      situacaoJuridicaId: [''],
-      dataTerminoPeriodoDeUso: []
+      situacaoJuridicaId: [null],
+      dataTerminoPeriodoDeUso: [],
+      situacaoJuridicaNome: [''],
+      nomeDistrito: [''],
     });
-
     console.log('✅ formLotes inicializado:', this.formLotes);
 
     this.loadMunicipiosCe();
     this.carregarLotes();
+
+    this.loadMunicipiosCe().then(() => {
+      this.route.queryParams.subscribe(params => {
+        const id = params['id'];
+        if (id) {
+          this.atualizando = true;
+          this.carregarLotePorId(+id); // só carrega depois que municípios estão prontos
+        }
+      });
+    });
+
 
     this.formLotes.get('municipioId')?.valueChanges.subscribe((municipioId) => {
       if (municipioId) {
@@ -117,6 +133,24 @@ export class CadastroLotesComponent implements OnInit {
       } else {
         this.filteredDistritos = [];
         this.formLotes.get('distritoId')?.reset();
+      }
+    });
+  }
+
+
+  carregarLotePorId(id: number) {
+    this.loteService.obterPorId(id).subscribe({
+      next: (loteDto: LoteDTO) => {
+        this.loteSelecionado = loteDto;
+        console.log('LOTE:', loteDto);
+
+        this.loadDistritosByMunicipio(loteDto.municipioId).then(() => {
+          const formPatch = mapLoteDTOToForm(loteDto);
+          this.formLotes.patchValue(formPatch);
+        });
+      },
+      error: (err) => {
+        console.error('Erro ao buscar lote:', err);
       }
     });
   }
@@ -134,21 +168,7 @@ export class CadastroLotesComponent implements OnInit {
 
   salvarLote(): void {
     const formValue = this.formLotes.value;
-
-    const loteDTO: LoteDTO = {
-      numero: formValue.numero,
-      sncr: formValue.sncr,
-      area: formValue.area,
-      denominacaoImovel: formValue.denominacaoImovel,
-      perimetro: formValue.perimetro,
-      cpf: formValue.cpf,
-      proprietario: formValue.proprietario || '',
-      municipioId: formValue.municipioId,
-      distritoId: formValue.distritoId,
-      situacaoJuridicaId: formValue.situacaoJuridicaId || null,
-      dataTerminoPeriodoDeUso: formValue.dataTerminoPeriodoDeUso || null,
-      formaObtencao: [] // preencha se necessário
-    };
+    const loteDTO = mapFormToLoteDTO(formValue);
 
     console.log('🔄 Enviando loteDTO:', loteDTO);
 
@@ -162,12 +182,33 @@ export class CadastroLotesComponent implements OnInit {
           numero: saved.numero,
           municipioId: saved.municipioId,
           distritoId: saved.distritoId,
+          situacaoJuridicaId: saved.situacaoJuridicaId,
           area: saved.area,
           denominacaoImovel: saved.denominacaoImovel,
           sncr: saved.sncr
         }
       });
     });
+
+  }
+
+  atualizarLote() {
+    const loteDTO = this.formLotes.value;
+    console.log('Atualizando lote com ID:', loteDTO.id); // Debug
+
+    if (this.formLotes.valid && loteDTO.id) {
+      this.loteService.atualizar(loteDTO.id, loteDTO).subscribe({
+        next: (res) => {
+          this.snackBar.open('Lote atualizado com sucesso!', 'Fechar', { duration: 3000 });
+        },
+        error: (err) => {
+          console.error('Erro ao atualizar Lote', err);
+          this.snackBar.open('Erro ao atualizar lote.', 'Fechar', { duration: 3000 });
+        }
+      });
+    } else {
+      this.snackBar.open('Formulário inválido ou ID ausente.', 'Fechar', { duration: 3000 });
+    }
   }
 
   carregarLotes(): void {
@@ -180,36 +221,41 @@ export class CadastroLotesComponent implements OnInit {
     });
   }
 
-  loadMunicipiosCe(): void {
+  loadMunicipiosCe(): Promise<void> {
     this.isLoadingMunicipio = true;
-    this.municipioService.getMunicipiosCe().subscribe({
-      next: (data) => {
-        this.municipios = data;
-        this.isLoadingMunicipio = false;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar municípios:', err);
-        this.isLoadingMunicipio = false;
-      }
+    return new Promise((resolve, reject) => {
+      this.municipioService.getMunicipiosCe().subscribe({
+        next: (data) => {
+          this.municipios = data;
+          this.isLoadingMunicipio = false;
+          resolve();
+        },
+        error: (err) => {
+          console.error('Erro ao carregar municípios:', err);
+          this.isLoadingMunicipio = false;
+          reject();
+        }
+      });
     });
   }
 
-  loadDistritosByMunicipio(municipioId: number): void {
+  loadDistritosByMunicipio(municipioId: number): Promise<void> {
     this.isLoadingDistrito = true;
-    this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
-      next: (distritos) => {
-        this.filteredDistritos = distritos;
-        this.formLotes.get('distritoId')?.setValue(null);
-        this.isLoadingDistrito = false;
-      },
-      error: () => {
-        this.filteredDistritos = [];
-        this.formLotes.get('distritoId')?.setValue(null);
-        this.isLoadingDistrito = false;
-      }
+    return new Promise((resolve, reject) => {
+      this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
+        next: (distritos) => {
+          this.filteredDistritos = distritos;
+          this.isLoadingDistrito = false;
+          resolve();
+        },
+        error: () => {
+          this.filteredDistritos = [];
+          this.isLoadingDistrito = false;
+          reject();
+        }
+      });
     });
   }
-  
 
   limparFormulario(): void {
     this.formLotes.reset();

@@ -10,11 +10,6 @@
           >
             {{ situacao.viewValue }}
           </mat-option>
-          <mat-error
-            *ngIf="formGroup.get('situacaoSelecionada')?.hasError('required')"
-          >
-            Situação é obrigatória
-          </mat-error>
         </mat-select>
       </mat-form-field>
     </div>

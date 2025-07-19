@@ -5,6 +5,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { LoteDTO } from '../models/lote-dto';
 
+export interface LoteFiltroDTO {
+  proprietario?: string;
+  cpf?: string;
+  numero?: string;
+  municipioId?: number;
+  denominacaoImovel?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -25,8 +33,8 @@ export class LoteService {
   }
 
   // Obter lote por ID
-  obterPorId(id: number): Observable<Lote> {
-    return this.http.get<Lote>(`${this.apiUrl}/${id}`).pipe(
+  obterPorId(id: number): Observable<LoteDTO> {
+    return this.http.get<LoteDTO>(`${this.apiUrl}/${id}`).pipe(
       catchError(this.handleError)
     );
   }
@@ -36,9 +44,13 @@ export class LoteService {
     return this.http.get<Lote[]>(`${this.apiUrl}?proprietario=${proprietario}`);
   }
 
+  filtrarLotes(filtro: LoteFiltroDTO): Observable<LoteDTO[]> {
+    return this.http.post<LoteDTO[]>(`${this.apiUrl}/filtrar`, filtro);
+  }
+
   // Atualizar lote
-  atualizar(id: number, lote: Lote): Observable<Lote> {
-    return this.http.put<Lote>(`${this.apiUrl}/${id}`, lote).pipe(
+  atualizar(id: number, lote: LoteDTO): Observable<LoteDTO> {
+    return this.http.put<LoteDTO>(`${this.apiUrl}/${id}`, lote).pipe(
       catchError(this.handleError)
     );
   }

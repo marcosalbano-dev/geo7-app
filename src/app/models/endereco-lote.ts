@@ -1,7 +1,7 @@
 
 
 import { Lote } from './lote';
-// import { Distrito } from '../ca';
+ import { Distrito } from '../models/distrito';
 
 export class EnderecoLote {
   id?: number;
@@ -12,7 +12,7 @@ export class EnderecoLote {
   pontoDeReferencia?: string;
   codImoReceita?: string;
   areaUrbana: number = 0;
-//   distrito?: Distrito;
+  distrito?: Distrito;
   comunidade?: string;
   localidade?: string;
 
