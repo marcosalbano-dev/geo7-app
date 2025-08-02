@@ -1,35 +1,31 @@
-import { ChangeDetectionStrategy, Component, ChangeDetectorRef, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
-import { LoteDTO } from '../models/lote-dto';
+import { CommonModule, NgFor } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+
 import { Municipio } from '../models/municipio';
-import { MunicipioService } from '../services/municipio.service';
-import { EstruturaService } from '../services/estrutura.service';
-import { DistritoService } from '../services/distrito.service';
-import { EnderecoLoteService } from '../services/endereco-lote.service';
-import { LoteService } from '../services/lote.service';
 import { Distrito } from '../models/distrito';
-import { NgFor } from '@angular/common'
-import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CommonModule } from '@angular/common';
-import { EstruturaDTO } from '../models/estrutura-dto';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { LoteDTO } from '../models/lote-dto';
+import { MunicipioService } from '../services/municipio.service';
+import { DistritoService } from '../services/distrito.service';
+import { LoteService } from '../services/lote.service';
+import { EstruturaService } from '../services/estrutura.service';
 import { CadastroSituacaoJuridicaComponent } from "../cadastro-situacao-juridica/cadastro-situacao-juridica.component";
-import { SituacaoJuridicaEnum } from '../enums/enums-cadastramento';
-import { EnderecoLoteDTO } from '../models/endereco-lote-dto';
-import { mapFormToEstruturaDTO } from '../helpers/estrutura-mapper';
-import { enderecoLoteDTOToFormValue, mapFormToEnderecoLoteDTO } from '../helpers/endereco-lote-mapper'; 
+import { estruturaDTOToFormValue, mapFormToEstruturaDTO } from '../helpers/estrutura-mapper';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 
 interface destinacaoDoImovel {
@@ -71,7 +67,7 @@ interface usoDaAgua {
     MatProgressSpinnerModule,
     ReactiveFormsModule,
     CommonModule,
-    CadastroSituacaoJuridicaComponent
+    CadastroSituacaoJuridicaComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cadastro-estrutura.component.html',
@@ -80,30 +76,109 @@ interface usoDaAgua {
 export class CadastroEstruturaComponent implements OnInit {
 
   formEstrutura!: FormGroup;
-  formEnderecoLote!: FormGroup;
-
   municipios: Municipio[] = [];
-  isLoadingMunicipio = false;
-
   filteredDistritos: Distrito[] = [];
-  isLoadingDistrito = false;
-
   lotes: LoteDTO[] = [];
   lotesFiltrados: LoteDTO[] = [];
+  atualizando = false;
+  isLoadingMunicipio = false;
+  isLoadingDistrito = false;
   loteSelecionado!: LoteDTO;
   numeroLote: string | null = null;
 
-  atualizando = false;
+  energias: energia[] = [
+    { value: 'solar', viewValue: 'SOLAR' },
+    { value: 'eolica', viewValue: 'EÓLICA' },
+  ];
 
-  preencherPessoasComLote(lote: LoteDTO) {
-    this.loteSelecionado = lote;
-  }
+  destinacoes: destinacaoDoImovel[] = [
+    { value: 'hortigranjeiro', viewValue: '01 - Hortigranjeiro' },
+    { value: 'producaoGraos', viewValue: '02 - Produção Grãos (Temporários)' },
+    { value: 'agriculturaPermanente', viewValue: '03 - Agricultura (Permanente)' },
+    { value: 'reflorestamento', viewValue: '04 - Reflorestamento' },
+    { value: 'extrativismo', viewValue: '05 - Extrativismo' },
+    { value: 'pecuaria', viewValue: '06 - Pecuária' },
+    { value: 'industrial', viewValue: '07 - Industrial' },
+    { value: 'comercial', viewValue: '08 - Comercial' },
+    { value: 'pesquisa', viewValue: '09 - Pesquisa' },
+    { value: 'educacaoCentroDeTreinamento', viewValue: '10 - Educação Centro de Treinamento' },
+    { value: 'colonizacaoAssentamento', viewValue: '11 - Colonização/Assentamento' },
+    { value: 'readaptacao', viewValue: '12 - Readaptação' },
+    { value: 'mineracao', viewValue: '13 - Mineração' },
+    { value: 'areaIndigena', viewValue: '14 - Área Indígena' },
+    { value: 'unidadeConservacaoAmbiental', viewValue: '15 - Unidade de Conservação Ambiental' },
+    { value: 'armazenamento', viewValue: '16 - Armazenamento' },
+    { value: 'oleodutoGasoduto', viewValue: '17 - Oleoduto/Gasoduto' },
+    { value: 'ferroviaRodovia', viewValue: '18 - Ferrovia/Rodovia' },
+    { value: 'linhaTransmissaoRepetidora', viewValue: '19 - Linha de Transmissão/Estação Repetidora' },
+    { value: 'tratamentoAguaEsgoto', viewValue: '20 - Tratamento Água/Esgoto/Resíduo' },
+    { value: 'barragemRepresaAcude', viewValue: '21 - Barragem/Represa/Açude' },
+    { value: 'exploracaoPetrolifera', viewValue: '22 - Exploração Petrolífera' },
+    { value: 'infraestruturaAeroportuaria', viewValue: '23 - Infra-Estrutura Aeroportuárea' },
+    { value: 'entidadeBancaria', viewValue: '24 - Entidade Bancária' },
+    { value: 'areaUsoMilitar', viewValue: '25 - Área de Uso Militar' },
+    { value: 'recreacao', viewValue: '26 - Recreação' },
+    { value: 'assistencialHospitalar', viewValue: '27 - Assistencial ou Hospitalar' },
+    { value: 'olaria', viewValue: '28 - Olaria' },
+    { value: 'outraAtividade', viewValue: '29 - Outra Atividade' },
+    { value: 'fomento', viewValue: '30 - Fomento' },
+    { value: 'semDestinacao', viewValue: '31 - Sem Destinação' }
+  ];
 
-  onMunicipioChange(municipioId: number): void {
-    this.loadDistritosByMunicipio(municipioId);
-    this.lotesFiltrados = this.lotes.filter(l => l.municipioId === municipioId);
-    console.log('📌 Lotes filtrados:', this.lotesFiltrados);
-  }
+  litigios: litigio[] = [
+    { value: 'areaComPosseiros', viewValue: '09 - Área com Posseiros' },
+    { value: 'limite', viewValue: '17 - Questão de Limite' },
+    { value: 'titulacao', viewValue: '25 - Questão de Titulação' },
+    { value: 'posse', viewValue: '25 - Questão quanto à Posse' },
+    { value: 'posseDominio', viewValue: '41 - Questão quanto à Posse a ao Domínio' },
+    { value: 'dominio', viewValue: '50 - Questão quanto ao Domínio' },
+    { value: 'restricaoAoUsoDaTerra', viewValue: '68 - Questão de Restrição ao Uso da Terra' },
+    { value: 'servidao', viewValue: '76 - Servidão do Acesso' },
+    { value: 'servidaoUsoAgua', viewValue: '84 - Servidão do Uso da Água' },
+    { value: 'outras', viewValue: '92 - Outras' },
+    { value: 'inexistente', viewValue: '99 - Inexistente' },
+  ];
+
+  aguas: usoDaAgua[] = [
+    { value: 'usoHumano', viewValue: 'Uso Humano' },
+    { value: 'aplicacaoAgricola', viewValue: 'Aplicação Agrícola' },
+    { value: 'usoHumanoAgricola', viewValue: 'Uso Humano e Agrícola' },
+    { value: 'usoAnimal', viewValue: 'Uso Animal' },
+    { value: 'usoHumanoAnimalAgricola', viewValue: 'Uso Humano/Animal e Agrícola' },
+    { value: 'usoHumanoEAnimal', viewValue: 'Uso Humano e Animal' },
+    { value: 'usoAnimalAgricola', viewValue: 'Uso Animal e Agrícola' },
+    { value: 'semUso', viewValue: 'Sem Uso' },
+  ];
+
+  situacoes = [
+    { value: 1, viewValue: 'Posse Por Simples Ocupação' },
+    { value: 2, viewValue: 'Posse a Justo Título' },
+    { value: 3, viewValue: 'Área Registrada (Domínio)' },
+    { value: 4, viewValue: 'Indefinido' }
+  ];
+
+  obtencoes = [
+    { value: 1, viewValue: '01 - Aquisição do Governo Estadual' },
+    { value: 2, viewValue: '02 - Adjudicação' },
+    { value: 3, viewValue: '03 - Aquisição do Governo Federal' },
+    { value: 4, viewValue: '04 - Aquisição INCRA' },
+    { value: 5, viewValue: '05 - Aquisição do Governo Municipal' },
+    { value: 6, viewValue: '06 - Carta de Arrematação' },
+    { value: 7, viewValue: '07 - Compra e Venda de Particular' },
+    { value: 8, viewValue: '08 - Concessão de Uso/Governo Estadual' },
+    { value: 9, viewValue: '09 - Concessão de Uso/Governo Federal' },
+    { value: 10, viewValue: '10 - Concessão de Uso/INCRA' },
+    { value: 11, viewValue: '11 - Concessão de Uso/Municipal' },
+    { value: 12, viewValue: '12 - Doação' },
+    { value: 13, viewValue: '13 - Foro ou Enfiteuse' },
+    { value: 14, viewValue: '14 - Incorporação' },
+    { value: 15, viewValue: '15 - Recebimento de Herança' },
+    { value: 16, viewValue: '16 - Usucapião' },
+    { value: 17, viewValue: '17 - Usufruto' },
+    { value: 18, viewValue: '18 - Doação em Pagamento' },
+    { value: 19, viewValue: '19 - Desapropriação' },
+    { value: 20, viewValue: '20 - Outras' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -111,69 +186,67 @@ export class CadastroEstruturaComponent implements OnInit {
     private municipioService: MunicipioService,
     private distritoService: DistritoService,
     private estruturaService: EstruturaService,
-    private enderecoLoteService: EnderecoLoteService,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private cd: ChangeDetectorRef,
     private router: Router
-  ) {
-
-
-  }
+  ) { }
 
   ngOnInit(): void {
-
-    this.route.queryParams.subscribe(params => {
-      const loteId = params['id'];
-      if (loteId) {
-        this.atualizando = true;
-        this.carregarEstruturaPorLoteId(loteId);
-      }
-    });
-
-    
+    // Inicialização do form com TODOS os campos
+    //  Crie o form ANTES de qualquer coisa!
     console.log('Construindo formEstrutura...');
-    // 1. Crie o form ANTES de qualquer coisa!
     this.formEstrutura = this.fb.group({
       id: [null],
+      loteId: [null, Validators.required],
       municipioId: [null, Validators.required],
       distritoId: [null, Validators.required],
-      loteId: [null, Validators.required],
       numero: [''],
       denominacaoImovel: [''],
-      situacaoSelecionada: [null, Validators.required],
-      situacaoJuridicaNome: [''],
-      formaObtencaoSelecionada: [null],
-      dataPosse: [null],
-      areaPosse: [null],
-      livro: [''],
-      areaRegistrada: [''],
-      nomeCartorio: [''],
-      municipioCartorio: [''],
-      dataRegistro: [''],
-      oficio: [''],
-      matricula: [''],
-      numeroRegistro: [''],
-      codImoReceita: [''],
-      comunidade: [''],
-      localidade: [''],
       area: [null, Validators.required],
       sncr: [''],
-      pontoReferencia: [''],
+      situacaoJuridicaId: [null, Validators.required],
+
+      formaObtencaoId: [null],
+      descricaoFormaDeObtencao: [''],
+      livro: [''],
+      matricula: [''],
+      municipioCartorio: [''],
+      nomeCartorio: [''],
+      dataRegistro: [''],
+      numeroRegistro: [''],
+      areaRegistrada: [''],
+      areaMedida: [''],
+      dataPosse: [''],
+      areaPosse: [''],
+      numeroHerdeiros: [null],
+      numeroHerdeirosForma: [null],
+      oficio: [''],
+
       familiasResidentes: [0],
       pessoasResidentes: [0],
       trabalhadoresComCarteira: [0],
       trabalhadoresSemCarteira: [0],
+      maoDeObraFamiliar: [0],
+
       valorTotal: [0],
       valorDasBenfeitorias: [0],
       valorOutrasAtividades: [0],
       valorTerraNua: [0],
-      destinacaoDoImovel: [null],
+      areaIrrigada: [0],
+
       litigio: [null],
       entregouMemorialPlanilha: [false],
-      isIrrigacao: [false],
+      destinacaoDoImovel: [null],
+      porcentagemDetencao: [null],
+      obsLitigio: [null],
+
       isFonteAguaExterna: [false],
-      isRedeDeAbastecimento: [false],
+      isPossuiElergiaEletrica: [false],
+      isPossuiEnergiaAlternativa: [false],
+      tipoEnergiaEletrica: [null],
+
+      isIrrigacao: [false],
       isAcude: [false],
       isAcudePerene: [false],
       usoDaguaAcude: [null],
@@ -189,81 +262,50 @@ export class CadastroEstruturaComponent implements OnInit {
       isOlhoDagua: [false],
       isOlhoDaguaPerene: [false],
       usoDaguaOlhoDagua: [null],
-      isPossuiEnergiaAlternativa: [false],
-      tipoEnergiaEletrica: [null]
-    });
-
-    console.log('Construindo formEnderecoLote...');
-    this.formEnderecoLote = this.fb.group({
-      id: [null],
-      loteId: [null, Validators.required],
-      ativo: [true],
+      isRedeDeAbastecimento: [false],
+      ativo: [null],
       dhc: [null],
       dhm: [null],
-      pontoDeReferencia: [''],
-      codImoReceita: [''],
-      areaUrbana: [0],
-      distritoId: [null],
-      comunidade: [''],
-      localidade: [''],
     });
 
-    console.log('Inicial:', this.formEstrutura.value);
-    console.log('Situação selecionada:', this.formEstrutura.value.situacaoSelecionada);
-
-    this.carregarMunicipios();
-
-    // Guarde o valor do distrito vindo do params
-    // let distritoIdParam: number | null = null;
-
-    // Escuta params da rota
+    // Carregar dados de rota, lotes, municipios etc.
     this.route.queryParams.subscribe(params => {
-      // Converta e valide
-      const distritoIdParam = params['distritoId'] ? Number(params['distritoId']) : null;
-      console.log('Param distritoId:', params['distritoId'], 'Convertido:', distritoIdParam);
-
-      this.paramCache = params; // Cache para uso posterior
-      // Aplica valores já disponíveis
+      const loteId = params['id'];
+      console.log('loteId: ', loteId);
+      if (loteId) {
+        this.atualizando = true;
+        this.carregarEstruturaPorLoteId(loteId);
+      }
+      const formaId = this.formEstrutura.get('formaObtencaoId')?.value;
+      const descricao = this.obtencoes.find(o => o.value === formaId)?.viewValue || '';
+      console.log('formaId: ', formaId);
+      console.log('descricao: ', descricao);
+      // Patch de dados iniciais vindos de params
+      this.paramCache = params;
+      console.log('paramCache: ', this.paramCache);
       this.formEstrutura.patchValue({
         id: params['id'] ? +params['id'] : null,
         municipioId: params['municipioId'] ? +params['municipioId'] : null,
         loteId: params['loteId'] ? +params['loteId'] : null,
-        numero: params['numero'] ? params['numero'] : '',   // normalmente string
+        numero: params['numero'] ?? '',
         area: params['area'] ? +params['area'] : null,
         denominacaoImovel: params['denominacaoImovel'] || '',
-        sncr: params['sncr'] ? params['sncr'] : '',
-        situacaoJuridicaNome: params['situacaoJuridicaNome'] ? params['situacaoJuridicaNome'] : ''
+        sncr: params['sncr'] ?? '',
+        situacaoJuridicaId: params['situacaoJuridicaId'] ?? null,
+        descricaoFormaDeObtencao: descricao,
       });
 
-      // Só desabilite após patchValue!
-      if (params['municipioId']) this.formEstrutura.get('municipioId')?.disable();
-      if (params['numero']) this.formEstrutura.get('numero')?.disable();
-      if (params['denominacaoImovel']) this.formEstrutura.get('denominacaoImovel')?.disable();
-
-      console.log(this.filteredDistritos, this.formEstrutura.value.distritoId)
-
-      // Carrega distritos SE tiver municipioId
       if (params['municipioId']) {
         this.distritoService.getDistritosByMunicipio(+params['municipioId']).subscribe(distritos => {
           this.filteredDistritos = distritos;
-          console.log('Distritos carregados:', this.filteredDistritos, 'Vai patchar distrito:', distritoIdParam);
-          // Só faz patch se o distrito existe!
+          const distritoIdParam = params['distritoId'] ? Number(params['distritoId']) : null;
           if (distritoIdParam) {
-            // **HABILITA** antes de patchar
             this.formEstrutura.get('distritoId')?.enable();
-            this.formEstrutura.patchValue({
-              distritoId: distritoIdParam
-            });
-            // Só depois de patchar, desabilita
+            this.formEstrutura.patchValue({ distritoId: distritoIdParam });
             this.formEstrutura.get('distritoId')?.disable();
-            // Teste: veja se o valor foi setado
-            console.log('Após patch e disable:', this.formEstrutura.value.distritoId, this.formEstrutura.getRawValue().distritoId);
           }
         });
       }
-      console.log('EnderecoLoteDTO:', this.formEstrutura.value);
-      const enderecoLoteDTO: EnderecoLoteDTO = this.formEnderecoLote.value;
-      this.formEnderecoLote.patchValue(enderecoLoteDTO);
     });
 
     // Desabilite se for readonly
@@ -271,19 +313,58 @@ export class CadastroEstruturaComponent implements OnInit {
     this.formEstrutura.get('numero')?.disable();
     this.formEstrutura.get('distritoId')?.disable();
     this.formEstrutura.get('denominacaoImovel')?.disable();
+
+    // Carregamento inicial de dados
+    this.carregarMunicipios();
+    this.carregarLotes();
+
+    console.log('FormEstrutura Inicial:', this.formEstrutura.value);
+    console.log('Situação selecionada:', this.formEstrutura.value.situacaoSelecionada);
+
   }
+
+  preencherPessoasComLote(lote: LoteDTO) {
+    this.loteSelecionado = lote;
+  }
+
+  onMunicipioChange(municipioId: number): void {
+    this.loadDistritosByMunicipio(municipioId);
+    this.lotesFiltrados = this.lotes.filter(l => l.municipioId === municipioId);
+    console.log('📌 Lotes filtrados:', this.lotesFiltrados);
+  }
+
+  // // 🚀 Navegar para cadastro de estrutura com dados do lote via query params
+  // this.router.navigate(['/cadastro-estrutura'], {
+  //   queryParams: {
+  //     loteId: loteDTO.id,
+  //     numero: loteDTO.numero,
+  //     municipioId: loteDTO.municipioId,
+  //     distritoId: loteDTO.distritoId,
+  //     situacaoJuridicaId: loteDTO.situacaoJuridicaId,
+  //     area: loteDTO.area,
+  //     denominacaoImovel: loteDTO.denominacaoImovel,
+  //     sncr: loteDTO.sncr
+  //   }
+  // });
+  
 
   atualizarEstrutura(): void {
     if (this.formEstrutura.valid) {
-      const dto = this.mapFormToDto(this.formEstrutura);
-      console.log('Enviando para atualização:', this.formEstrutura.value);
 
-      this.formEnderecoLote.patchValue(enderecoLoteDTOToFormValue(dto));
-      this.estruturaService.atualizar(dto.id, dto).subscribe({
+      const formaId = this.formEstrutura.get('formaObtencaoId')?.value;
+      const descricao = this.obtencoes.find(o => o.value === formaId)?.viewValue || '';
+      this.formEstrutura.patchValue({ descricaoFormaDeObtencao: descricao });
+
+      const estruturaDTO = mapFormToEstruturaDTO(this.formEstrutura);
+      console.log('Atualizar - estruturaDTO: ', estruturaDTO)
+      this.estruturaService.atualizar(estruturaDTO.id, estruturaDTO).subscribe({
         next: () => {
           this.snackBar.open('Estrutura atualizada com sucesso!', 'Fechar', { duration: 3000 });
+            this.router.navigate(['/cadastro-pessoas'], { queryParams: { 
+              loteId: estruturaDTO.loteId,
+            } });
         },
-        error: (err) => {
+        error: err => {
           console.error('❌ Erro ao atualizar estrutura:', err);
           this.snackBar.open('Erro ao atualizar estrutura.', 'Fechar', { duration: 3000 });
         }
@@ -291,10 +372,39 @@ export class CadastroEstruturaComponent implements OnInit {
     } else {
       this.snackBar.open('Formulário inválido.', 'Fechar', { duration: 3000 });
     }
-
-
   }
 
+  salvarEstrutura(): void {
+    if (!this.formEstrutura.valid) {
+      this.formEstrutura.markAllAsTouched();
+      this.snackBar.open('Preencha todos os campos obrigatórios.', 'Fechar', { duration: 4000 });
+      return;
+    }
+    const formaId = this.formEstrutura.get('formaObtencaoId')?.value;
+    const descricao = this.obtencoes.find(o => o.value === formaId)?.viewValue || '';
+    this.formEstrutura.patchValue({ 
+      descricaoFormaDeObtencao: descricao,
+      formaId: formaId
+    });
+
+    const estruturaDTO = mapFormToEstruturaDTO(this.formEstrutura);
+    console.log('Salvar - estruturaDTO: ', estruturaDTO)
+    console.log('DescricaoFormaDeObtencao enviado:', this.formEstrutura.get('descricaoFormaDeObtencao')?.value);
+
+    this.estruturaService.salvar(estruturaDTO).subscribe({
+      next: res => {
+        this.snackBar.open('Estrutura salva com sucesso!', 'Fechar', { duration: 3000 });
+        const loteId = this.formEstrutura.get('loteId')?.value;
+        if (loteId) {
+          this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId } });
+        }
+      },
+      error: err => {
+        console.error('❌ Erro ao salvar estrutura:', err);
+        this.snackBar.open('Erro ao salvar estrutura', 'Fechar', { duration: 4000 });
+      }
+    });
+  }
   private mapFormToDto(form: FormGroup): any {
     const raw = form.getRawValue();
 
@@ -313,11 +423,13 @@ export class CadastroEstruturaComponent implements OnInit {
       numero: safeString(raw.numero),
       municipioId: raw.municipioId,
       distritoId: raw.distritoId,
-      situacaoJuridicaId: typeof raw.situacaoSelecionada === 'object' ? raw.situacaoSelecionada?.id : raw.situacaoSelecionada,
-      situacaoJuridicaNome: raw.situacaoJuridicaNome,
+      situacaoJuridicaId: safeNumber(raw.situacaoJuridicaId),
+      // situacaoJuridicaId: typeof raw.situacaoSelecionada === 'object' ? raw.situacaoSelecionada?.id : raw.situacaoSelecionada,
+      // situacaoJuridicaNome: raw.situacaoJuridicaNome,
       denominacaoImovel: safeString(raw.denominacaoImovel),
-      situacaoSelecionada: raw.situacaoSelecionada,
-      formaObtencaoSelecionada: raw.formaObtencaoSelecionada,
+      //situacaoSelecionada: raw.situacaoSelecionada,
+      //formaObtencaoSelecionada: raw.formaObtencaoSelecionada,
+      formaObtencaoId: raw.formaObtencaoId,
       dataPosse: formatDate(raw.dataPosse),
       areaPosse: safeNumber(raw.areaPosse),
       livro: safeString(raw.livro),
@@ -328,12 +440,12 @@ export class CadastroEstruturaComponent implements OnInit {
       oficio: safeString(raw.oficio),
       matricula: safeString(raw.matricula),
       numeroRegistro: safeString(raw.numeroRegistro),
-      codImoReceita: safeString(raw.codImoReceita),
-      comunidade: safeString(raw.comunidade),
-      localidade: safeString(raw.localidade),
+      //codImoReceita: safeString(raw.codImoReceita),
+      //comunidade: safeString(raw.comunidade),
+      //localidade: safeString(raw.localidade),
       area: safeNumber(raw.area),
       sncr: safeString(raw.sncr),
-      pontoReferencia: safeString(raw.pontoReferencia),
+      //pontoReferencia: safeString(raw.pontoReferencia),
       familiasResidentes: safeNumber(raw.familiasResidentes),
       pessoasResidentes: safeNumber(raw.pessoasResidentes),
       trabalhadoresComCarteira: safeNumber(raw.trabalhadoresComCarteira),
@@ -375,41 +487,43 @@ export class CadastroEstruturaComponent implements OnInit {
   }
 
 
-  carregarEstruturaPorLoteId(loteId: number) {
-    this.estruturaService.buscarPorLoteId(loteId).subscribe({
-      next: (estruturaDTO) => {
-        if (estruturaDTO) {
-          console.log('DTO recebido:', estruturaDTO);
-          // ⚠️ Carregar distritos antes de patchar (para evitar select vazio)
-          this.loadDistritosByMunicipio(estruturaDTO.municipioId).then(() => {
-            // Habilita os campos necessários ANTES do patchValue
-            this.formEstrutura.get('municipioId')?.enable();
-            this.formEstrutura.get('distritoId')?.enable();
-            this.formEstrutura.get('numero')?.enable();
-            this.formEstrutura.get('denominacaoImovel')?.enable();
+  // carregarEstruturaPorLoteId(loteId: number) {
+  //   this.estruturaService.buscarPorLoteId(loteId).subscribe({
+  //     next: (estruturaDTO) => {
+  //       if (estruturaDTO) {
+  //         console.log('DTO recebido:', estruturaDTO);
+  //         // ⚠️ Carregar distritos antes de patchar (para evitar select vazio)
+  //         this.loadDistritosByMunicipio(estruturaDTO.municipioId).then(() => {
+  //           // Habilita os campos necessários ANTES do patchValue
+  //           this.formEstrutura.get('municipioId')?.enable();
+  //           this.formEstrutura.get('distritoId')?.enable();
+  //           this.formEstrutura.get('numero')?.enable();
+  //           this.formEstrutura.get('denominacaoImovel')?.enable();
 
-            this.formEstrutura.patchValue({
-              ...estruturaDTO,
-              situacaoSelecionada: estruturaDTO.situacaoJuridicaId
-            });
+  //           this.formEstrutura.patchValue({
+  //             ...estruturaDTO,
+  //             formaObtencaoId: estruturaDTO.formaObtencaoId,
+  //             situacaoJuridicaId: estruturaDTO.situacaoJuridicaId,
+  //             descricaoFormaDeObtencao: estruturaDTO.descricaoFormaDeObtencao, // para exibição
+  //           });
 
-            // Desabilita depois do patchValue (se necessário)
-            this.formEstrutura.get('municipioId')?.disable();
-            this.formEstrutura.get('distritoId')?.disable();
-            this.formEstrutura.get('numero')?.disable();
-            this.formEstrutura.get('denominacaoImovel')?.disable();
-            this.cd.markForCheck(); // força detecção se necessário
+  //           // Desabilita depois do patchValue (se necessário)
+  //           this.formEstrutura.get('municipioId')?.disable();
+  //           this.formEstrutura.get('distritoId')?.disable();
+  //           this.formEstrutura.get('numero')?.disable();
+  //           this.formEstrutura.get('denominacaoImovel')?.disable();
+  //           this.cd.markForCheck(); // força detecção se necessário
 
-            console.log('📦 EstruturaDTO patchado:', estruturaDTO);
-          });
-        }
-      },
-      error: (err) => {
-        console.error('❌ Erro ao carregar estrutura:', err);
-      }
+  //           console.log('📦 EstruturaDTO patchado:', estruturaDTO);
+  //         });
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('❌ Erro ao carregar estrutura:', err);
+  //     }
 
-    });
-  }
+  //   });
+  // }
 
   private paramCache: any = null;
 
@@ -425,6 +539,13 @@ export class CadastroEstruturaComponent implements OnInit {
         }
       },
       error: (err) => console.error('Erro ao carregar municípios:', err)
+    });
+  }
+
+  carregarLotes(): void {
+    this.loteService.obterTodos().subscribe({
+      next: (res) => this.lotes = res,
+      error: err => console.error('Erro ao carregar lotes:', err)
     });
   }
 
@@ -544,64 +665,39 @@ export class CadastroEstruturaComponent implements OnInit {
     return d1 && d2 ? d1.id === d2.id : d1 === d2;
   }
 
-  salvarEstrutura(): void {
-    if (!this.formEstrutura.valid || !this.formEnderecoLote.valid) {
-      this.formEstrutura.markAllAsTouched();
-      this.formEnderecoLote.markAllAsTouched();
-      this.snackBar.open('Preencha todos os campos obrigatórios.', 'Fechar', { duration: 4000 });
-      return;
-    }
-    const raw = this.formEstrutura.getRawValue();
-
-    // Verifica campo obrigatório
-    if (!raw.situacaoSelecionada) {
-      console.warn('⚠️ Campo situacaoSelecionada está faltando!');
-      this.snackBar.open('Situação Jurídica é obrigatória.', 'Fechar', { duration: 4000 });
-      return;
-    }
-
-    // Mapeamento separado
-    const estruturaDTO = mapFormToEstruturaDTO(this.formEstrutura);
-
-    console.log('✅ EstruturaDTO para envio:', estruturaDTO);
-    console.log('🧪 Payload enviado ao backend:', estruturaDTO);
-
-    this.estruturaService.salvar(estruturaDTO).subscribe({
-      next: (res) => {
-        console.log('✅ Estrutura salva com sucesso!', res);
-        this.snackBar.open('Estrutura salva com sucesso!', 'Fechar', { duration: 3000 });
-        const enderecoLoteDTO: EnderecoLoteDTO = mapFormToEnderecoLoteDTO(this.formEnderecoLote);
-
-        // Depois de salvar Estrutura, salva Endereço do Lote
-        enderecoLoteDTO.loteId = res.loteId || res.id;
-        this.enderecoLoteService.salvar(enderecoLoteDTO).subscribe({
-        next: (res) => {
-          this.snackBar.open('Endereço do lote salvo!', 'Fechar', { duration: 3000 });
-          // Redirecione, atualize ou o que preferir...
-          this.formEnderecoLote.patchValue(enderecoLoteDTOToFormValue(enderecoLoteDTO));
-        },
-        error: (err) => {
-          this.snackBar.open('Erro ao salvar endereço do lote.', 'Fechar', { duration: 3000 });
-        }
-      });
-
-        const loteId = this.formEstrutura.get('loteId')?.value;
-        if (loteId) {
-          this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId } });
-        }
-      },
-      error: (err) => {
-        console.error('❌ Erro ao salvar estrutura:', err);
-        this.snackBar.open('Erro ao salvar estrutura', 'Fechar', { duration: 4000 });
-      }
-    });
-  }
 
   private formatToISO(date: Date | string | null): string | null {
     if (!date) return null;
     const d = new Date(date);
     // Corrige para fuso do Brasil 
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];// yyyy-MM-dd
+  }
+
+  carregarEstruturaPorLoteId(loteId: number) {
+    this.estruturaService.buscarPorLoteId(loteId).subscribe({
+      next: (estruturaDTO) => {
+        if (estruturaDTO) {
+          this.loadDistritosByMunicipio(estruturaDTO.municipioId).then(() => {
+            this.formEstrutura.get('municipioId')?.enable();
+            this.formEstrutura.get('distritoId')?.enable();
+            this.formEstrutura.get('numero')?.enable();
+            this.formEstrutura.get('denominacaoImovel')?.enable();
+
+            // Usa função de mapeamento padronizada para patchValue
+            this.formEstrutura.patchValue(estruturaDTOToFormValue(estruturaDTO));
+
+            this.formEstrutura.get('municipioId')?.disable();
+            this.formEstrutura.get('distritoId')?.disable();
+            this.formEstrutura.get('numero')?.disable();
+            this.formEstrutura.get('denominacaoImovel')?.disable();
+            this.cd.markForCheck();
+          });
+        }
+      },
+      error: err => {
+        console.error('❌ Erro ao carregar estrutura:', err);
+      }
+    });
   }
 
 
@@ -616,15 +712,15 @@ export class CadastroEstruturaComponent implements OnInit {
     });
   }
 
-  carregarLotes(): void {
-    this.loteService.obterTodos().subscribe({
-      next: (res) => {
-        this.lotes = res;
-        console.log('📦 Todos os lotes carregados:', this.lotes);
-      },
-      error: (err) => console.error('Erro ao carregar lotes:', err)
-    });
-  }
+  // carregarLotes(): void {
+  //   this.loteService.obterTodos().subscribe({
+  //     next: (res) => {
+  //       this.lotes = res;
+  //       console.log('📦 Todos os lotes carregados:', this.lotes);
+  //     },
+  //     error: (err) => console.error('Erro ao carregar lotes:', err)
+  //   });
+  // }
 
   preencherEstruturaComLote(lote: LoteDTO) {
     this.formEstrutura.patchValue({
@@ -640,114 +736,12 @@ export class CadastroEstruturaComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.formEstrutura.valid || !this.formEnderecoLote.valid) {
-      this.formEstrutura.markAllAsTouched();
-      this.formEnderecoLote.markAllAsTouched();
-      this.snackBar.open('Preencha todos os campos obrigatórios.', 'Fechar', { duration: 4000 });
-      return;
-    }
-  
-    
+
     if (this.formEstrutura.valid) {
-      this.salvarEstrutura();
+      this.atualizando ? this.atualizarEstrutura() : this.salvarEstrutura();
     } else {
       this.formEstrutura.markAllAsTouched();
       console.warn('⚠️ Formulário inválido. Corrija os campos.');
     }
   }
-
-  energias: energia[] = [
-    { value: 'solar', viewValue: 'SOLAR' },
-    { value: 'eolica', viewValue: 'EÓLICA' },
-  ];
-
-  destinacoes: destinacaoDoImovel[] = [
-    { value: 'hortigranjeiro', viewValue: '01 - Hortigranjeiro' },
-    { value: 'producaoGraos', viewValue: '02 - Produção Grãos (Temporários)' },
-    { value: 'agriculturaPermanente', viewValue: '03 - Agricultura (Permanente)' },
-    { value: 'reflorestamento', viewValue: '04 - Reflorestamento' },
-    { value: 'extrativismo', viewValue: '05 - Extrativismo' },
-    { value: 'pecuaria', viewValue: '06 - Pecuária' },
-    { value: 'industrial', viewValue: '07 - Industrial' },
-    { value: 'comercial', viewValue: '08 - Comercial' },
-    { value: 'pesquisa', viewValue: '09 - Pesquisa' },
-    { value: 'educacaoCentroDeTreinamento', viewValue: '10 - Educação Centro de Treinamento' },
-    { value: 'colonizacaoAssentamento', viewValue: '11 - Colonização/Assentamento' },
-    { value: 'readaptacao', viewValue: '12 - Readaptação' },
-    { value: 'mineracao', viewValue: '13 - Mineração' },
-    { value: 'areaIndigena', viewValue: '14 - Área Indígena' },
-    { value: 'unidadeConservacaoAmbiental', viewValue: '15 - Unidade de Conservação Ambiental' },
-    { value: 'armazenamento', viewValue: '16 - Armazenamento' },
-    { value: 'oleodutoGasoduto', viewValue: '17 - Oleoduto/Gasoduto' },
-    { value: 'ferroviaRodovia', viewValue: '18 - Ferrovia/Rodovia' },
-    { value: 'linhaTransmissaoRepetidora', viewValue: '19 - Linha de Transmissão/Estação Repetidora' },
-    { value: 'tratamentoAguaEsgoto', viewValue: '20 - Tratamento Água/Esgoto/Resíduo' },
-    { value: 'barragemRepresaAcude', viewValue: '21 - Barragem/Represa/Açude' },
-    { value: 'exploracaoPetrolifera', viewValue: '22 - Exploração Petrolífera' },
-    { value: 'infraestruturaAeroportuaria', viewValue: '23 - Infra-Estrutura Aeroportuárea' },
-    { value: 'entidadeBancaria', viewValue: '24 - Entidade Bancária' },
-    { value: 'areaUsoMilitar', viewValue: '25 - Área de Uso Militar' },
-    { value: 'recreacao', viewValue: '26 - Recreação' },
-    { value: 'assistencialHospitalar', viewValue: '27 - Assistencial ou Hospitalar' },
-    { value: 'olaria', viewValue: '28 - Olaria' },
-    { value: 'outraAtividade', viewValue: '29 - Outra Atividade' },
-    { value: 'fomento', viewValue: '30 - Fomento' },
-    { value: 'semDestinacao', viewValue: '31 - Sem Destinação' }
-  ];
-
-  litigios: litigio[] = [
-    { value: 'areaComPosseiros', viewValue: '09 - Área com Posseiros' },
-    { value: 'limite', viewValue: '17 - Questão de Limite' },
-    { value: 'titulacao', viewValue: '25 - Questão de Titulação' },
-    { value: 'posse', viewValue: '25 - Questão quanto à Posse' },
-    { value: 'posseDominio', viewValue: '41 - Questão quanto à Posse a ao Domínio' },
-    { value: 'dominio', viewValue: '50 - Questão quanto ao Domínio' },
-    { value: 'restricaoAoUsoDaTerra', viewValue: '68 - Questão de Restrição ao Uso da Terra' },
-    { value: 'servidao', viewValue: '76 - Servidão do Acesso' },
-    { value: 'servidaoUsoAgua', viewValue: '84 - Servidão do Uso da Água' },
-    { value: 'outras', viewValue: '92 - Outras' },
-    { value: 'inexistente', viewValue: '99 - Inexistente' },
-  ];
-
-  aguas: usoDaAgua[] = [
-    { value: 'usoHumano', viewValue: 'Uso Humano' },
-    { value: 'aplicacaoAgricola', viewValue: 'Aplicação Agrícola' },
-    { value: 'usoHumanoAgricola', viewValue: 'Uso Humano e Agrícola' },
-    { value: 'usoAnimal', viewValue: 'Uso Animal' },
-    { value: 'usoHumanoAnimalAgricola', viewValue: 'Uso Humano/Animal e Agrícola' },
-    { value: 'usoHumanoEAnimal', viewValue: 'Uso Humano e Animal' },
-    { value: 'usoAnimalAgricola', viewValue: 'Uso Animal e Agrícola' },
-    { value: 'semUso', viewValue: 'Sem Uso' },
-  ];
-
-  situacoes = [
-    { value: 1, viewValue: 'Posse por Simples Ocupação' },
-    { value: 2, viewValue: 'Posse aJusto Título' },
-    { value: 3, viewValue: 'Área Registrada (Domínio)' },
-    { value: 99, viewValue: 'Indefinido' }
-  ];
-
-  obtencoes = [
-    { value: 'aquisicaoGovEstadual', viewValue: '01 - Aquisição do Governo Estadual' },
-    { value: 'adjudicacao', viewValue: '02 - Adjudicação' },
-    { value: 'aquisicaoGovFederal', viewValue: '03 - Aquisição do Governo Federal' },
-    { value: 'aquisicaoIncra', viewValue: '04 - Aquisição INCRA' },
-    { value: 'aquisicaoGovMunicipal', viewValue: '05 - Aquisição do Governo Municipal' },
-    { value: 'cartaArrecadacao', viewValue: '06 - Carta de Arrecadação' },
-    { value: 'compraVendaParticular', viewValue: '07 - Compra e Venda de Particular' },
-    { value: 'cartaArrecadacao', viewValue: '08 - Carta de Arrecadação' },
-    { value: 'concessaoUsoGovFederal', viewValue: '09 - Concessão de Uso/Governo Federal' },
-    { value: 'concessaoUsoIncra', viewValue: '10 - Concessão de Uso/INCRA' },
-    { value: 'concessaoUsoMunicipal', viewValue: '11 - Concessão de Uso/Municipal' },
-    { value: 'doacao', viewValue: '12 - Doação' },
-    { value: 'foroOuEnfiteuse', viewValue: '13 - Foro ou Enfiteuse' },
-    { value: 'incorporacao', viewValue: '14 - Incorporação' },
-    { value: 'recebimentoHeranca', viewValue: '15 - Recebimento de Herança' },
-    { value: 'usucapiao', viewValue: '16 - Usucapião' },
-    { value: 'usufruto', viewValue: '17 - Usufruto' },
-    { value: 'doacaoEmPagamento', viewValue: '18 - Doação em Pagamento' },
-    { value: 'desapropriacao', viewValue: '19 - Desapropriação' },
-    { value: 'outras', viewValue: '20 - Outros' }
-  ];
-
 }

@@ -48,12 +48,15 @@ export interface PessoaDTO {
   
     // Vinculação com imóvel rural
     condicao?: string;
-    detencao?: string;
+    percentDetencao?: string;
     declarante?: string;
     reside?: string;
     atividade?: string;
     qtdAreaCedida?: string;
     terminoContrato?: string; // "YYYY-MM-DD"
     tipoContrato?: string;
+
+    programasDoGovernoIds: number;
+    programasSelecionados: number;
   }
   

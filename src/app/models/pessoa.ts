@@ -48,7 +48,7 @@ export class Pessoa {
   
     // Vinculação com imóvel rural
     condicao?: string;
-    detencao?: string;
+    percentDetencao?: string;
     declarante?: string;
     reside?: string;
     atividade?: string;

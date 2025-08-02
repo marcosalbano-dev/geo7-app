@@ -9,6 +9,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import { CONDICOES_PESSOA_IMOVEL } from '../enums/enum-condicao-pessoa-imovel.enum';
 import { TIPOS_ATOS } from '../enums/enum-tipos-atos.enum';
@@ -31,7 +32,8 @@ import { Router } from '@angular/router';
     MatButtonToggleModule,
     MatIconModule,
     MatDividerModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    MatDatepickerModule
   ],
   templateUrl: './cadastro-pessoa-lote.component.html',
   styleUrl: './cadastro-pessoa-lote.component.scss'
@@ -95,6 +97,15 @@ export class CadastroPessoaLoteComponent implements OnInit {
       console.log('🚦 PessoaLote salvo:', saved);
     });
   }
+
+   private formatDate(date: Date | null): string | null {
+    if (!date) return null;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // mês começa em 0
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   
 
   isExploracao(): boolean {

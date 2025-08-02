@@ -4,7 +4,6 @@ import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { EstruturaDTO } from '../models/estrutura-dto';
-import { EnderecoLoteDTO } from '../models/endereco-lote-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -45,7 +44,7 @@ export class EstruturaService {
   }
 
   // Excluir estrutura
-  excluir(id: number): Observable<void> {
+  deletar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       catchError(this.handleError)
     );

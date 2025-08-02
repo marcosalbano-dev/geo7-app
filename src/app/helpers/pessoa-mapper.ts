@@ -1,6 +1,15 @@
 // src/app/helpers/pessoa-mapper.ts
 
+import { FormGroup } from '@angular/forms';
 import { PessoaDTO } from '../models/pessoa.dto';
+
+export function mapFormToPessoaDTO(dto: Partial<PessoaDTO>) {
+    return {
+      // ...outros campos
+      programasDoGovernoIds: dto.programasSelecionados ?? [],
+      // ...outros campos
+    };
+  }
 
 export function pessoaDtoToFormPessoas(dto: Partial<PessoaDTO>) {
     return {
@@ -63,7 +72,7 @@ export function pessoaDtoToFormPessoaLote(dto: Partial<PessoaDTO>) {
         loteId: (dto as any).loteId ?? null,
         numero: (dto as any).numeroLote ?? '', // caso precise
         condicaoPessoaImovelRural: dto.condicao ?? '',
-        detencao: dto.detencao ?? '',
+        percentDetencao: dto.percentDetencao ?? '',
         isDeclarante: typeof dto.declarante === 'string'
             ? dto.declarante === 'S'
             : !!dto.declarante,

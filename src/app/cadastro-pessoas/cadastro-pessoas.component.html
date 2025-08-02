@@ -32,21 +32,20 @@
             </div>
 
             <div fxFlex="470px">
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width" [formGroup]="formEndereco">
                 <mat-label>Endereço de Correspondência</mat-label>
                 <input
                   type="text"
                   placeholder="Ex: Avenida..."
                   matInput
-                  formControlName="endereco"
+                  formControlName="logradouro"
                 />
               </mat-form-field>
             </div>
           </div>
-
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="120px">
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width" [formGroup]="formEndereco">
                 <mat-label>Número</mat-label>
                 <input
                   type="text"
@@ -58,7 +57,7 @@
             </div>
 
             <div fxFlex="350px">
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width" [formGroup]="formEndereco">
                 <mat-label>Complemento</mat-label>
                 <input
                   type="text"
@@ -70,7 +69,7 @@
             </div>
 
             <div fxFlex="250px">
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width" [formGroup]="formEndereco">
                 <mat-label>Bairro</mat-label>
                 <input
                   type="text"
@@ -92,7 +91,8 @@
               </mat-form-field>
             </div>
           </div>
-
+       
+          
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="120px">
               <mat-form-field mat-form-field class="full-width">
@@ -108,11 +108,11 @@
               </mat-form-field>
             </div>
             <div fxFlex="260px">
-              <mat-form-field mat-form-field class="full-width">
-                <mat-label>Municipio de Residência</mat-label
-                ><mat-select
-                  formControlName="municipioResidencia"
-                  [disabled]="!municipios.length"
+              <mat-form-field class="full-width">
+                <mat-label>Município de Residência</mat-label>
+                <mat-select
+                  formControlName="municipioId"
+                  [errorStateMatcher]="errorStateMatcher"
                 >
                   <mat-option
                     *ngFor="let municipio of municipios"
@@ -121,6 +121,11 @@
                     {{ municipio.nome }}
                   </mat-option>
                 </mat-select>
+                <mat-error
+                  *ngIf="formPessoas.get('municipioId')?.hasError('required')"
+                >
+                  Município é obrigatório
+                </mat-error>
               </mat-form-field>
             </div>
 
@@ -530,19 +535,22 @@
 
           <mat-card class="mt-4">
             <app-cadastro-pessoas-anexo
-              [formGroup]="formAnexo"
+              [formAnexo]="formAnexo"
             ></app-cadastro-pessoas-anexo>
           </mat-card>
 
           <mat-card-actions>
+            @if(!atualizando){
             <button mat-flat-button color="primary" type="submit">
               <mat-icon fontIcon="save"></mat-icon>
               Salvar
             </button>
+          } @else {
             <button mat-flat-button color="primary" type="button">
               <mat-icon fontIcon="refresh"></mat-icon>
               Atualizar
             </button>
+          }
             <button
               mat-flat-button
               color="accent"

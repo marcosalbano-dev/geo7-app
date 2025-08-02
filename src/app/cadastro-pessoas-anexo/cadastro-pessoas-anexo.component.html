@@ -1,6 +1,6 @@
 <div fxLayout="row" fxLayoutAlign="center">
     <div fxLayout="column" fxFlex="1000px">
-      <form [formGroup]="formGroup" (ngSubmit)="onSalvar()">
+      <form [formGroup]="formAnexo" (ngSubmit)="onSalvar()">
         <mat-card>
           <mat-card-header>
             <mat-card-title>Informações do Anexo</mat-card-title>
@@ -72,16 +72,16 @@
                   <mat-button-toggle [value]="false">Não</mat-button-toggle>
                 </mat-button-toggle-group>
               </div>
-              <div fxFlex="480px">
+              <!-- <div fxFlex="480px">
                 <mat-form-field class="full-width">
                   <mat-label>Selecione os Programas do Governo</mat-label>
                   <mat-select formControlName="programasSelecionados" multiple>
-                    <mat-option *ngFor="let p of programasGoverno" [value]="p.value">
-                      {{ p.label }}
+                    <mat-option *ngFor="let p of programas" [value]="p.id">
+                      {{ p.nome }}
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
-              </div>
+              </div> -->
             </div>
   
           </mat-card-content>

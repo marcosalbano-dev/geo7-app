@@ -56,8 +56,8 @@ export class LoteService {
   }
 
   // Excluir lote
-  excluir(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+  deletar(id: number): Observable<LoteDTO> {
+    return this.http.delete<LoteDTO>(`${this.apiUrl}/${id}`).pipe(
       catchError(this.handleError)
     );
   }

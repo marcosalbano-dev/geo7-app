@@ -3,7 +3,7 @@
     <div fxFlex="480px">
       <mat-form-field class="full-width">
         <mat-label>Situação Jurídica</mat-label>
-        <mat-select formControlName="situacaoSelecionada">
+        <mat-select formControlName="situacaoJuridicaId">
           <mat-option
             *ngFor="let situacao of situacoes"
             [value]="situacao.value"
@@ -15,12 +15,12 @@
     </div>
   </div>
 
-  <div *ngIf="formGroup.get('situacaoSelecionada')?.value !== 'Indefinido'">
+  <div *ngIf="formGroup.get('situacaoJuridicaId')?.value !== '99'">
     <div fxLayout="row" fxLayoutGap="16px">
       <div fxFlex="480px">
         <mat-form-field class="full-width">
           <mat-label>Forma de Obtenção</mat-label>
-          <mat-select formControlName="formaObtencaoSelecionada">
+          <mat-select formControlName="formaObtencaoId">
             <mat-option
               *ngFor="let obtencao of obtencoes"
               [value]="obtencao.value"
@@ -100,9 +100,18 @@
       <div fxLayout="row" fxLayoutGap="16px">
         <div fxFlex="230px">
           <mat-form-field class="full-width">
-            <mat-label>Data do Registro</mat-label>
-            <input matInput formControlName="dataRegistro" />
-          </mat-form-field>
+          <mat-label>Data Registro</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="dataRegistro"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
         </div>
         <div fxFlex="230px">
           <mat-form-field class="full-width">

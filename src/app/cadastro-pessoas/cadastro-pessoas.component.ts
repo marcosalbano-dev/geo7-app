@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, signal } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,7 +20,7 @@ import { MunicipioService } from '../services/municipio.service';
 import { ErrorStateMatcher, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { CadastroPessoaLoteComponent } from '../cadastro-pessoa-lote/cadastro-pessoa-lote.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LoteService } from '../services/lote.service';
 import { PessoaLoteDTO } from '../models/pessoa-lote.dto';
 import { PessoaLoteService } from '../services/pessoa-lote.service';
@@ -29,8 +29,11 @@ import {
   pessoaDtoToFormPessoas,
   pessoaDtoToFormFisica,
   pessoaDtoToFormJuridica,
-  pessoaDtoToFormPessoaLote
+  pessoaDtoToFormPessoaLote,
+  mapFormToPessoaDTO
 } from '../helpers/pessoa-mapper';
+//import { ProgramaGovernoDTO } from '../models/programa-governo-dto';
+//import { ProgramaGovernoService } from '../services/programa-governo.service';
 
 interface distrito {
   value: string;
@@ -93,13 +96,20 @@ interface tipoDocumento {
   styleUrl: './cadastro-pessoas.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadastroPessoasComponent {
+export class CadastroPessoasComponent implements OnInit {
 
+  atualizando = false;
 
 
   errorStateMatcher: ErrorStateMatcher = {
     isErrorState: (control) => !!(control && control.invalid && control.touched),
   };
+
+  programas = [
+    { id: 1, nome: 'Bolsa Família' },
+    { id: 2, nome: 'Bolsa Safra' }
+    // ...etc
+  ];
 
 
   distritos: distrito[] = [
@@ -200,6 +210,7 @@ export class CadastroPessoasComponent {
   isLoadingMunicipio = false;
   @Input() loteId: number | null = null;
   numero: string = '';
+  //programas: ProgramaGovernoDTO[] = [];
 
   tipoPessoaSelecionada = signal<string>('FISICA');
 
@@ -208,6 +219,8 @@ export class CadastroPessoasComponent {
   formJuridica: FormGroup;
   formPessoaLote: FormGroup;
   formAnexo: FormGroup;
+  formEndereco: FormGroup;
+  formDocumento: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -216,7 +229,9 @@ export class CadastroPessoasComponent {
     private municipioService: MunicipioService,
     private route: ActivatedRoute,
     private pessoaLoteService: PessoaLoteService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router,
+    //private programaGovernoService: ProgramaGovernoService
   ) {
 
     this.formAnexo = this.fb.group({
@@ -228,18 +243,17 @@ export class CadastroPessoasComponent {
       tiposPronaf: [[]],
       valorTotalPronafs: [''],
       recebeProgramaGoverno: [false],
-      programasSelecionados: [[]],
+      //programasSelecionados: [[]],
     });
 
     this.formPessoas = this.fb.group({
       municipioId: [null, Validators.required],
       loteId: [null, Validators.required],
       nome: [''],
-      endereco: [''],
       numero: [''],
       complemento: [''],
       bairro: [''],
-      municipioResidencia: [''],
+      //municipioResidencia: [''],
       uf: [''],
       cep: [''],
       telefone: [''],
@@ -299,6 +313,46 @@ export class CadastroPessoasComponent {
       dataTerminoContrato: ['']
     });
 
+    this.formEndereco = this.fb.group({
+      logradouro: [''],
+      complemento: [''],
+      numero: [''],
+      bairro: [''],
+      cep: [''],
+      codigoPaisResidencia: ['931'],
+      municipioId: [null],
+      uf: ['']
+    });
+
+    this.formDocumento = this.fb.group({
+      id: [null],
+      tipoDocumentoIdentificacao: [''],
+      numeroDocumentoIdentificacao: [''],
+      orgaoEmissor: [''],
+      ufOrgaoEmissor: [''],
+      tipoNacionalidade: [''],
+      cpf: [''],
+      cnpj: [''],
+      estadoCivil: [''],
+      tipoPessoa: [''],
+      naturezaJuridica: [''],
+      capitalNacional: [''],
+      capitalEstrangeiro: [''],
+      registroJuntaComercial: [''],
+      nomeFantasia: [''],
+      codigoPaisSede: [''],
+      ufPaisSede: [''],
+      tipoDocumentoRepresentanteLegal: [''],
+      numeroDocumentoRepresentanteLegal: [''],
+      tipoDePoder: [''],
+      tipoDeGoverno: [''],
+      percentCapitalNacional: [''],
+      percentCapitalEstrangeiro: [''],
+      pcePais: [''],
+      pcePercentCapital: [''],
+      obsevacoesQuadro7: ['']
+    });
+
     // Atualiza signal quando troca tipo
     this.formPessoas.get('tipoPessoa')?.valueChanges.subscribe(tp => {
       this.tipoPessoaSelecionada.set(tp);
@@ -307,12 +361,17 @@ export class CadastroPessoasComponent {
 
   ngOnInit(): void {
     this.loadUfs();
+    // this.programaGovernoService.getAll().subscribe({
+    //   next: (dados) => this.programas = dados,
+    //   error: () => this.programas = []
+    // });
 
     const loteId = Number(this.route.snapshot.queryParamMap.get('id'));
 
     this.route.queryParams.subscribe(params => {
       const loteId = params['loteId'];
       this.formPessoaLote.get('loteId')?.setValue(loteId);
+      const pessoaLoteId = params['pessoaLoteId']; // depende da sua rota
 
       if (loteId) {
         this.formPessoaLote.get('loteId')?.setValue(+loteId);
@@ -321,8 +380,18 @@ export class CadastroPessoasComponent {
           this.numero = lote.numero; // <-- só preenche a variável
         });
       }
+      if (pessoaLoteId) {
+        this.pessoaLoteService.getEditarDetentor(pessoaLoteId).subscribe(data => {
+          this.formPessoas.patchValue(data.pessoa);
+          this.formPessoaLote.patchValue(data.pessoaLote);
+          this.formEndereco.patchValue(data.endereco);
+          this.formDocumento.patchValue(data.documento);
+        });
+      }
     });
+
   }
+  
 
   loadUfs(): void {
     this.isLoadingUf = true;
@@ -349,35 +418,61 @@ export class CadastroPessoasComponent {
       }
     });
   }
+  
 
   onSalvar() {
+    console.log('formPessoas:', this.formPessoas.value);
     // (garanta que o valor está presente no formPessoaLote)
     if (!this.formPessoaLote.get('loteId')?.value) {
       alert('Lote não selecionado!');
       return;
     }
-    // Aqui você já tem todos os valores dos forms
+    const pessoaLoteCamposData = [
+      'dataAto',
+      'dataTerminoContrato', // e outros campos de data
+    ];
+    const pessoaLotePayload = parseDateFields(this.formPessoaLote.value, pessoaLoteCamposData);
+    
     const dados = {
-      ...this.formAnexo.value,
-      ...this.formPessoas.value,
-      ...(this.tipoPessoaSelecionada() === 'FISICA'
-        ? this.formFisica.value
-        : this.formJuridica.value),
-      ...this.formPessoaLote.value
+      pessoa: {
+        ...this.formPessoas.value,
+        ...(this.tipoPessoaSelecionada() === 'FISICA'
+          ? this.formFisica.value
+          : this.formJuridica.value),
+        // Inclua campos do anexo aqui SE eles pertencem à pessoa!
+        // Exemplo:
+        nacimento: this.formFisica.get('nascimento')?.value ? 
+          this.formFisica.get('nascimento')?.value.toISOString().slice(0, 10) : null,
+        atividadePrincipal: this.formAnexo.get('atividadePrincipal')?.value,
+        recebePronaf: this.formAnexo.get('recebePronaf')?.value,
+        qtdPronaf: this.formAnexo.get('qtdPronaf')?.value || null,
+        valorTotalPronafs: this.formAnexo.get('valorTotalPronafs')?.value || null,
+        recebeProgramaGoverno: this.formAnexo.get('recebeProgramaGoverno')?.value,
+        //programasDoGovernoIds: this.formAnexo.value.programasSelecionados
+      },
+      pessoaLote: pessoaLotePayload,
+      endereco: this.formEndereco.value,
+      documento: this.formDocumento.value
     };
-
+    console.log('DADOS: ', dados)
+    const dadosTratados = nullifyEmptyStrings(dados);
+    console.log('DADOS TRATADOS: ', dadosTratados)
     //...this.formPessoaLote.value
-    console.log('Dados para salvar:', dados);
-    console.log('formPessoaLote:', this.formPessoaLote.value);
+    //console.log('Dados para salvar:', dados);
     console.log('loteId:', this.formPessoaLote.get('loteId')?.value);
-
+    console.log('PessoaLote payload:', this.formPessoaLote.value);
     // Salva pessoa
-    this.pessoasService.salvarPessoa(dados).subscribe({
+    this.pessoasService.salvarPessoa(dadosTratados).subscribe({
       next: (pessoaSalva) => {
 
         if (!pessoaSalva.id) {
           alert('Pessoa sem id, algo deu errado!');
           return;
+        }
+        this.snackBar.open('Pessoa salva com sucesso!', 'Fechar', { duration: 3000 });
+        const loteId = this.formPessoas.get('loteId')?.value;
+        if (loteId) {
+          this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
         }
 
         const condicao = this.formPessoaLote.get('condicaoPessoaImovelRural')?.value;
@@ -404,7 +499,7 @@ export class CadastroPessoasComponent {
           atividadePrincipalExploracao: this.formPessoaLote.get('atividadePrincipalExploracao')?.value,
           contrato: this.formPessoaLote.get('contrato')?.value,
           dataTerminoContrato: this.formPessoaLote.get('dataTerminoContrato')?.value,
-          isContratoPrazoIndeterminado: isContratoPrazoIndeterminado ?? false 
+          isContratoPrazoIndeterminado: isContratoPrazoIndeterminado ?? false
         };
 
         // Só adiciona o campo se for Comodatário (ajuste o valor exato do select se necessário)
@@ -431,7 +526,6 @@ export class CadastroPessoasComponent {
     });
   }
 
-  
 
   onLimpar() {
     const loteId = this.formPessoaLote.get('loteId')?.value;
@@ -471,6 +565,42 @@ export class CadastroPessoasComponent {
       CondicaoPessoaImovel.Concessionario
     ].includes(this.condicaoSelecionada);
   }
-
-
 }
+
+export function nullifyEmptyStrings(obj: any): any {
+  if (obj === '') return null;
+  if (Array.isArray(obj)) {
+    return obj.map(nullifyEmptyStrings);
+  }
+  if (obj !== null && typeof obj === 'object') {
+    // Cria um novo objeto, evitando recursão infinita
+    const copy: any = {};
+    for (const key of Object.keys(obj)) {
+      copy[key] = nullifyEmptyStrings(obj[key]);
+    }
+    return copy;
+  }
+  return obj;
+}
+
+
+function parseDateFields(obj: any, campos: string[]): any {
+  const clone = { ...obj };
+  campos.forEach(campo => {
+    if (clone[campo] instanceof Date) {
+      // Se vier um Date
+      clone[campo] = clone[campo].toISOString().split('T')[0];
+    } else if (clone[campo] && typeof clone[campo] === 'object' && 'year' in clone[campo]) {
+      // Se vier um objeto do tipo { year, month, day }
+      const { year, month, day } = clone[campo];
+      // Padroniza mês/dia pra dois dígitos
+      clone[campo] = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    } else if (typeof clone[campo] !== 'string') {
+      // Qualquer outro tipo estranho vira null
+      clone[campo] = null;
+    }
+  });
+  return clone;
+}
+
+

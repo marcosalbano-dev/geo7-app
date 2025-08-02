@@ -57,9 +57,18 @@
     </div>
     <div fxFlex="300px">
       <mat-form-field class="full-width">
-        <mat-label>Data do Ato</mat-label>
-        <input matInput formControlName="dataAto" />
-      </mat-form-field>
+      <mat-label>Data do Ato</mat-label>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        formControlName="dataAto"
+      />
+      <mat-datepicker-toggle
+        matSuffix
+        [for]="picker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
     </div>
   </div>
 
@@ -109,6 +118,4 @@
         <mat-button-toggle [value]="false">Não</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
-
-
 </div>

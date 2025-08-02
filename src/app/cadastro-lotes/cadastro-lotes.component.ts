@@ -200,6 +200,20 @@ export class CadastroLotesComponent implements OnInit {
       this.loteService.atualizar(loteDTO.id, loteDTO).subscribe({
         next: (res) => {
           this.snackBar.open('Lote atualizado com sucesso!', 'Fechar', { duration: 3000 });
+          console.log('🚦 Lote salvo:', loteDTO);
+          // 🚀 Navegar para cadastro de estrutura com dados do lote via query params
+          this.router.navigate(['/cadastro-estrutura'], {
+            queryParams: {
+              loteId: loteDTO.id,
+              numero: loteDTO.numero,
+              municipioId: loteDTO.municipioId,
+              distritoId: loteDTO.distritoId,
+              situacaoJuridicaId: loteDTO.situacaoJuridicaId,
+              area: loteDTO.area,
+              denominacaoImovel: loteDTO.denominacaoImovel,
+              sncr: loteDTO.sncr
+            }
+          });
         },
         error: (err) => {
           console.error('Erro ao atualizar Lote', err);

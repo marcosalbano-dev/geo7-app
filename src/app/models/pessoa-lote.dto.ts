@@ -19,6 +19,7 @@ export interface PessoaLoteDTO {
     contrato?: string;                           // Tipo de contrato ("E" ou "V")
     dataTerminoContrato?: string | Date;         // Data de término do contrato
     isContratoPrazoIndeterminado?: boolean;      // Prazo indeterminado?
+    municipioId?: number;
   
     dateCreated?: string | Date;                 // Data de criação
     lastUpdated?: string | Date;                 // Data de atualização

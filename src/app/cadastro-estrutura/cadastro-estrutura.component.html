@@ -6,6 +6,8 @@
           <mat-card-title>Estrutura</mat-card-title>
         </mat-card-header>
         <mat-card-content class="mt-20">
+
+          <!-- Linha 1: Lote, Município, Distrito -->
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="300px">
               <mat-form-field appearance="fill" class="full-width">
@@ -23,8 +25,6 @@
                 </mat-select>
               </mat-form-field>
             </div>
-            
-
             <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Distrito</mat-label>
@@ -36,63 +36,16 @@
               </mat-form-field>
             </div>
           </div>
-          
-          <app-cadastro-situacao-juridica
-            *ngIf="formEstrutura"
-            [formGroup]="formEstrutura"
-            [loteId]="formEstrutura.get('loteId')?.value"
-            [situacoes]="situacoes"
-            [obtencoes]="obtencoes"
-          ></app-cadastro-situacao-juridica>
-
+          <!-- <app-cadastro-forma-obtencao [form]="formEstrutura"></app-cadastro-forma-obtencao> -->
+          <!-- Linha 2: Denominação, Área, SNCR -->
           <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="718px">
+            <div fxFlex="480px">
               <mat-form-field class="full-width">
                 <mat-label>Denominação do imóvel</mat-label>
                 <input matInput [value]="formEstrutura.get('denominacaoImovel')?.value" readonly>
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
-              <mat-form-field class="full-width">
-                <mat-label>Código Imóvel na Receita</mat-label>
-                <input
-                  type="text"
-                  formControlName="codImoReceita"
-                  placeholder="Ex: 123456"
-                  matInput
-                />
-              </mat-form-field>
-            </div>
-          </div>
-
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="480px">
-              <mat-form-field class="full-width">
-                <mat-label>Comunidade</mat-label>
-                <input
-                  type="text"
-                  formControlName="comunidade"
-                  placeholder="Ex: Sítio..."
-                  matInput
-                />
-              </mat-form-field>
-            </div>
-
-            <div fxFlex="468px">
-              <mat-form-field class="full-width">
-                <mat-label>Localidade</mat-label>
-                <input
-                  type="text"
-                  formControlName="localidade"
-                  placeholder="Ex: Lagoinha"
-                  matInput
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <div fxLayout="row" fxLayoutGap="16px" fxFlexFill>
-            <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Área (Ha)</mat-label>
                 <input
@@ -112,8 +65,7 @@
                 </mat-error>
               </mat-form-field>
             </div>
-
-            <div fxFlex="300px">
+            <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>SNCR</mat-label>
                 <input
@@ -125,20 +77,17 @@
                 />
               </mat-form-field>
             </div>
-
-            <div fxFlex="330px">
-              <mat-form-field class="full-width">
-                <mat-label>Ponto de Referência</mat-label>
-                <input
-                  type="text"
-                  formControlName="pontoReferencia"
-                  placeholder="Ex: Próximo a..."
-                  matInput
-                />
-              </mat-form-field>
-            </div>
           </div>
 
+          <app-cadastro-situacao-juridica
+          *ngIf="formEstrutura"
+          [formGroup]="formEstrutura"
+          [loteId]="formEstrutura.get('loteId')?.value"
+          [situacoes]="situacoes"
+          [obtencoes]="obtencoes"
+        ></app-cadastro-situacao-juridica>
+
+        <!-- Campos Gerais da Estrutura -->
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-form-field class="full-width">
@@ -151,7 +100,6 @@
                 />
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Pessoas Residentes</mat-label>
@@ -163,7 +111,6 @@
                 />
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Assalariados com CLT</mat-label>
@@ -175,7 +122,6 @@
                 />
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Assalariados sem CLT</mat-label>
@@ -189,6 +135,7 @@
             </div>
           </div>
 
+          <!-- Valores e área irrigada -->
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="230px">
               <mat-form-field class="full-width">
@@ -201,7 +148,6 @@
                 />
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Benfeitorias</mat-label>
@@ -213,7 +159,6 @@
                 />
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Cultura e Pastagens</mat-label>
@@ -225,7 +170,6 @@
                 />
               </mat-form-field>
             </div>
-
             <div fxFlex="230px">
               <mat-form-field class="full-width">
                 <mat-label>Terra Nua</mat-label>
@@ -238,7 +182,7 @@
               </mat-form-field>
             </div>
           </div>
-
+          <!-- Destinação, litígio, porcentagem detenção, observação -->
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="480">
               <mat-form-field mat-form-field class="full-width">
@@ -246,14 +190,13 @@
                 ><mat-select formControlName="destinacaoDoImovel">
                   <mat-option
                     *ngFor="let destinacao of destinacoes"
-                    [value]="destinacao.value"
+                    [value]="destinacao.viewValue"
                   >
                     {{ destinacao.viewValue }}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
-
             <div fxFlex="480px">
               <mat-form-field mat-form-field class="full-width">
                 <mat-label>Litígio do Imóvel</mat-label

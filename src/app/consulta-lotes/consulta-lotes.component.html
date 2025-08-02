@@ -114,18 +114,20 @@
           <ng-container matColumnDef="acoes">
             <th mat-header-cell *matHeaderCellDef>Ações</th>
             <td mat-cell *matCellDef="let lote">
-              <button type="button" mat-button color="primary" (click)="preparaEditarLote(lote.id)">
-                <mat-icon fontIcon="edit">visibility</mat-icon>
-                Editar Imóvel
+              <button mat-button color="primary" (click)="preparaEditarLote(lote.id)">
+                <mat-icon>edit</mat-icon> Editar Imóvel
               </button>
-              <button type="button" mat-button color="primary" (click)="preparaEditarEstrutura(lote.id)">
-                <mat-icon fontIcon="edit">visibility</mat-icon>
-                Editar Estrutura
+              <button mat-button color="primary" (click)="preparaEditarEstrutura(lote.id)">
+                <mat-icon>edit</mat-icon> Editar Estrutura
               </button>
-              <button type="button" mat-button color="primary" (click)="preparaEditarDadosPessoais(lote.id)">
-                <mat-icon fontIcon="edit">visibility</mat-icon>
-                Editar Dados Pessoais
+              <button mat-button color="primary" (click)="preparaEditarDadosPessoais(lote.id)">
+                <mat-icon>edit</mat-icon> Editar Dados Pessoais
               </button>
+              <ng-container>
+                <button mat-button color="warn" (click)="confirmarDelecao(lote)">
+                  <mat-icon>delete</mat-icon> Deletar
+                </button>
+              </ng-container>
             </td>
           </ng-container>
           <!-- (click)="verDetalhes(lote)" -->

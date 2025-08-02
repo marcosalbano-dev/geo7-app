@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -11,6 +11,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
+//import { ProgramaGovernoDTO } from '../models/programa-governo-dto';
+//import { ProgramaGovernoService } from '../services/programa-governo.service';
 
 @Component({
   selector: 'app-cadastro-pessoas-anexo',
@@ -32,9 +34,9 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule
   ]
 })
-export class CadastroPessoasAnexoComponent {
+export class CadastroPessoasAnexoComponent implements OnInit{
 
-  @Input({ required: true }) formGroup!: FormGroup;
+  @Input({ required: true }) formAnexo!: FormGroup;
 
   atividadesPrincipais = [
     { value: 'agricultor', label: 'Agricultor' },
@@ -51,17 +53,26 @@ export class CadastroPessoasAnexoComponent {
     // Adicione todos conforme necessário
   ];
 
-  programasGoverno = [
-    { value: 'bolsa_familia', label: 'BOLSA FAMÍLIA' },
-    { value: 'bolsa_safra', label: 'BOLSA SAFRA' },
-    // Adicione todos conforme necessário
-  ];
+  // programasGoverno = [
+  //   { value: '1', label: 'BOLSA FAMÍLIA' },
+  //   { value: '2', label: 'BOLSA SAFRA' },
+  //   // Adicione todos conforme necessário
+  // ];
+
+  // programas = [
+  //   { id: 1, nome: 'Bolsa Família' },
+  //   { id: 2, nome: 'Bolsa Safra' }
+  // ];
 
   selectedPronafTipos: string[] = [];
   selectedProgramas: string[] = [];
+  //programas: ProgramaGovernoDTO[] = [];
 
-  constructor(private fb: FormBuilder) {
-    this.formGroup = this.fb.group({
+  constructor(
+    private fb: FormBuilder,
+    //private programaGovernoService: ProgramaGovernoService,
+  ) {
+    this.formAnexo = this.fb.group({
       utmEste: [''],
       utmNorte: [''],
       atividadePrincipal: [''],
@@ -70,39 +81,45 @@ export class CadastroPessoasAnexoComponent {
       tiposPronaf: [[]],
       valorTotalPronafs: [''],
       recebeProgramaGoverno: [false],
-      programasSelecionados: [[]],
+      //programasSelecionados: [[]],
     });
   }
 
+  ngOnInit() {
+    // this.programaGovernoService.getAll().subscribe(
+    //   data => this.programas = data
+    // );
+  }
+
   togglePronaf(tipo: string) {
-    const tipos = this.formGroup.value.tiposPronaf as string[];
+    const tipos = this.formAnexo.value.tiposPronaf as string[];
     if (tipos.includes(tipo)) {
-      this.formGroup.patchValue({
+      this.formAnexo.patchValue({
         tiposPronaf: tipos.filter(t => t !== tipo)
       });
     } else {
-      this.formGroup.patchValue({
+      this.formAnexo.patchValue({
         tiposPronaf: [...tipos, tipo]
       });
     }
   }
   
 
-  togglePrograma(programa: string) {
-    const programas = this.formGroup.value.programasSelecionados as string[];
-    if (programas.includes(programa)) {
-      this.formGroup.patchValue({
-        programasSelecionados: programas.filter(p => p !== programa)
-      });
-    } else {
-      this.formGroup.patchValue({
-        programasSelecionados: [...programas, programa]
-      });
-    }
-  }
+  // togglePrograma(programa: string) {
+  //   const programas = this.formAnexo.value.programasSelecionados as string[];
+  //   if (programas.includes(programa)) {
+  //     this.formAnexo.patchValue({
+  //       programasSelecionados: programas.filter(p => p !== programa)
+  //     });
+  //   } else {
+  //     this.formAnexo.patchValue({
+  //       programasSelecionados: [...programas, programa]
+  //     });
+  //   }
+  // }
 
   onSalvar() {
-    console.log(this.formGroup.value);
+    console.log(this.formAnexo.value);
     // Salve os dados no backend aqui
   }
 }
