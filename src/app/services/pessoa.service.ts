@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { AtualizaDetentorRequestDTO } from '../models/atualiza-detentor-request-dto';
 import { EditarDetentorResponseDTO } from '../models/editar-detentor-response-dto';
 import { PessoaDTO } from '../models/pessoa.dto';
+import { PessoaRespostaDTO } from '../models/pessoa-resposta.dto';
 
 @Injectable({ providedIn: 'root' })
 export class PessoasService {
@@ -13,13 +14,13 @@ export class PessoasService {
   constructor(private http: HttpClient) {}
 
   /** Cadastro completo de pessoa+vinculos+documento+endereco */
-  salvarPessoa(dados: AtualizaDetentorRequestDTO): Observable<PessoaDTO> {
-    return this.http.post<PessoaDTO>(`${this.apiUrl}`, dados);
+  salvarPessoa(dados: AtualizaDetentorRequestDTO): Observable<PessoaRespostaDTO> {
+    return this.http.post<PessoaRespostaDTO>(`${this.apiUrl}`, dados);
   }
 
   /** Atualização completa */
-  atualizarPessoa(pessoaLoteId: number, dados: AtualizaDetentorRequestDTO): Observable<PessoaDTO> {
-    return this.http.put<PessoaDTO>(`${this.apiUrl}/${pessoaLoteId}`, dados);
+  atualizarPessoa(pessoaLoteId: number, dados: AtualizaDetentorRequestDTO) {
+    return this.http.put<EditarDetentorResponseDTO>(`${this.apiUrl}/${pessoaLoteId}`, dados);
   }
 
   /** Buscar para edição (carrega todos os dados necessários) */
@@ -28,12 +29,16 @@ export class PessoasService {
   }
 
   /** Listar pessoas (pode ser só PessoaDTO, conforme backend) */
-  listarPessoas(): Observable<PessoaDTO[]> {
-    return this.http.get<PessoaDTO[]>(this.apiUrl);
+  listarPessoas(): Observable<PessoaRespostaDTO[]> {
+    return this.http.get<PessoaRespostaDTO[]>(this.apiUrl);
   }
 
   /** Buscar pessoa por id (apenas dados da pessoa, não o combinado) */
-  buscarPorId(id: number): Observable<PessoaDTO> {
-    return this.http.get<PessoaDTO>(`${this.apiUrl}/${id}`);
+  buscarPorId(id: number): Observable<PessoaRespostaDTO> {
+    return this.http.get<PessoaRespostaDTO>(`${this.apiUrl}/${id}`);
   }
+
+  buscarParaEdicaoPorLote(loteId: number) {
+  return this.http.get<EditarDetentorResponseDTO>(`${this.apiUrl}/editar/por-lote/${loteId}`);
+}
 }

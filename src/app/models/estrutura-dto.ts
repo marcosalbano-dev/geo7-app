@@ -11,6 +11,7 @@ export interface EstruturaDTO {
   areaPosse?: number;
   livro?: string;
   areaRegistrada?: string;
+  areaMedida?: string;
   nomeCartorio?: string;
   municipioCartorio?: string;
   dataRegistro?: string;

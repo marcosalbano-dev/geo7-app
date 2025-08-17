@@ -20,8 +20,8 @@ export class EstruturaService {
     return this.http.post<EstruturaDTO>(`${environment.apiUrl}/estrutura`, estrutura);
   }
 
-  buscarPorLoteId(loteId: number): Observable<EstruturaDTO> {
-    return this.http.get<EstruturaDTO>(`${this.apiUrl}/estruturas/por-lote/${loteId}`);
+  buscarPorLoteId(loteId: number) {
+    return this.http.get<EstruturaDTO>(`${this.apiUrl}/por-lote/${loteId}`);
   }
 
   // Obter todas as estruturas da API

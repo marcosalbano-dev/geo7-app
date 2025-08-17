@@ -3,7 +3,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { CondicaoPessoaImovel } from '../enums/enum-condicao-pessoa-imovel.enum';
 import { CadastroPessoasAnexoComponent } from '../cadastro-pessoas-anexo/cadastro-pessoas-anexo.component';
+import { CadastroDocumentoPessoaComponent } from '../cadastro-documento-pessoa/cadastro-documento-pessoa.component';
 import { PessoasService } from '../services/pessoa.service';
 import { Municipio } from '../models/municipio';
 import { EstadoService } from '../services/estado.service';
@@ -25,15 +26,10 @@ import { LoteService } from '../services/lote.service';
 import { PessoaLoteDTO } from '../models/pessoa-lote.dto';
 import { PessoaLoteService } from '../services/pessoa-lote.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  pessoaDtoToFormPessoas,
-  pessoaDtoToFormFisica,
-  pessoaDtoToFormJuridica,
-  pessoaDtoToFormPessoaLote,
-  mapFormToPessoaDTO
-} from '../helpers/pessoa-mapper';
-//import { ProgramaGovernoDTO } from '../models/programa-governo-dto';
-//import { ProgramaGovernoService } from '../services/programa-governo.service';
+import { toggleControls } from '../helpers/documentos-pessoa-mapper';
+import { CadastroEnderecoPessoaComponent } from "../cadastro-endereco-pessoa/cadastro-endereco-pessoa.component";
+import { EditarDetentorResponseDTO } from '../models/editar-detentor-response-dto';
+import { ChangeDetectorRef } from '@angular/core';
 
 interface distrito {
   value: string;
@@ -90,7 +86,9 @@ interface tipoDocumento {
     CadastroPessoasAnexoComponent,
     MatDatepickerModule,
     MatNativeDateModule,
-    CadastroPessoaLoteComponent
+    CadastroPessoaLoteComponent,
+    CadastroEnderecoPessoaComponent,
+    CadastroDocumentoPessoaComponent
   ],
   templateUrl: './cadastro-pessoas.component.html',
   styleUrl: './cadastro-pessoas.component.scss',
@@ -166,15 +164,15 @@ export class CadastroPessoasComponent implements OnInit {
   ];
 
   tiposPoderes = [
-    { value: 'executivo', viewValue: 'E - Executivo' },
-    { value: 'legislativo', viewValue: 'L - Legislativo' },
-    { value: 'judiciario', viewValue: 'J - Judiciário' }
+    { value: 'E - Executivo', viewValue: 'E - Executivo' },
+    { value: 'L - Legislativo', viewValue: 'L - Legislativo' },
+    { value: 'J - Judiciário', viewValue: 'J - Judiciário' }
   ];
 
   tiposGovernos = [
-    { value: 'executivo', viewValue: 'E - Executivo' },
-    { value: 'legislativo', viewValue: 'L - Legislativo' },
-    { value: 'judiciario', viewValue: 'J - Judiciário' }
+    { value: 'E - Executivo', viewValue: 'E - Executivo' },
+    { value: 'L - Legislativo', viewValue: 'L - Legislativo' },
+    { value: 'J - Judiciário', viewValue: 'J - Judiciário' }
   ];
 
   nacionalidades = [
@@ -204,6 +202,20 @@ export class CadastroPessoasComponent implements OnInit {
     { value: 'verbal', viewValue: 'Verbal' },
   ];
 
+  PF_DOC_KEYS: string[] = [
+    'cpf', 'estadoCivil', 'tipoNacionalidade', 'ufNaturalidade',
+    'naturalidadeId', 'codigoPaisOrigem', 'codigoPaisResidencia'
+  ];
+
+  PJ_DOC_KEYS: string[] = [
+    'cnpj', 'naturezaJuridica', 'tipoDePoder', 'tipoDeGoverno',
+    'ufPaisSede', 'codigoPaisSede', 'capitalNacional', 'capitalEstrangeiro',
+    'registroJuntaComercial', 'nomeFantasia', 'percentCapitalNacional',
+    'percentCapitalEstrangeiro', 'pcePais', 'pcePercentCapital'
+  ];
+
+  pessoaLoteIdEmEdicao: number | null = null;
+
   ufs: string[] = [];
   municipios: Municipio[] = [];
   isLoadingUf = false;
@@ -219,8 +231,8 @@ export class CadastroPessoasComponent implements OnInit {
   formJuridica: FormGroup;
   formPessoaLote: FormGroup;
   formAnexo: FormGroup;
-  formEndereco: FormGroup;
-  formDocumento: FormGroup;
+  formEnderecoPessoa: FormGroup;
+  formDocumentoPessoa: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -231,14 +243,14 @@ export class CadastroPessoasComponent implements OnInit {
     private pessoaLoteService: PessoaLoteService,
     private snackBar: MatSnackBar,
     private router: Router,
-    //private programaGovernoService: ProgramaGovernoService
+    private cdr: ChangeDetectorRef
   ) {
 
     this.formAnexo = this.fb.group({
-      utmEste: [''],
-      utmNorte: [''],
+      coordenadaEste: [''],
+      coordenadaNorte: [''],
       atividadePrincipal: [''],
-      recebePronaf: [false],
+      isRecebePronaf: [false],
       qtdPronaf: [0],
       tiposPronaf: [[]],
       valorTotalPronafs: [''],
@@ -262,44 +274,44 @@ export class CadastroPessoasComponent implements OnInit {
     });
 
     this.formFisica = this.fb.group({
-      cpf: [''],
-      nascimento: [''],
-      sexo: [''],
-      espolio: [''],
-      raca: [''],
+      //cpf: [''],
+      dataNascimento: [''],
+      sexoPessoa: [''],
+      isEspolio: [false],
+      racaCor: [''],
       estadoCivil: [''],
-      casamento: [''],
+      dataCasamento: [''],
       regimeBens: [''],
       tipoDocumento: [''],
       numeroDocumento: [''],
       orgaoEmissor: [''],
       ufOrgaoEmissor: [''],
-      nacionalidade: [''],
+      tipoNacionalidade: [''],
       ufNaturalidade: [''],
-      municipioNaturalidade: [''],
-      codPaisOrigem: [''],
-      codPaisResidencia: [''],
+      naturalidadeId: [''],
+      codigoPaisOrigem: [''],
+      codigoPaisResidencia: [''],
       nomePai: [''],
       nomeMae: [''],
     });
 
     this.formJuridica = this.fb.group({
       cnpj: [''],
-      natureza: [''],
+      naturezaJuridica: [''],
       tipoPoder: [''],
       tipoGoverno: [''],
       ufPaisSede: [''],
-      codPaisSede: [''],
+      codigoPaisSede: [''],
       capitalNacional: [''],
       capitalEstrangeiro: [''],
-      regJuntaComercial: [''],
+      registroJuntaComercial: [''],
     });
 
     this.formPessoaLote = this.fb.group({
       loteId: [null, Validators.required],
       numero: [{ value: '', disabled: true }],
       condicaoPessoaImovelRural: [''],
-      detencao: [null],
+      percentDetencao: [null],
       isDeclarante: [false],
       isResideNoImovel: [false],
       atividadePrincipalExploracao: [null],
@@ -309,11 +321,11 @@ export class CadastroPessoasComponent implements OnInit {
       tiposAtos: [null],
       numeroAto: [null],
       dataAto: [null],
-      prazoIndeterminado: [null],
+      isContratoPrazoIndeterminado: [false],
       dataTerminoContrato: ['']
     });
 
-    this.formEndereco = this.fb.group({
+    this.formEnderecoPessoa = this.fb.group({
       logradouro: [''],
       complemento: [''],
       numero: [''],
@@ -324,20 +336,33 @@ export class CadastroPessoasComponent implements OnInit {
       uf: ['']
     });
 
-    this.formDocumento = this.fb.group({
+    this.formDocumentoPessoa = this.fb.group({
       id: [null],
+      pessoaId: [null], // será preenchido no backend ou depois do POST da pessoa
+
+      // Identificação
       tipoDocumentoIdentificacao: [''],
       numeroDocumentoIdentificacao: [''],
       orgaoEmissor: [''],
       ufOrgaoEmissor: [''],
-      tipoNacionalidade: [''],
+
+      // Nacionalidade / naturalidade
+      tipoNacionalidade: [''],              // <mat-select> Nacionalidade
+      ufNaturalidade: [''],                 // UF para escolher município
+      naturalidadeId: [null],               // id do município de naturalidade
+      codigoPaisOrigem: [''],
+      codigoPaisResidencia: [''],
+
+      // Pessoa Física / Jurídica (alguns podem permanecer vazios dependendo do tipo)
       cpf: [''],
       cnpj: [''],
       estadoCivil: [''],
-      tipoPessoa: [''],
+      tipoPessoa: [''],                     // PF ou PJ (vamos preencher no submit)
       naturezaJuridica: [''],
-      capitalNacional: [''],
-      capitalEstrangeiro: [''],
+
+      // PJ extra
+      capitalNacional: [null],
+      capitalEstrangeiro: [null],
       registroJuntaComercial: [''],
       nomeFantasia: [''],
       codigoPaisSede: [''],
@@ -346,12 +371,14 @@ export class CadastroPessoasComponent implements OnInit {
       numeroDocumentoRepresentanteLegal: [''],
       tipoDePoder: [''],
       tipoDeGoverno: [''],
-      percentCapitalNacional: [''],
-      percentCapitalEstrangeiro: [''],
+      percentCapitalNacional: [null],
+      percentCapitalEstrangeiro: [null],
       pcePais: [''],
-      pcePercentCapital: [''],
+      pcePercentCapital: [null],
+
       obsevacoesQuadro7: ['']
     });
+
 
     // Atualiza signal quando troca tipo
     this.formPessoas.get('tipoPessoa')?.valueChanges.subscribe(tp => {
@@ -359,39 +386,167 @@ export class CadastroPessoasComponent implements OnInit {
     });
   }
 
+
+
   ngOnInit(): void {
     this.loadUfs();
-    // this.programaGovernoService.getAll().subscribe({
-    //   next: (dados) => this.programas = dados,
-    //   error: () => this.programas = []
-    // });
+    // modo inicial
+    const tp0 = (this.formPessoas.get('tipoPessoa')?.value ?? 'FISICA') as 'FISICA' | 'JURIDICA';
+    this.applyTipoPessoaMode(tp0);
 
-    const loteId = Number(this.route.snapshot.queryParamMap.get('id'));
-
-    this.route.queryParams.subscribe(params => {
-      const loteId = params['loteId'];
-      this.formPessoaLote.get('loteId')?.setValue(loteId);
-      const pessoaLoteId = params['pessoaLoteId']; // depende da sua rota
-
-      if (loteId) {
-        this.formPessoaLote.get('loteId')?.setValue(+loteId);
-        console.log('👥 LoteId recebido para cadastro de pessoas:', loteId);
-        this.loteService.obterPorId(loteId).subscribe(lote => {
-          this.numero = lote.numero; // <-- só preenche a variável
-        });
-      }
-      if (pessoaLoteId) {
-        this.pessoaLoteService.getEditarDetentor(pessoaLoteId).subscribe(data => {
-          this.formPessoas.patchValue(data.pessoa);
-          this.formPessoaLote.patchValue(data.pessoaLote);
-          this.formEndereco.patchValue(data.endereco);
-          this.formDocumento.patchValue(data.documento);
-        });
-      }
+    // reagir a mudanças
+    this.formPessoas.get('tipoPessoa')?.valueChanges.subscribe((tp: 'FISICA' | 'JURIDICA') => {
+      this.tipoPessoaSelecionada.set(tp);
+      this.applyTipoPessoaMode(tp);
     });
 
+    this.route.queryParams.subscribe(params => {
+
+      const loteId = Number(params['loteId'] ?? this.route.snapshot.queryParamMap.get('loteId'));
+        if (!loteId) return;
+
+        this.formPessoaLote.get('loteId')?.setValue(loteId);
+        this.loteService.obterPorId(loteId).subscribe(l => this.numero = l.numero);
+    
+        this.pessoasService.buscarParaEdicaoPorLote(loteId).subscribe({
+          next: (resp) => this.patchAll(resp),
+          error: (err) => {
+            // sem vínculo => permanece em modo "Salvar"
+            if (err.status !== 404) console.error('Erro ao carregar edição por lote', err);
+            this.atualizando = false;
+            this.cdr.markForCheck();
+          }
+        });
+      });
+      ['cpf','cnpj','estadoCivil','tipoNacionalidade','ufNaturalidade','naturalidadeId','codigoPaisOrigem','codigoPaisResidencia']
+      .forEach(k => {
+        if (!this.formDocumentoPessoa.get(k)) {
+          this.formDocumentoPessoa.addControl(k, new FormControl(''));
+        }
+      });
+  }
+
+  private patchAll(resp: EditarDetentorResponseDTO) {
+    // Pessoa básica
+    if (resp.pessoa) {
+      this.formPessoas.patchValue({
+        nome: resp.pessoa.nome ?? '',
+        telefone: resp.pessoa.telefone ?? '',
+        email: resp.pessoa.email ?? ''
+      }, { emitEvent: false });
+  
+      const toDate = (s?: string|null) => s ? new Date(s) : null;
+  
+      this.formFisica.patchValue({
+        dataNascimento: toDate(resp.pessoa.dataNascimento as any),
+        sexoPessoa: resp.pessoa.sexoPessoa ?? null,
+        isEspolio: !!resp.pessoa.isEspolio,
+        racaCor: resp.pessoa.racaCor ?? null,
+        dataCasamento: resp.pessoa.dataCasamento ?? null,
+        regimeBens: resp.pessoa.regimeDeBens ?? null,
+        nomePai: resp.pessoa.nomePai ?? null,
+        nomeMae: resp.pessoa.nomeMae ?? null,
+      }, { emitEvent: false });
+  
+      // Anexo (vem na própria pessoa)
+      this.formAnexo.patchValue({
+        coordenadaEste: resp.pessoa.coordenadaEste ?? '',
+        coordenadaNorte: resp.pessoa.coordenadaNorte ?? '',
+        atividadePrincipal: resp.pessoa.atividadePrincipal ?? '',
+        isRecebePronaf: !!resp.pessoa.isRecebePronaf,
+        qtdPronaf: resp.pessoa.qtdPronaf ?? 0,
+        valorTotalPronafs: resp.pessoa.valorTotalPronafs ?? null,
+        recebeProgramaGoverno: !!resp.pessoa.isRecebeAjudoProgramaGoverno,
+      }, { emitEvent: false });
+    }
+  
+    // Documento
+    if (resp.documento) {
+      this.formDocumentoPessoa.patchValue(resp.documento, { emitEvent: false });
+      const tp = resp.documento.tipoPessoa || 'FISICA';
+      this.formPessoas.get('tipoPessoa')?.setValue(tp, { emitEvent: false });
+      this.applyTipoPessoaMode(tp);
+    }
+  
+    // Endereço
+    if (resp.endereco) {
+      this.formEnderecoPessoa.patchValue({
+        logradouro: resp.endereco.logradouro ?? '',
+        complemento: resp.endereco.complemento ?? '',
+        numero: resp.endereco.numero ?? '',
+        bairro: resp.endereco.bairro ?? '',
+        cep: resp.endereco.cep ?? '',
+        codigoPaisResidencia: resp.endereco.codigoPaisResidencia ?? '931',
+        municipioId: resp.endereco.municipioId ?? null,
+        uf: resp.endereco.uf ?? ''
+      }, { emitEvent: false });
+    }
+
+    // carrega municípios da UF e só então aplica o municipioId
+  if (resp.endereco.uf) {
+    this.onUfChange(resp.endereco.uf);
+    setTimeout(() => {
+      this.formEnderecoPessoa.patchValue({ municipioId: resp.endereco.municipioId }, { emitEvent: false });
+    });
   }
   
+    // Pessoa-Lote
+    if (resp.pessoaLote) {
+      this.pessoaLoteIdEmEdicao = resp.pessoaLote.id!;
+      this.formPessoaLote.patchValue({
+        loteId: resp.pessoaLote.loteId,
+        condicaoPessoaImovelRural: resp.pessoaLote.condicaoPessoaImovelRural ?? null,
+        percentDetencao: resp.pessoaLote.percentDetencao ?? null,
+        isDeclarante: !!resp.pessoaLote.isDeclarante,
+        isResideNoImovel: !!resp.pessoaLote.isResideNoImovel,
+        tipoDoAto: resp.pessoaLote.tipoDoAto ?? null,
+        numeroAto: resp.pessoaLote.numeroAto ?? null,
+        dataAto: resp.pessoaLote.dataAto ?? null,
+        quantidadeAreaCedida: resp.pessoaLote.quantidadeAreaCedida ?? null,
+        atividadePrincipalExploracao: resp.pessoaLote.atividadePrincipalExploracao ?? null,
+        contrato: resp.pessoaLote.contrato ?? null,
+        dataTerminoContrato: resp.pessoaLote.dataTerminoContrato ?? null,
+        isContratoPrazoIndeterminado: !!resp.pessoaLote.isContratoPrazoIndeterminado
+      }, { emitEvent: false });
+    }
+  
+    // Modo atualização ON
+    this.atualizando = true;
+    this.cdr.markForCheck();
+  }
+
+  private applyTipoPessoaMode(tp: 'FISICA' | 'JURIDICA') {
+    // espelha no form de documento (pra usar *ngIf no filho)
+    this.formDocumentoPessoa.patchValue({ tipoPessoa: tp }, { emitEvent: false });
+
+    if (tp === 'FISICA') {
+      this.formFisica.enable({ emitEvent: false });
+      this.formJuridica.disable({ emitEvent: false });
+      this.formJuridica.reset({}, { emitEvent: false });
+
+      toggleControls(this.formDocumentoPessoa, this.PF_DOC_KEYS, true);
+      toggleControls(this.formDocumentoPessoa, this.PJ_DOC_KEYS, false, true);
+
+      // validações chave
+      this.formDocumentoPessoa.get('cpf')?.addValidators(Validators.required);
+      this.formDocumentoPessoa.get('cnpj')?.clearValidators();
+    } else {
+      this.formJuridica.enable({ emitEvent: false });
+      this.formFisica.disable({ emitEvent: false });
+      this.formFisica.reset({}, { emitEvent: false });
+
+      toggleControls(this.formDocumentoPessoa, this.PJ_DOC_KEYS, true);
+      toggleControls(this.formDocumentoPessoa, this.PF_DOC_KEYS, false, true);
+
+      this.formDocumentoPessoa.get('cnpj')?.addValidators(Validators.required);
+      this.formDocumentoPessoa.get('cpf')?.clearValidators();
+    }
+
+    this.formDocumentoPessoa.get('cpf')?.updateValueAndValidity({ emitEvent: false });
+    this.formDocumentoPessoa.get('cnpj')?.updateValueAndValidity({ emitEvent: false });
+  }
+
+
 
   loadUfs(): void {
     this.isLoadingUf = true;
@@ -418,7 +573,13 @@ export class CadastroPessoasComponent implements OnInit {
       }
     });
   }
-  
+
+  toNumberOrNull(v: any) {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  }
+
 
   onSalvar() {
     console.log('formPessoas:', this.formPessoas.value);
@@ -432,7 +593,30 @@ export class CadastroPessoasComponent implements OnInit {
       'dataTerminoContrato', // e outros campos de data
     ];
     const pessoaLotePayload = parseDateFields(this.formPessoaLote.value, pessoaLoteCamposData);
-    
+
+    const docRaw = this.formDocumentoPessoa.getRawValue();
+    const cpfDigits = (docRaw.cpf ?? '').toString().replace(/\D/g, ''); // só números
+    const documento = {
+      ...docRaw,
+      tipoNacionalidade: docRaw.tipoNacionalidade ?? this.formFisica.get('tipoNacionalidade')?.value ?? null,
+      naturalidadeId: docRaw.naturalidadeId ?? null, // precisa ser id do município
+      codigoPaisOrigem: docRaw.codPaisOrigem ?? docRaw.codigoPaisOrigem ?? null,
+      codigoPaisResidencia: docRaw.codigoPaisResidencia ?? docRaw.codPaisResidencia ?? null,
+
+      naturezaJuridica: docRaw.naturezaJuridica ?? this.formJuridica.get('naturezaJuridica')?.value ?? null,
+      registroJuntaComercial: docRaw.registroJuntaComercial ?? this.formJuridica.get('regJuntaComercial')?.value ?? null,
+
+      tipoPessoa: this.formPessoas.get('tipoPessoa')?.value,
+      cpf: cpfDigits || null,          // <<<<<< garante string ou null
+      cnpj: (docRaw.cnpj ?? '').toString().replace(/\D/g, '') || null,
+
+      capitalNacional: this.toNumberOrNull(docRaw.capitalNacional),
+      capitalEstrangeiro: this.toNumberOrNull(docRaw.capitalEstrangeiro),
+      percentCapitalNacional: this.toNumberOrNull(docRaw.percentCapitalNacional),
+      percentCapitalEstrangeiro: this.toNumberOrNull(docRaw.percentCapitalEstrangeiro),
+      pcePercentCapital: this.toNumberOrNull(docRaw.pcePercentCapital),
+    };
+
     const dados = {
       pessoa: {
         ...this.formPessoas.value,
@@ -441,26 +625,29 @@ export class CadastroPessoasComponent implements OnInit {
           : this.formJuridica.value),
         // Inclua campos do anexo aqui SE eles pertencem à pessoa!
         // Exemplo:
-        nacimento: this.formFisica.get('nascimento')?.value ? 
-          this.formFisica.get('nascimento')?.value.toISOString().slice(0, 10) : null,
+        coordenadaEste: this.formAnexo.get('coordenadaEste')?.value,
+        coordenadaNorte: this.formAnexo.get('coordenadaNorte')?.value,
+        dataNascimento: this.formFisica.get('dataNascimento')?.value ?
+          this.formFisica.get('dataNascimento')?.value.toISOString().slice(0, 10) : null,
         atividadePrincipal: this.formAnexo.get('atividadePrincipal')?.value,
-        recebePronaf: this.formAnexo.get('recebePronaf')?.value,
+        isRecebePronaf: this.formAnexo.get('isRecebePronaf')?.value,
         qtdPronaf: this.formAnexo.get('qtdPronaf')?.value || null,
         valorTotalPronafs: this.formAnexo.get('valorTotalPronafs')?.value || null,
         recebeProgramaGoverno: this.formAnexo.get('recebeProgramaGoverno')?.value,
-        //programasDoGovernoIds: this.formAnexo.value.programasSelecionados
+        isContratoPrazoIndeterminado: !!this.formPessoaLote.get('isContratoPrazoIndeterminado')?.value // força booleano
       },
       pessoaLote: pessoaLotePayload,
-      endereco: this.formEndereco.value,
-      documento: this.formDocumento.value
+      endereco: this.formEnderecoPessoa.value,
+      documento: nullifyEmptyStrings(documento)
     };
+    console.log('Documento para salvar:', dados.documento);
     console.log('DADOS: ', dados)
     const dadosTratados = nullifyEmptyStrings(dados);
     console.log('DADOS TRATADOS: ', dadosTratados)
-    //...this.formPessoaLote.value
-    //console.log('Dados para salvar:', dados);
     console.log('loteId:', this.formPessoaLote.get('loteId')?.value);
     console.log('PessoaLote payload:', this.formPessoaLote.value);
+    console.log('formDocumentoPessoa (raw):', this.formDocumentoPessoa.getRawValue());
+    console.log('CPF enviado:', documento.cpf)
     // Salva pessoa
     this.pessoasService.salvarPessoa(dadosTratados).subscribe({
       next: (pessoaSalva) => {
@@ -479,7 +666,7 @@ export class CadastroPessoasComponent implements OnInit {
         let isContratoPrazoIndeterminado = this.formPessoaLote.get('isContratoPrazoIndeterminado')?.value;
 
         // Só é permitido marcar “Prazo Indeterminado” se for Comodatário
-        if (condicao !== CondicaoPessoaImovel.Comodatario || condicao !== CondicaoPessoaImovel.Parceiro || condicao !== CondicaoPessoaImovel.Concessionario) {
+        if (condicao !== CondicaoPessoaImovel.Comodatario && condicao !== CondicaoPessoaImovel.Parceiro && condicao !== CondicaoPessoaImovel.Concessionario) {
           isContratoPrazoIndeterminado = false;
         }
 
@@ -526,6 +713,139 @@ export class CadastroPessoasComponent implements OnInit {
     });
   }
 
+  onAtualizar(): void {
+    // helper local p/ datas (yyyy-MM-dd)
+    const toISO = (v: any): string | null => {
+      if (!v) return null;
+      if (v instanceof Date) return v.toISOString().slice(0, 10);
+      if (typeof v === 'object' && 'year' in v) {
+        const { year, month, day } = v;
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      }
+      if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+      return null;
+    };
+
+    // 1) validar lote e obter pessoaLoteId
+    const loteId = this.formPessoaLote.get('loteId')?.value;
+    if (!loteId) {
+      this.snackBar.open('Lote não selecionado.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    const pessoaLoteId =
+      (this as any).pessoaLoteIdEmEdicao ??
+      Number(this.route.snapshot.queryParamMap.get('pessoaLoteId'));
+    if (!pessoaLoteId) {
+      this.snackBar.open('pessoaLoteId não informado.', 'Fechar', { duration: 3500 });
+      return;
+    }
+
+    // 2) pessoaLote (tratando datas e regra do prazo indeterminado)
+    const pessoaLoteCamposData = ['dataAto', 'dataTerminoContrato'];
+    const pessoaLotePayload = parseDateFields(this.formPessoaLote.getRawValue(), pessoaLoteCamposData);
+
+    const condicao = this.formPessoaLote.get('condicaoPessoaImovelRural')?.value;
+    let isPrazoInd = !!this.formPessoaLote.get('isContratoPrazoIndeterminado')?.value;
+    if (condicao !== CondicaoPessoaImovel.Comodatario &&
+      condicao !== CondicaoPessoaImovel.Parceiro &&
+      condicao !== CondicaoPessoaImovel.Concessionario) {
+      isPrazoInd = false;
+    }
+    pessoaLotePayload.isContratoPrazoIndeterminado = isPrazoInd;
+
+    // 3) documento (sincroniza tipoPessoa + cpf/cnpj e normaliza números)
+    const docRaw = this.formDocumentoPessoa.getRawValue();
+    const toNumOrNull = (v: any) => (v === '' || v === null || v === undefined ? null : Number(v));
+    const cpfDigits = (docRaw.cpf ?? '').toString().replace(/\D/g, ''); // só números
+    const documento = {
+      ...docRaw,
+      tipoPessoa: this.formPessoas.get('tipoPessoa')?.value,
+      cpf: cpfDigits || null,          // <<<<<< garante string ou null
+      cnpj: (docRaw.cnpj ?? '').toString().replace(/\D/g, '') || null,
+      capitalNacional: toNumOrNull(docRaw.capitalNacional),
+      capitalEstrangeiro: toNumOrNull(docRaw.capitalEstrangeiro),
+      percentCapitalNacional: docRaw.percentCapitalNacional ?? null,   // backend espera string
+      percentCapitalEstrangeiro: docRaw.percentCapitalEstrangeiro ?? null,
+      pcePercentCapital: docRaw.pcePercentCapital ?? null
+    };
+
+    // 4) pessoa (PF/PJ + anexo + datas)
+    const pessoa = {
+      ...this.formPessoas.value,
+      ...(this.tipoPessoaSelecionada() === 'FISICA' ? this.formFisica.value : this.formJuridica.value),
+      // datas em yyyy-MM-dd
+      dataNascimento: toISO(this.formFisica.get('dataNascimento')?.value),
+      dataCasamento: toISO(this.formFisica.get('dataCasamento')?.value),
+
+      racaCor: this.formFisica.get('racaCor')?.value ?? null,
+      regimeDeBens: this.formFisica.get('regimeBens')?.value ?? null,
+      isEspolio: !!this.formFisica.get('isEspolio')?.value,
+      // anexo
+      coordenadaEste: this.formAnexo.get('coordenadaEste')?.value,
+      coordenadaNorte: this.formAnexo.get('coordenadaNorte')?.value,
+      atividadePrincipal: this.formAnexo.get('atividadePrincipal')?.value,
+      isRecebePronaf: this.formAnexo.get('isRecebePronaf')?.value ?? false,
+      qtdPronaf: this.formAnexo.get('qtdPronaf')?.value ?? null,
+      valorTotalPronafs: this.formAnexo.get('valorTotalPronafs')?.value ?? null,
+      isRecebeAjudoProgramaGoverno: this.formAnexo.get('recebeProgramaGoverno')?.value ?? false,
+    };
+
+    // 5) montar payload final e limpar strings vazias
+    const dados = {
+      pessoa,
+      pessoaLote: pessoaLotePayload,
+      endereco: this.formEnderecoPessoa.getRawValue(),
+      documento: nullifyEmptyStrings(documento)
+    };
+    const payload = nullifyEmptyStrings(dados);
+
+    console.log('PUT payload:', payload);
+    console.log('CPF enviado:', documento.cpf)
+
+    // 6) chamar API
+    this.pessoasService.atualizarPessoa(pessoaLoteId, payload).subscribe({
+      next: (resp) => {
+        this.snackBar.open('Dados atualizados com sucesso!', 'Fechar', { duration: 3000 });
+        this.atualizando = true; // continua em modo edição
+        // 1) Pessoa (campos básicos)
+        this.patchAll(resp);
+
+        // 2) Pessoa Física (campos de PF que vêm na pessoa)
+        const toDate = (s?: string | null) => (s ? new Date(s) : null);
+        this.formFisica.patchValue({
+          dataNascimento: toDate(resp.pessoa?.dataNascimento),
+          sexoPessoa: resp.pessoa?.sexoPessoa ?? null,
+          isEspolio: resp.pessoa?.isEspolio ?? false,
+          racaCor: resp.pessoa?.racaCor ?? null,
+          dataCasamento: resp.pessoa?.dataCasamento ?? null,
+          regimeBens: resp.pessoa?.regimeDeBens ?? null,
+          nomePai: resp.pessoa?.nomePai ?? null,
+          nomeMae: resp.pessoa?.nomeMae ?? null,
+        }, { emitEvent: false });
+
+        // 3) Documento
+        if (resp.documento) {
+          this.formDocumentoPessoa.patchValue(resp.documento);
+          const tp = resp.documento.tipoPessoa || 'FISICA';
+          this.formPessoas.get('tipoPessoa')?.setValue(tp, { emitEvent: false });
+          this.applyTipoPessoaMode(tp); // garante que o UI PF/PJ está coerente
+        }
+
+        // 4) Endereço
+        if (resp.endereco) this.formEnderecoPessoa.patchValue(resp.endereco);
+
+        // 5) Vínculo pessoa-lote
+        if (resp.pessoaLote) this.formPessoaLote.patchValue(resp.pessoaLote);
+
+        // navegação opcional:
+        // this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
+      },
+      error: (err) => {
+        console.error('Erro ao atualizar detentor:', err);
+        this.snackBar.open('Erro ao atualizar detentor.', 'Fechar', { duration: 4000 });
+      }
+    });
+  }
 
   onLimpar() {
     const loteId = this.formPessoaLote.get('loteId')?.value;

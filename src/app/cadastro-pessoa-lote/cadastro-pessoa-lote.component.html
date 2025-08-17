@@ -16,7 +16,7 @@
     <div fxFlex="140px">
       <mat-form-field class="full-width">
         <mat-label>% Detenção</mat-label>
-        <input matInput formControlName="detencao" />
+        <input matInput formControlName="percentDetencao" />
       </mat-form-field>
     </div>
     <div fxFlex="160px" style="margin-top: 30px">
@@ -83,7 +83,7 @@
     <div fxFlex="200px">
       <mat-form-field class="full-width">
         <mat-label>Atividade Principal de Exploração</mat-label>
-        <mat-select formControlName="atividadePrincipal">
+        <mat-select formControlName="atividadePrincipalExploracao">
           <mat-option
             *ngFor="let atividade of ATIVIDADES"
             [value]="atividade.value"
@@ -111,11 +111,11 @@
         <input matInput type="date" formControlName="dataTerminoContrato" />
       </mat-form-field>
     </div>
-    <div fxFlex="170px">
+    <!-- <div fxFlex="170px">
       <mat-label>Prazo Indeterminado?</mat-label>
-      <mat-button-toggle-group formControlName="prazoIndeterminado">
+      <mat-button-toggle-group formControlName="isContratoPrazoIndeterminado">
         <mat-button-toggle [value]="true">Sim</mat-button-toggle>
         <mat-button-toggle [value]="false">Não</mat-button-toggle>
       </mat-button-toggle-group>
-    </div>
+    </div> -->
 </div>

@@ -82,7 +82,7 @@ export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
       || (obtencoes.find(o => o.value === raw.formaObtencaoId)?.viewValue),
     // Forma de obtenção — campos dinâmicos por situação
     dataPosse: toISODateString(raw.dataPosse),
-    areaPosse: safeNumber(raw.areaPosse),
+    areaMedida: safeString(raw.areaPosse ?? raw.areaMedida), // << garante envio
     livro: safeString(raw.livro),
     areaRegistrada: safeString(raw.areaRegistrada),
     nomeCartorio: safeString(raw.nomeCartorio),
@@ -153,9 +153,21 @@ export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
   };
 }
 
+// tenta achar o código na lista pelo texto retornado do back
+function codigoFormaByDescricao(desc?: string): number | null {
+  if (!desc) return null;
+  const hit = obtencoes.find(o => o.viewValue === desc);
+  if (hit) return hit.value;
+
+  // fallback: se a descrição começar com "NN -", extrai o número
+  const m = desc.match(/^\s*(\d{1,2})\s*-/);
+  return m ? Number(m[1]) : null;
+}
+
 export function estruturaDTOToFormValue(
   dto: Partial<EstruturaDTO>
 ) {
+  const codigoForma = codigoFormaByDescricao(dto.descricaoFormaDeObtencao);
   return {
     // Identificadores principais
     id: dto.id ?? null,
@@ -165,12 +177,12 @@ export function estruturaDTOToFormValue(
     situacaoSelecionada: dto.situacaoSelecionada ?? null,
     situacaoJuridicaId: dto.situacaoJuridicaId ?? null,
     formaObtencaoSelecionada: dto.formaObtencaoSelecionada ?? null,
-    formaObtencaoId: dto.formaObtencaoId ?? null,
-    descricaoFormaDeObtencao: dto.descricaoFormaDeObtencao ?? '',
+    formaObtencaoId: codigoForma,
+    descricaoFormaDeObtencao: codigoForma,
 
     // Forma de obtenção — campos dinâmicos
     dataPosse: dto.dataPosse ?? null,
-    areaPosse: dto.areaPosse ?? null,
+    areaPosse: dto.areaMedida ? Number(dto.areaMedida) : null,
     livro: dto.livro ?? '',
     areaRegistrada: dto.areaRegistrada ?? '',
     nomeCartorio: dto.nomeCartorio ?? '',

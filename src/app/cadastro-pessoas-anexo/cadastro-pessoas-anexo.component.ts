@@ -37,6 +37,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class CadastroPessoasAnexoComponent implements OnInit{
 
   @Input({ required: true }) formAnexo!: FormGroup;
+  @Input() loteId: number | null = null;
 
   atividadesPrincipais = [
     { value: 'agricultor', label: 'Agricultor' },
@@ -53,42 +54,26 @@ export class CadastroPessoasAnexoComponent implements OnInit{
     // Adicione todos conforme necessário
   ];
 
-  // programasGoverno = [
-  //   { value: '1', label: 'BOLSA FAMÍLIA' },
-  //   { value: '2', label: 'BOLSA SAFRA' },
-  //   // Adicione todos conforme necessário
-  // ];
-
-  // programas = [
-  //   { id: 1, nome: 'Bolsa Família' },
-  //   { id: 2, nome: 'Bolsa Safra' }
-  // ];
-
   selectedPronafTipos: string[] = [];
   selectedProgramas: string[] = [];
-  //programas: ProgramaGovernoDTO[] = [];
 
   constructor(
     private fb: FormBuilder,
-    //private programaGovernoService: ProgramaGovernoService,
   ) {
     this.formAnexo = this.fb.group({
-      utmEste: [''],
-      utmNorte: [''],
+      coordenadaEste: [''],
+      coordenadaNorte: [''],
       atividadePrincipal: [''],
-      recebePronaf: [false],
+      isRecebePronaf: [false],
       qtdPronaf: [0],
       tiposPronaf: [[]],
       valorTotalPronafs: [''],
       recebeProgramaGoverno: [false],
-      //programasSelecionados: [[]],
     });
   }
 
   ngOnInit() {
-    // this.programaGovernoService.getAll().subscribe(
-    //   data => this.programas = data
-    // );
+
   }
 
   togglePronaf(tipo: string) {

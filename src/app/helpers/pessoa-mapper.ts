@@ -32,12 +32,12 @@ export function pessoaDtoToFormPessoas(dto: Partial<PessoaDTO>) {
 export function pessoaDtoToFormFisica(dto: Partial<PessoaDTO>) {
     return {
         cpf: dto.cpf ?? '',
-        nascimento: dto.nascimento ?? '',
-        sexo: dto.sexo ?? '',
-        espolio: dto.espolio ?? '',
+        dataNascimento: dto.dataNascimento ?? '',
+        sexoPessoa: dto.sexoPessoa ?? '',
+        isEspolio: dto.isEspolio ?? '',
         raca: dto.raca ?? '',
         estadoCivil: dto.estadoCivil ?? '',
-        casamento: dto.casamento ?? '',
+        dataCasamento: dto.dataCasamento ?? '',
         regimeBens: dto.regimeBens ?? '',
         tipoDocumento: dto.tipoDocumento ?? '',
         numeroDocumento: dto.numeroDocumento ?? '',
@@ -85,5 +85,6 @@ export function pessoaDtoToFormPessoaLote(dto: Partial<PessoaDTO>) {
         tipoContrato: dto.tipoContrato ?? '',
         // campos extras (ajuste conforme seu form)
         // percentDetencao, tipoDoAto, numeroAto, dataAto, etc.
+        
     };
 }

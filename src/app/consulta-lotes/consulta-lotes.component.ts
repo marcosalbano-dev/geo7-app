@@ -134,7 +134,7 @@ export class ConsultaLotesComponent implements OnInit {
 
   preparaEditarDadosPessoais(id: string) {
     console.log("ID LOTE RECEBIDO: ", id);
-    this.router.navigate(['/cadastro-pessoas'], { queryParams: { "id": id } });
+    this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId: id } });
   }
 
   preparaDeletar(id: number) {

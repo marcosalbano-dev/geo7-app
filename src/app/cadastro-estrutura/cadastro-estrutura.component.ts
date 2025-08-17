@@ -154,7 +154,7 @@ export class CadastroEstruturaComponent implements OnInit {
     { value: 1, viewValue: 'Posse Por Simples Ocupação' },
     { value: 2, viewValue: 'Posse a Justo Título' },
     { value: 3, viewValue: 'Área Registrada (Domínio)' },
-    { value: 4, viewValue: 'Indefinido' }
+    { value: 99, viewValue: 'Indefinido' }
   ];
 
   obtencoes = [
