@@ -1,0 +1,143 @@
+/* ====== LAYOUT UTILITIES ====== */
+.form-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.col-12 { grid-column: span 12; }
+.col-9  { grid-column: span 9;  }
+.col-8  { grid-column: span 8;  }
+.col-6  { grid-column: span 6;  }
+.col-4  { grid-column: span 4;  }
+.col-3  { grid-column: span 3;  }
+
+/* Material inputs ocupam 100% da célula */
+.form-grid mat-form-field,
+.form-grid .full-width {
+  width: 100%;
+}
+
+/* ====== RESPONSIVE GRID ====== */
+@media (max-width: 959px) {          /* ~ tablet */
+  .form-grid { grid-template-columns: repeat(6, 1fr); }
+  .md-6 { grid-column: span 6; }
+  .md-4 { grid-column: span 4; }
+  .md-3 { grid-column: span 3; }
+  .md-12 { grid-column: span 6; }
+}
+
+@media (max-width: 599px) {          /* celular */
+  .form-grid { grid-template-columns: 1fr; }
+  .col-12, .col-9, .col-8, .col-6, .col-4, .col-3,
+  .md-12, .md-6, .md-4, .md-3 { grid-column: 1 / -1; }
+}
+
+/* ====== ACTION BUTTONS ====== */
+.actions {
+  display: flex; 
+  gap: var(--spacing-sm); 
+  justify-content: flex-end; 
+  flex-wrap: wrap;
+}
+
+/* ====== SPACING UTILITIES ====== */
+.mt-20 { margin-top: var(--spacing-lg); }
+.mb-20 { margin-bottom: var(--spacing-lg); }
+.mt-40 { margin-top: var(--spacing-xl); }
+.mb-40 { margin-bottom: var(--spacing-xl); }
+
+/* ====== WIDTH UTILITIES ====== */
+.full-width { width: 100%; }
+.half-width { width: 50%; }
+
+/* ====== DISPLAY UTILITIES ====== */
+.d-block { display: block; }
+.d-flex { display: flex; }
+.d-grid { display: grid; }
+.d-none { display: none; }
+
+/* ====== FLEX UTILITIES ====== */
+.flex-center { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+.flex-between { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+}
+
+.flex-end { 
+  display: flex; 
+  align-items: center; 
+  justify-content: flex-end; 
+}
+
+/* ====== TEXT UTILITIES ====== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-primary { color: var(--color-primary-600); }
+.text-secondary { color: var(--color-secondary-600); }
+.text-success { color: var(--color-success-600); }
+.text-warning { color: var(--color-warning-600); }
+.text-error { color: var(--color-error-600); }
+
+/* ====== BACKGROUND UTILITIES ====== */
+.bg-primary { background-color: var(--color-primary-500); }
+.bg-secondary { background-color: var(--color-secondary-500); }
+.bg-success { background-color: var(--color-success-500); }
+.bg-warning { background-color: var(--color-warning-500); }
+.bg-error { background-color: var(--color-error-500); }
+
+/* ====== BORDER UTILITIES ====== */
+.border { border: 1px solid var(--color-border); }
+.border-top { border-top: 1px solid var(--color-border); }
+.border-bottom { border-bottom: 1px solid var(--color-border); }
+.border-left { border-left: 1px solid var(--color-border); }
+.border-right { border-right: 1px solid var(--color-border); }
+
+/* ====== ROUNDED UTILITIES ====== */
+.rounded { border-radius: var(--radius-sm); }
+.rounded-sm { border-radius: var(--radius-xs); }
+.rounded-lg { border-radius: var(--radius-md); }
+.rounded-full { border-radius: 50%; }
+
+/* ====== SHADOW UTILITIES ====== */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* ====== OPACITY UTILITIES ====== */
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+.opacity-100 { opacity: 1; }
+
+/* ====== CURSOR UTILITIES ====== */
+.cursor-pointer { cursor: pointer; }
+.cursor-not-allowed { cursor: not-allowed; }
+.cursor-default { cursor: default; }
+
+/* ====== OVERFLOW UTILITIES ====== */
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-scroll { overflow: scroll; }
+
+/* ====== POSITION UTILITIES ====== */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+
+/* ====== Z-INDEX UTILITIES ====== */
+.z-0 { z-index: 0; }
+.z-10 { z-index: 10; }
+.z-20 { z-index: 20; }
+.z-30 { z-index: 30; }
+.z-40 { z-index: 40; }
+.z-50 { z-index: 50; }

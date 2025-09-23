@@ -1,18 +1,31 @@
 import { FormGroup } from "@angular/forms";
 import { EnderecoPessoaDTO } from "../models/endereco-pessoa-dto";
 
-export function formToEnderecoPessoaDTO(form: FormGroup): EnderecoPessoaDTO {
+// export function formToEnderecoPessoaDTO(form: FormGroup): EnderecoPessoaDTO {
+//     return {
+//       bairro: form.get('bairro')?.value,
+//       cep: form.get('cep')?.value,
+//       codigoPaisResidencia: form.get('codigoPaisResidencia')?.value,
+//       complemento: form.get('complemento')?.value,
+//       logradouro: form.get('logradouro')?.value,
+//       municipioId: form.get('municipioId')?.value, // <-- obrigatório
+//       numero: form.get('numero')?.value,
+//       //municipioNome: form.get('municipioNome')?.value,
+//       uf: form.get('uf')?.value,
+//       pessoaId: form.get('pessoaId')?.value
+//     };
+//   }
+
+  export function enderecoToForm(e?: any) {
     return {
-      bairro: form.get('bairro')?.value,
-      cep: form.get('cep')?.value,
-      codigoPaisResidencia: form.get('codigoPaisResidencia')?.value,
-      complemento: form.get('complemento')?.value,
-      logradouro: form.get('logradouro')?.value,
-      municipioId: form.get('municipioId')?.value, // <-- obrigatório
-      numero: form.get('numero')?.value,
-      //municipioNome: form.get('municipioNome')?.value,
-      uf: form.get('uf')?.value,
-      pessoaId: form.get('pessoaId')?.value
+      logradouro: e?.logradouro ?? '',
+      complemento: e?.complemento ?? '',
+      numero: e?.numero ?? '',
+      bairro: e?.bairro ?? '',
+      cep: e?.cep ?? '',
+      codigoPaisResidencia: e?.codigoPaisResidencia ?? '931',
+      municipioId: e?.municipioId ?? null,
+      uf: e?.uf ?? null,
     };
   }
   

@@ -1,33 +1,59 @@
-<mat-toolbar color="primary">
-  <span>Geo7</span>
-  <span class="spacer"></span>
-    <a routerLink="/cadastro-lotes">
-    <mat-icon fontIcon="feed"></mat-icon>  
-    Imóveis
-  </a>
-  <a routerLink="/cadastro-estrutura">
-    <mat-icon fontIcon="feed"></mat-icon>  
-    Estrutura
-  </a>
-  <a routerLink="/cadastro-pessoas">
-    <mat-icon fontIcon="feed"></mat-icon>  
-    Dados Pessoais
-  </a>
-  <a routerLink="/cadastro-endereco-lote">
-    <mat-icon fontIcon="feed"></mat-icon>  
-    Endereço do Imóvel
-  </a>
-  <!-- <a routerLink="/vinculacao">
-    <mat-icon fontIcon="feed"></mat-icon>  
-    Vinculação
-  </a> -->
-  <a routerLink="/cadastro-uso">
-    <mat-icon fontIcon="feed"></mat-icon>  
-    Dados de Uso
-  </a>
-  <a routerLink="/consulta-lotes">
-    <mat-icon fontIcon="search"></mat-icon>  
-    Consulta
-  </a>
-</mat-toolbar>
-<router-outlet></router-outlet>
+<mat-sidenav-container class="main-container page">
+  <!-- Drawer / menu lateral -->
+  <mat-sidenav #drawer class="sidenav" [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="!(isHandset$ | async)">
+    <img src="assets/brand/logo-horizontal-256w.png" alt="Geo7" class="sidenav-logo">
+    
+
+    <mat-nav-list>
+      <a mat-list-item routerLink="/cadastro-lotes" (click)="closeIfHandset(drawer)">
+        <mat-icon>home</mat-icon>
+        <span class="ml-5">Imóveis</span>
+      </a>
+      <a mat-list-item routerLink="/cadastro-estrutura" (click)="closeIfHandset(drawer)">
+        <mat-icon>settings</mat-icon><span class="ml-5">Estrutura</span>
+      </a>
+      <a mat-list-item routerLink="/cadastro-pessoas" (click)="closeIfHandset(drawer)">
+        <mat-icon>person</mat-icon><span class="ml-5">Dados Pessoais</span>
+      </a>
+      <a mat-list-item routerLink="/cadastro-endereco-lote" (click)="closeIfHandset(drawer)">
+        <mat-icon>place</mat-icon><span class="ml-5">Endereço do Imóvel</span>
+      </a>
+      <a mat-list-item routerLink="/cadastro-dados-sobre-uso" (click)="closeIfHandset(drawer)">
+        <mat-icon>eco</mat-icon><span class="ml-5">Dados Sobre Uso</span>
+      </a>
+      <a mat-list-item routerLink="/consulta-lotes" (click)="closeIfHandset(drawer)">
+        <mat-icon>search</mat-icon><span class="ml-5">Consulta</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Conteúdo -->
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <mat-toolbar-row class="toolbar-row-1">
+        <button mat-icon-button class="hide-on-large" (click)="drawer.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <img src="assets/brand/logo-horizontal-256w.png" alt="Geo7" class="brand">
+        <span class="spacer"></span>
+      </mat-toolbar-row>
+
+      <!-- Linha 2: links (somente em telas grandes) -->
+      <mat-toolbar-row class="toolbar-row-2" *ngIf="!(isHandset$ | async)">
+        <a mat-button routerLink="/cadastro-lotes"><mat-icon>home</mat-icon><span class="ml-5">Imóveis</span></a>
+        <a mat-button routerLink="/cadastro-estrutura"><mat-icon>settings</mat-icon><span class="ml-5">Estrutura</span></a>
+        <a mat-button routerLink="/cadastro-pessoas"><mat-icon>person</mat-icon><span class="ml-5">Dados
+            Pessoais</span></a>
+        <a mat-button routerLink="/cadastro-endereco-lote"><mat-icon>place</mat-icon><span class="ml-5">Endereço do
+            Imóvel</span></a>
+        <a mat-button routerLink="/cadastro-dados-sobre-uso"><mat-icon>eco</mat-icon><span class="ml-5">Dados Sobre
+            Uso</span></a>
+        <a mat-button routerLink="/consulta-lotes"><mat-icon>search</mat-icon><span class="ml-5">Consulta</span></a>
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

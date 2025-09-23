@@ -170,8 +170,8 @@ export function estruturaDTOToFormValue(
   const codigoForma = codigoFormaByDescricao(dto.descricaoFormaDeObtencao);
   return {
     // Identificadores principais
-    id: dto.id ?? null,
-    loteId: dto.loteId ?? null,
+    id: dto.id,
+    loteId: dto.loteId,
 
     // Situação Jurídica e Forma de Obtenção
     situacaoSelecionada: dto.situacaoSelecionada ?? null,

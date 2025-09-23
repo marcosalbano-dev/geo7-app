@@ -1,7 +1,7 @@
 <div [formGroup]="formEnderecoPessoa">
-  <div fxLayout="row" fxLayoutGap="16px">
+  <!-- <div fxLayout="row" fxLayoutGap="16px">
     
-  </div>
+  </div> -->
   <div fxLayout="row" fxLayoutGap="16px">
     <div fxFlex="470px">
       <mat-form-field class="full-width">
@@ -67,7 +67,6 @@
         <mat-form-field mat-form-field class="full-width">
           <mat-label>Estado (UF)</mat-label
           ><mat-select
-            (selectionChange)="onUfChange($event.value)"
             formControlName="uf"
           >
             <mat-option *ngFor="let uf of ufs" [value]="uf">{{ uf }}</mat-option>
@@ -79,7 +78,6 @@
           <mat-label>Município de Residência</mat-label>
           <mat-select
             formControlName="municipioId"
-            [errorStateMatcher]="errorStateMatcher"
           >
             <mat-option
               *ngFor="let municipio of municipios"
@@ -88,11 +86,6 @@
               {{ municipio.nome }}
             </mat-option>
           </mat-select>
-          <mat-error
-            *ngIf="formEnderecoPessoa.get('municipioId')?.hasError('required')"
-          >
-            Município é obrigatório
-          </mat-error>
         </mat-form-field>
       </div>
   </div>

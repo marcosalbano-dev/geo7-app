@@ -1,8 +1,8 @@
 export interface EnderecoLoteDTO {
   id?: number;
   loteId: number;
-  numero?: string;
-  municipioId: number;
+  //numero?: string;
+  //municipioId: number;
   distritoId: number;
   pontoDeReferencia?: string;
   codImoReceita?: string;

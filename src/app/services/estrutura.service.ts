@@ -43,11 +43,8 @@ export class EstruturaService {
     );
   }
 
-  // Excluir estrutura
-  deletar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      catchError(this.handleError)
-    );
+  delete(id: number) {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   // Tratamento de erros

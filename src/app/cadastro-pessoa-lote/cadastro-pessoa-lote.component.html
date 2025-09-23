@@ -1,100 +1,95 @@
 <div [formGroup]="formPessoaLote">
-  <div fxLayout="row" fxLayoutGap="16px">
-    <div fxFlex="450px">
+
+  <!-- Linha: condição, % detenção, flags -->
+  <div class="form-grid">
+    <div class="col-6 md-12">
       <mat-form-field class="full-width">
         <mat-label>Condição da Pessoa no Imóvel Rural</mat-label>
         <mat-select formControlName="condicaoPessoaImovelRural" required>
-          <mat-option
-            *ngFor="let condicao of CONDICOES"
-            [value]="condicao.value"
-          >
+          <mat-option *ngFor="let condicao of CONDICOES" [value]="condicao.value">
             {{ condicao.label }}
           </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
-    <div fxFlex="140px">
+
+    <div class="col-2 md-6">
       <mat-form-field class="full-width">
         <mat-label>% Detenção</mat-label>
         <input matInput formControlName="percentDetencao" />
       </mat-form-field>
     </div>
-    <div fxFlex="160px" style="margin-top: 30px">
+
+    <div class="col-2 md-6" style="margin-top: 30px;">
       <mat-label>É Declarante?</mat-label>
-      <mat-button-toggle-group formControlName="isDeclarante">
+      <mat-button-toggle-group formControlName="isDeclarante" aria-label="É Declarante?">
         <mat-button-toggle [value]="true">Sim</mat-button-toggle>
         <mat-button-toggle [value]="false">Não</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
-    <div fxFlex="170px" style="margin-top: 30px">
+
+    <div class="col-2 md-6" style="margin-top: 30px;">
       <mat-label>Reside no Imóvel?</mat-label>
-      <mat-button-toggle-group formControlName="isResideNoImovel">
+      <mat-button-toggle-group formControlName="isResideNoImovel" aria-label="Reside no Imóvel?">
         <mat-button-toggle [value]="true">Sim</mat-button-toggle>
         <mat-button-toggle [value]="false">Não</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
   </div>
-  <h3>Ato Estrangeiro (Preencher somente em caso de estrangeiro)</h3>
-  <div fxLayout="row" fxLayoutGap="16px">
-    <div fxFlex="300px">
+
+  <h3 class="mt-20">Ato Estrangeiro (Preencher somente em caso de estrangeiro)</h3>
+
+  <!-- Linha: Ato estrangeiro -->
+  <div class="form-grid">
+    <div class="col-4 md-12">
       <mat-form-field class="full-width">
         <mat-label>Tipo do Ato</mat-label>
         <mat-select formControlName="tiposAtos">
-          <mat-option
-            *ngFor="let tiposAtos of TIPOS_ATOS"
-            [value]="tiposAtos.value"
-          >
+          <mat-option *ngFor="let tiposAtos of TIPOS_ATOS" [value]="tiposAtos.value">
             {{ tiposAtos.label }}
           </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
-    <div fxFlex="300px">
+
+    <div class="col-4 md-6">
       <mat-form-field class="full-width">
         <mat-label>Número do Ato</mat-label>
         <input matInput formControlName="numeroAto" />
       </mat-form-field>
     </div>
-    <div fxFlex="300px">
+
+    <div class="col-4 md-6">
       <mat-form-field class="full-width">
-      <mat-label>Data do Ato</mat-label>
-      <input
-        matInput
-        [matDatepicker]="picker"
-        formControlName="dataAto"
-      />
-      <mat-datepicker-toggle
-        matSuffix
-        [for]="picker"
-      ></mat-datepicker-toggle>
-      <mat-datepicker #picker></mat-datepicker>
-    </mat-form-field>
+        <mat-label>Data do Ato</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="dataAto" />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
     </div>
   </div>
 
-  <!-- Exploração: exibe só para Parceiro, Comodatário, Concessionário -->
-  <div *ngIf="isExploracao()" fxLayout="row" fxLayoutGap="16px">
-    <div fxFlex="170px">
+  <!-- Exploração (somente para Parceiro/Comodatário/Concessionário) -->
+  <div *ngIf="isExploracao()" class="form-grid">
+    <div class="col-3 md-6">
       <mat-form-field class="full-width">
         <mat-label>Área Cedida</mat-label>
         <input matInput formControlName="qtdAreaCedida" />
       </mat-form-field>
     </div>
-    <div fxFlex="200px">
+
+    <div class="col-4 md-12">
       <mat-form-field class="full-width">
         <mat-label>Atividade Principal de Exploração</mat-label>
         <mat-select formControlName="atividadePrincipalExploracao">
-          <mat-option
-            *ngFor="let atividade of ATIVIDADES"
-            [value]="atividade.value"
-          >
+          <mat-option *ngFor="let atividade of ATIVIDADES" [value]="atividade.value">
             {{ atividade.label }}
           </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
 
-    <div fxFlex="160px">
+    <div class="col-3 md-6">
       <mat-form-field class="full-width">
         <mat-label>Tipo de Contrato</mat-label>
         <mat-select formControlName="tipoContrato">
@@ -105,17 +100,12 @@
       </mat-form-field>
     </div>
 
-    <div fxFlex="200px">
+    <div class="col-2 md-6">
       <mat-form-field class="full-width">
         <mat-label>Data Término do Contrato</mat-label>
         <input matInput type="date" formControlName="dataTerminoContrato" />
       </mat-form-field>
     </div>
-    <!-- <div fxFlex="170px">
-      <mat-label>Prazo Indeterminado?</mat-label>
-      <mat-button-toggle-group formControlName="isContratoPrazoIndeterminado">
-        <mat-button-toggle [value]="true">Sim</mat-button-toggle>
-        <mat-button-toggle [value]="false">Não</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div> -->
+  </div>
+
 </div>

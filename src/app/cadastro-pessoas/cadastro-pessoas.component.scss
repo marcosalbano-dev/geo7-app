@@ -1,0 +1,107 @@
+/* ====== IMPORTS ====== */
+@import '../../styles/mixins.scss';
+
+/* ====== COMPONENT STYLES ====== */
+:host {
+  display: block;
+  overflow-x: hidden;
+}
+
+/* ====== FORM STYLES ====== */
+:host ::ng-deep mat-form-field {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+:host ::ng-deep input[matinput][disabled],
+:host ::ng-deep input[matinput][readonly],
+:host ::ng-deep .mdc-text-field--disabled .mdc-text-field__input {
+  background: var(--color-background-disabled);
+  border-radius: var(--radius-xs);
+}
+
+/* ====== CARD STYLES ====== */
+:host ::ng-deep mat-card {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  padding: var(--card-padding);
+  
+  h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-sm) 0 var(--spacing-sm);
+  }
+  
+  &.mt-4 {
+    padding: var(--card-padding-sm);
+  }
+}
+
+/* ====== ACTIONS ====== */
+:host ::ng-deep mat-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  flex-wrap: nowrap;
+  
+  @media (max-width: 599px) {
+    flex-wrap: wrap;
+  }
+}
+
+/* ====== BUTTONS ====== */
+:host ::ng-deep button[mat-flat-button] {
+  height: var(--button-height);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  
+  mat-icon {
+    margin-right: var(--spacing-xs);
+  }
+}
+
+/* ====== FORM GRID ====== */
+:host ::ng-deep .form-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(12, 1fr);
+  
+  .col-12 { grid-column: span 12; }
+  .col-9  { grid-column: span 9;  }
+  .col-8  { grid-column: span 8;  }
+  .col-6  { grid-column: span 6;  }
+  .col-4  { grid-column: span 4;  }
+  .col-3  { grid-column: span 3;  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  @media (max-width: 959px) {
+    grid-template-columns: repeat(6, 1fr);
+    .md-6 { grid-column: span 6; }
+    .md-4 { grid-column: span 4; }
+    .md-3 { grid-column: span 3; }
+    .md-12 { grid-column: span 6; }
+  }
+  
+  @media (max-width: 599px) {
+    grid-template-columns: 1fr;
+    .col-12, .col-9, .col-8, .col-6, .col-4, .col-3,
+    .md-12, .md-6, .md-4, .md-3 { grid-column: 1 / -1; }
+  }
+}
+
+/* ====== SELECT STYLES ====== */
+:host ::ng-deep .mdc-text-field--filled {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}

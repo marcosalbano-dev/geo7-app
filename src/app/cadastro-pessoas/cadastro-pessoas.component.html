@@ -1,118 +1,106 @@
-<div fxLayout="row" fxLayoutAlign="center">
-  <div fxLayout="column" fxFlex="1000px">
-    <form class="mt-60" [formGroup]="formPessoas" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
-      <mat-card appearance="outlined">
-        <mat-card-content class="mt-20">
-          <!-- Campos fixos -->
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="250px">
-              <!-- Número do Lote apenas para exibição -->
-              <mat-form-field appearance="fill">
-                <mat-label>Número do Lote</mat-label>
-                <input matInput [value]="numero" disabled />
-                <!-- Campo oculto para garantir o envio do loteId -->
-                <input type="hidden" formControlName="loteId" />
-              </mat-form-field>
-            </div>
+<div class="page-center">
+  <form class="mt-60" [formGroup]="formPessoas" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
+    <mat-card appearance="outlined">
+      <mat-card-content class="mt-20">
+
+        <!-- Número do lote (exibição) -->
+        <div class="form-grid">
+          <div class="col-3 md-6">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Número do Lote</mat-label>
+              <input matInput [value]="numero" disabled />
+              <input type="hidden" formControlName="loteId" />
+            </mat-form-field>
           </div>
-          <mat-card-header>
-            <mat-card-title>Dados Pessoais</mat-card-title>
-          </mat-card-header>
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="480px">
-              <mat-form-field class="full-width">
-                <mat-label>Nome do Detentor</mat-label>
-                <input
-                  type="text"
-                  placeholder="Ex: José.."
-                  matInput
-                  formControlName="nome"
-                />
-              </mat-form-field>
-            </div>
-            <div fxFlex="250px">
-              <mat-form-field class="full-width">
-                <mat-label>Telefone</mat-label>
-                <input
-                  type="text"
-                  placeholder="Ex: Bairro"
-                  formControlName="telefone"
-                  matInput
-                />
-              </mat-form-field>
-            </div>
+        </div>
 
-            <div fxFlex="200px">
-              <mat-form-field class="full-width">
-                <mat-label>Email</mat-label>
-                <input
-                  type="text"
-                  placeholder="Ex: fulano@email.com"
-                  matInput
-                  formControlName="email"
-                />
-              </mat-form-field>
-            </div>
+        <mat-card-header>
+          <mat-card-title>Dados Pessoais</mat-card-title>
+        </mat-card-header>
+
+        <!-- Nome / Telefone / Email -->
+        <div class="form-grid">
+          <div class="col-6 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Nome do Detentor</mat-label>
+              <input type="text" placeholder="Ex: José.." matInput formControlName="nome" />
+            </mat-form-field>
           </div>
-          <app-cadastro-endereco-pessoa
-            *ngIf="formEnderecoPessoa"
-            [formEnderecoPessoa]="formEnderecoPessoa"
-            [loteId]="formEnderecoPessoa.get('loteId')?.value"
-          >
-          </app-cadastro-endereco-pessoa>
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="260px">
-              <mat-form-field class="full-width">
-                <mat-label>Tipo de Pessoa</mat-label>
-                <mat-select
-                  formControlName="tipoPessoa"
-                  (selectionChange)="onTipoPessoaChange($event.value)"
-                >
-                  @for (tipo of tiposPessoas; track tipo) {
-                  <mat-option [value]="tipo.value">{{
-                    tipo.viewValue
-                  }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </div>
+
+          <div class="col-3 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Telefone</mat-label>
+              <input type="text" placeholder="Ex: (85) 99999-9999" formControlName="telefone" matInput />
+            </mat-form-field>
           </div>
-          <app-cadastro-documento-pessoa
-            *ngIf="formDocumentoPessoa"
-            [formDocumentoPessoa]="formDocumentoPessoa"
-            [formFisica]="formFisica" 
-            [ufs]="ufs"
-          >
-          </app-cadastro-documento-pessoa>
 
-          <mat-card class="mt-4">
-            <h3>Vinculação com o Imóvel Rural</h3>
-            <app-cadastro-pessoa-lote
-              [formPessoaLote]="formPessoaLote"
-              [loteId]="formPessoaLote.get('loteId')?.value"
-            >
-            </app-cadastro-pessoa-lote>
-          </mat-card>
+          <div class="col-3 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Email</mat-label>
+              <input type="email" placeholder="fulano@email.com" matInput formControlName="email" />
+            </mat-form-field>
+          </div>
+        </div>
 
-          <mat-card class="mt-4">
-            <app-cadastro-pessoas-anexo
-              [formAnexo]="formAnexo"
-              [loteId]="formAnexo.get('loteId')?.value"
-            ></app-cadastro-pessoas-anexo>
-          </mat-card>
+        <!-- Endereço da pessoa (componente) -->
+        <app-cadastro-endereco-pessoa
+          *ngIf="formEnderecoPessoa"
+          [formEnderecoPessoa]="formEnderecoPessoa"
+          [loteId]="formEnderecoPessoa.get('loteId')?.value">
+        </app-cadastro-endereco-pessoa>
 
-          <mat-card-actions>
-            <button mat-flat-button color="primary" type="submit">
-              <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
-              {{ atualizando ? 'Atualizar' : 'Salvar' }}
-            </button>
-            <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
-              <mat-icon fontIcon="backspace"></mat-icon>
-              Limpar
-            </button>
-          </mat-card-actions>
-        </mat-card-content>
-      </mat-card> 
-    </form>
-  </div>
+        <!-- Tipo de pessoa -->
+        <div class="form-grid">
+          <div class="col-3 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Tipo de Pessoa</mat-label>
+              <mat-select formControlName="tipoPessoa" (selectionChange)="onTipoPessoaChange($event.value)">
+                @for (tipo of tiposPessoas; track tipo) {
+                  <mat-option [value]="tipo.value">{{ tipo.viewValue }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Documento da pessoa (componente) -->
+        <app-cadastro-documento-pessoa
+          *ngIf="formDocumentoPessoa"
+          [formDocumentoPessoa]="formDocumentoPessoa"
+          [formFisica]="formFisica"
+          [ufs]="ufs">
+        </app-cadastro-documento-pessoa>
+
+        <!-- Vinculação -->
+        <mat-card class="mt-4">
+          <h3>Vinculação com o Imóvel Rural</h3>
+          <app-cadastro-pessoa-lote
+            [formPessoaLote]="formPessoaLote"
+            [loteId]="formPessoaLote.get('loteId')?.value">
+          </app-cadastro-pessoa-lote>
+        </mat-card>
+
+        <!-- Anexos -->
+        
+          <app-cadastro-pessoas-anexo
+            [formAnexo]="formAnexo"
+            [loteId]="formAnexo.get('loteId')?.value">
+          </app-cadastro-pessoas-anexo>
+        
+
+        <mat-card-actions>
+          <button mat-flat-button color="primary" type="submit">
+            <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
+            {{ atualizando ? 'Atualizar' : 'Salvar' }}
+          </button>
+
+          <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
+            <mat-icon fontIcon="backspace"></mat-icon>
+            Limpar
+          </button>
+        </mat-card-actions>
+
+      </mat-card-content>
+    </mat-card>
+  </form>
 </div>

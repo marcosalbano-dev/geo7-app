@@ -1,103 +1,109 @@
-<div fxLayout="row" fxLayoutAlign="center">
-    <div fxLayout="column" fxFlex="1000px">
-      <form class="mt-60" *ngIf="formEnderecoLote" [formGroup]="formEnderecoLote" (ngSubmit)="onSubmit()">
-        <mat-card appearance="outlined">
-          <mat-card-header>
-            <mat-card-title>Endereço do Lote</mat-card-title>
-          </mat-card-header>
-          <mat-card-content class="mt-20">
-  
-            <div fxLayout="row" fxLayoutGap="16px">
-              <div fxFlex="220px">
-                <mat-form-field class="full-width">
-                  <mat-label>Número do Lote</mat-label>
-                  <input matInput formControlName="numero" />
-                </mat-form-field>
-              </div>
-  
-              <div fxFlex="320px">
-                <mat-form-field class="full-width">
-                    <mat-label>Município</mat-label>
-                    <input type="text" matInput formControlName="municipioId"
-                      [matAutocomplete]="autoMunicipio" [disabled]="true">
-                    <mat-autocomplete #autoMunicipio="matAutocomplete">
-                      <mat-option *ngFor="let municipio of filteredMunicipios$ | async" [value]="municipio.id">
-                        {{ municipio.nome }}
-                      </mat-option>
-                    </mat-autocomplete>
-                    <mat-error *ngIf="showError('municipioId')">Município obrigatório</mat-error>
-                  </mat-form-field>
-              </div>
-  
-              <div fxFlex="300px">
-                <mat-form-field class="full-width">
-                    <mat-label>Distrito</mat-label>
-                    <input type="text" matInput formControlName="distritoId"
-                      [matAutocomplete]="autoDistrito" [disabled]="true">
-                    <mat-autocomplete #autoDistrito="matAutocomplete">
-                      <mat-option *ngFor="let distrito of filteredDistritos$ | async" [value]="distrito.id">
-                        {{ distrito.nomeDistrito }}
-                      </mat-option>
-                    </mat-autocomplete>
-                    <mat-error *ngIf="showError('distritoId')">Distrito obrigatório</mat-error>
-                  </mat-form-field>
-              </div>
-            </div>
-  
-            <div fxLayout="row" fxLayoutGap="16px">
-              <div fxFlex="330px">
-                <mat-form-field class="full-width">
-                  <mat-label>Ponto de Referência</mat-label>
-                  <input matInput formControlName="pontoDeReferencia" placeholder="Ex: Próx. à escola"/>
-                </mat-form-field>
-              </div>
-  
-              <div fxFlex="300px">
-                <mat-form-field class="full-width">
-                  <mat-label>Comunidade</mat-label>
-                  <input matInput formControlName="comunidade" placeholder="Ex: Comunidade X"/>
-                </mat-form-field>
-              </div>
-  
-              <div fxFlex="250px">
-                <mat-form-field class="full-width">
-                  <mat-label>Localidade</mat-label>
-                  <input matInput formControlName="localidade" placeholder="Ex: Localidade Y"/>
-                </mat-form-field>
-              </div>
-            </div>
-  
-            <div fxLayout="row" fxLayoutGap="16px">
-              <div fxFlex="320px">
-                <mat-form-field class="full-width">
-                  <mat-label>Código Imóvel Receita</mat-label>
-                  <input matInput formControlName="codImoReceita" placeholder="Ex: 000123"/>
-                </mat-form-field>
-              </div>
-              <div fxFlex="220px">
-                <mat-form-field class="full-width">
-                  <mat-label>Área Urbana (m²)</mat-label>
-                  <input matInput type="number" formControlName="areaUrbana" />
-                </mat-form-field>
-              </div>
-            </div>
-  
-            <mat-divider></mat-divider>
-            <mat-card-actions>
-              <button mat-flat-button color="primary" type="submit">
-                <mat-icon fontIcon="save"></mat-icon>
-                Salvar
-              </button>
-              <button mat-flat-button color="accent" class="ml-5" 
-              type="button" (click)="limparFormulario()">
-                <mat-icon fontIcon="backspace"></mat-icon>
-                Limpar
-              </button>
-            </mat-card-actions>
-  
-          </mat-card-content>
-        </mat-card>
-      </form>
-    </div>
-  </div>
-  
+<!-- endereco-lote.component.html (novo, sem fxLayout) -->
+<div class="page">
+  <form *ngIf="formEnderecoLote"
+        [formGroup]="formEnderecoLote"
+        (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
+
+    <mat-card appearance="outlined" class="card">
+      <mat-card-header>
+        <mat-card-title>Endereço do Lote</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content class="mt-20">
+
+        <!-- Linha 1: número / município / distrito -->
+        <div class="form-grid">
+          <div class="col-3 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Número do Lote</mat-label>
+              <input matInput formControlName="numero" readonly />
+            </mat-form-field>
+          </div>
+
+          <div class="col-5 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Município</mat-label>
+              <input matInput formControlName="municipioId"
+                     [matAutocomplete]="autoMunicipio" readonly />
+              <mat-autocomplete #autoMunicipio="matAutocomplete" [displayWith]="displayMunicipio">
+                <mat-option *ngFor="let municipio of (filteredMunicipios$ | async) || []"
+                            [value]="municipio.id">
+                  {{ municipio.nome }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-12">
+            <mat-form-field class="full-width">
+              <mat-label>Distrito</mat-label>
+              <input matInput [value]="getDistritoNome()" readonly />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Linha 2: ponto de referência / comunidade / localidade -->
+        <div class="form-grid">
+          <div class="col-4 md-12">
+            <mat-form-field class="full-width">
+              <mat-label>Ponto de Referência</mat-label>
+              <input matInput formControlName="pontoDeReferencia" placeholder="Ex: Próx. à escola" />
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Comunidade</mat-label>
+              <input matInput formControlName="comunidade" placeholder="Ex: Comunidade X" />
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Localidade</mat-label>
+              <input matInput formControlName="localidade" placeholder="Ex: Localidade Y" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Linha 3: código receita / área urbana -->
+        <div class="form-grid">
+          <div class="col-6 md-12">
+            <mat-form-field class="full-width">
+              <mat-label>Código Imóvel Receita</mat-label>
+              <input matInput formControlName="codImoReceita" placeholder="Ex: 000123" />
+            </mat-form-field>
+          </div>
+
+          <div class="col-3 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Área Urbana (m²)</mat-label>
+              <input matInput type="number" formControlName="areaUrbana" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+          <button mat-flat-button color="primary" type="submit">
+            <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
+            {{ atualizando ? 'Atualizar' : 'Salvar' }}
+          </button>
+
+          <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
+            <mat-icon fontIcon="backspace"></mat-icon>
+            Limpar
+          </button>
+
+          <button *ngIf="formEnderecoLote.get('id')?.value"
+                  mat-flat-button color="warn" class="ml-5" type="button" (click)="onDelete()">
+            <mat-icon fontIcon="delete"></mat-icon>
+            Excluir
+          </button>
+        </mat-card-actions>
+
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

@@ -26,10 +26,11 @@ import { LoteService } from '../services/lote.service';
 import { PessoaLoteDTO } from '../models/pessoa-lote.dto';
 import { PessoaLoteService } from '../services/pessoa-lote.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { toggleControls } from '../helpers/documentos-pessoa-mapper';
+import { documentoToForm, toggleControls } from '../helpers/documentos-pessoa-mapper';
 import { CadastroEnderecoPessoaComponent } from "../cadastro-endereco-pessoa/cadastro-endereco-pessoa.component";
 import { EditarDetentorResponseDTO } from '../models/editar-detentor-response-dto';
 import { ChangeDetectorRef } from '@angular/core';
+import { enderecoToForm, pessoaToFormFisica, pessoaToFormPessoas } from '../helpers/pessoa-mapper';
 
 interface distrito {
   value: string;
@@ -97,7 +98,6 @@ interface tipoDocumento {
 export class CadastroPessoasComponent implements OnInit {
 
   atualizando = false;
-
 
   errorStateMatcher: ErrorStateMatcher = {
     isErrorState: (control) => !!(control && control.invalid && control.touched),
@@ -191,11 +191,11 @@ export class CadastroPessoasComponent implements OnInit {
     { value: CondicaoPessoaImovel.Concessionario, label: '26 - Concessionário' },
   ];
 
-  atividades = [
-    { value: 'agricola', viewValue: '1 - Agrícola' },
-    { value: 'pecuaria', viewValue: '3 - Pecuária' },
-    { value: 'granjeira', viewValue: '5 - Granjeira' }
-  ];
+  // atividades = [
+  //   { value: 'agricola', viewValue: '1 - Agrícola' },
+  //   { value: 'pecuaria', viewValue: '3 - Pecuária' },
+  //   { value: 'granjeira', viewValue: '5 - Granjeira' }
+  // ];
 
   tiposContratos = [
     { value: 'escrito', viewValue: 'Escrito' },
@@ -279,7 +279,7 @@ export class CadastroPessoasComponent implements OnInit {
       sexoPessoa: [''],
       isEspolio: [false],
       racaCor: [''],
-      estadoCivil: [''],
+      //estadoCivil: [''],
       dataCasamento: [''],
       regimeBens: [''],
       tipoDocumento: [''],
@@ -289,8 +289,8 @@ export class CadastroPessoasComponent implements OnInit {
       tipoNacionalidade: [''],
       ufNaturalidade: [''],
       naturalidadeId: [''],
-      codigoPaisOrigem: [''],
-      codigoPaisResidencia: [''],
+      //codigoPaisOrigem: [''],
+      //codigoPaisResidencia: [''],
       nomePai: [''],
       nomeMae: [''],
     });
@@ -331,7 +331,7 @@ export class CadastroPessoasComponent implements OnInit {
       numero: [''],
       bairro: [''],
       cep: [''],
-      codigoPaisResidencia: ['931'],
+      codigoPaisResidencia: [''],
       municipioId: [null],
       uf: ['']
     });
@@ -351,7 +351,7 @@ export class CadastroPessoasComponent implements OnInit {
       ufNaturalidade: [''],                 // UF para escolher município
       naturalidadeId: [null],               // id do município de naturalidade
       codigoPaisOrigem: [''],
-      codigoPaisResidencia: [''],
+      //codigoPaisResidencia: [''],
 
       // Pessoa Física / Jurídica (alguns podem permanecer vazios dependendo do tipo)
       cpf: [''],
@@ -403,22 +403,22 @@ export class CadastroPessoasComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
 
       const loteId = Number(params['loteId'] ?? this.route.snapshot.queryParamMap.get('loteId'));
-        if (!loteId) return;
+      if (!loteId) return;
 
-        this.formPessoaLote.get('loteId')?.setValue(loteId);
-        this.loteService.obterPorId(loteId).subscribe(l => this.numero = l.numero);
-    
-        this.pessoasService.buscarParaEdicaoPorLote(loteId).subscribe({
-          next: (resp) => this.patchAll(resp),
-          error: (err) => {
-            // sem vínculo => permanece em modo "Salvar"
-            if (err.status !== 404) console.error('Erro ao carregar edição por lote', err);
-            this.atualizando = false;
-            this.cdr.markForCheck();
-          }
-        });
+      this.formPessoaLote.get('loteId')?.setValue(loteId);
+      this.loteService.obterPorId(loteId).subscribe(l => this.numero = l.numero);
+
+      this.pessoasService.buscarParaEdicaoPorLote(loteId).subscribe({
+        next: (resp) => this.patchAll(resp),
+        error: (err) => {
+          // sem vínculo => permanece em modo "Salvar"
+          if (err.status !== 404) console.error('Erro ao carregar edição por lote', err);
+          this.atualizando = false;
+          this.cdr.markForCheck();
+        }
       });
-      ['cpf','cnpj','estadoCivil','tipoNacionalidade','ufNaturalidade','naturalidadeId','codigoPaisOrigem','codigoPaisResidencia']
+    });
+    ['cpf', 'cnpj', 'estadoCivil', 'tipoNacionalidade', 'ufNaturalidade', 'naturalidadeId', 'codigoPaisOrigem', 'codigoPaisResidencia']
       .forEach(k => {
         if (!this.formDocumentoPessoa.get(k)) {
           this.formDocumentoPessoa.addControl(k, new FormControl(''));
@@ -426,29 +426,24 @@ export class CadastroPessoasComponent implements OnInit {
       });
   }
 
+  private ibgeToUF(id: number | null | undefined): string | null {
+    if (!id) return null;
+    const d2 = String(id).slice(0, 2);
+    const map: Record<string, string> = {
+      '11': 'RO', '12': 'AC', '13': 'AM', '14': 'RR', '15': 'PA', '16': 'AP', '17': 'TO',
+      '21': 'MA', '22': 'PI', '23': 'CE', '24': 'RN', '25': 'PB', '26': 'PE', '27': 'AL', '28': 'SE', '29': 'BA',
+      '31': 'MG', '32': 'ES', '33': 'RJ', '35': 'SP',
+      '41': 'PR', '42': 'SC', '43': 'RS',
+      '50': 'MS', '51': 'MT', '52': 'GO', '53': 'DF'
+    };
+    return map[d2] ?? null;
+  }
+
   private patchAll(resp: EditarDetentorResponseDTO) {
-    // Pessoa básica
+    // Pessoa
     if (resp.pessoa) {
-      this.formPessoas.patchValue({
-        nome: resp.pessoa.nome ?? '',
-        telefone: resp.pessoa.telefone ?? '',
-        email: resp.pessoa.email ?? ''
-      }, { emitEvent: false });
-  
-      const toDate = (s?: string|null) => s ? new Date(s) : null;
-  
-      this.formFisica.patchValue({
-        dataNascimento: toDate(resp.pessoa.dataNascimento as any),
-        sexoPessoa: resp.pessoa.sexoPessoa ?? null,
-        isEspolio: !!resp.pessoa.isEspolio,
-        racaCor: resp.pessoa.racaCor ?? null,
-        dataCasamento: resp.pessoa.dataCasamento ?? null,
-        regimeBens: resp.pessoa.regimeDeBens ?? null,
-        nomePai: resp.pessoa.nomePai ?? null,
-        nomeMae: resp.pessoa.nomeMae ?? null,
-      }, { emitEvent: false });
-  
-      // Anexo (vem na própria pessoa)
+      this.formPessoas.patchValue(pessoaToFormPessoas(resp.pessoa), { emitEvent: false });
+      this.formFisica.patchValue(pessoaToFormFisica(resp.pessoa), { emitEvent: false });
       this.formAnexo.patchValue({
         coordenadaEste: resp.pessoa.coordenadaEste ?? '',
         coordenadaNorte: resp.pessoa.coordenadaNorte ?? '',
@@ -459,37 +454,47 @@ export class CadastroPessoasComponent implements OnInit {
         recebeProgramaGoverno: !!resp.pessoa.isRecebeAjudoProgramaGoverno,
       }, { emitEvent: false });
     }
-  
     // Documento
     if (resp.documento) {
-      this.formDocumentoPessoa.patchValue(resp.documento, { emitEvent: false });
       const tp = resp.documento.tipoPessoa || 'FISICA';
       this.formPessoas.get('tipoPessoa')?.setValue(tp, { emitEvent: false });
       this.applyTipoPessoaMode(tp);
-    }
-  
-    // Endereço
-    if (resp.endereco) {
-      this.formEnderecoPessoa.patchValue({
-        logradouro: resp.endereco.logradouro ?? '',
-        complemento: resp.endereco.complemento ?? '',
-        numero: resp.endereco.numero ?? '',
-        bairro: resp.endereco.bairro ?? '',
-        cep: resp.endereco.cep ?? '',
-        codigoPaisResidencia: resp.endereco.codigoPaisResidencia ?? '931',
-        municipioId: resp.endereco.municipioId ?? null,
-        uf: resp.endereco.uf ?? ''
-      }, { emitEvent: false });
+
+      const docForm = documentoToForm(resp.documento, resp.endereco);
+      this.formDocumentoPessoa.patchValue(docForm, { emitEvent: false });
+
+      // normalizações
+      const toLow = (s?: string | null) => s?.toString().trim().toLowerCase() ?? null;
+      const ec = toLow(resp.documento.estadoCivil);
+      const nac = toLow(resp.documento.tipoNacionalidade);
+      if (ec) this.formDocumentoPessoa.patchValue({ estadoCivil: ec }, { emitEvent: false });
+      if (nac) this.formDocumentoPessoa.patchValue({ tipoNacionalidade: nac }, { emitEvent: false });
+
+      // naturalidade: garante que o subscribe do filho rode
+      const natId = resp.documento.naturalidadeId ?? null;
+      const ufNat = resp.documento.ufNaturalidade || this.ibgeToUF(natId);
+      if (ufNat) {
+        this.formDocumentoPessoa.patchValue({ ufNaturalidade: ufNat }, { emitEvent: true });
+        setTimeout(() => this.formDocumentoPessoa.patchValue({ naturalidadeId: natId }, { emitEvent: false }));
+      }
+
+      // **garante exibição dos códigos** (como string)
+      const codOrig = resp.documento.codigoPaisOrigem;
+      const codResi = resp.documento.codigoPaisResidencia ?? resp.endereco?.codigoPaisResidencia;
+      this.formDocumentoPessoa.get('codigoPaisOrigem')?.setValue(
+        codOrig != null ? String(codOrig) : '', { emitEvent: false }
+      );
+      this.formDocumentoPessoa.get('codigoPaisResidencia')?.setValue(
+        codResi != null ? String(codResi) : '', { emitEvent: false }
+      );
     }
 
-    // carrega municípios da UF e só então aplica o municipioId
-  if (resp.endereco.uf) {
-    this.onUfChange(resp.endereco.uf);
-    setTimeout(() => {
-      this.formEnderecoPessoa.patchValue({ municipioId: resp.endereco.municipioId }, { emitEvent: false });
-    });
-  }
-  
+    // Endereço (dispara valueChanges da UF no filho)
+    if (resp.endereco) {
+      this.formEnderecoPessoa.patchValue(enderecoToForm(resp.endereco), { emitEvent: true });
+      this.formEnderecoPessoa.get('municipioId')?.setValue(resp.endereco.municipioId ?? null, { emitEvent: false });
+    }
+
     // Pessoa-Lote
     if (resp.pessoaLote) {
       this.pessoaLoteIdEmEdicao = resp.pessoaLote.id!;
@@ -509,7 +514,7 @@ export class CadastroPessoasComponent implements OnInit {
         isContratoPrazoIndeterminado: !!resp.pessoaLote.isContratoPrazoIndeterminado
       }, { emitEvent: false });
     }
-  
+
     // Modo atualização ON
     this.atualizando = true;
     this.cdr.markForCheck();
@@ -559,26 +564,13 @@ export class CadastroPessoasComponent implements OnInit {
     });
   }
 
-  onUfChange(uf: string): void {
-    this.isLoadingMunicipio = true;
-    this.municipioService.getMunicipiosPorUf(uf).subscribe({
-      next: (municipios) => {
-        this.municipios = municipios;
-        this.formPessoas.get('municipioResidencia')?.setValue(null);
-        this.isLoadingMunicipio = false;
-      },
-      error: () => {
-        this.municipios = [];
-        this.isLoadingMunicipio = false;
-      }
-    });
-  }
-
   toNumberOrNull(v: any) {
     if (v === null || v === undefined || v === '') return null;
     const n = Number(v);
     return isNaN(n) ? null : n;
   }
+
+  onlyDigits(v: any) { return (v ?? '').toString().replace(/\D/g, ''); }
 
 
   onSalvar() {
@@ -600,8 +592,8 @@ export class CadastroPessoasComponent implements OnInit {
       ...docRaw,
       tipoNacionalidade: docRaw.tipoNacionalidade ?? this.formFisica.get('tipoNacionalidade')?.value ?? null,
       naturalidadeId: docRaw.naturalidadeId ?? null, // precisa ser id do município
-      codigoPaisOrigem: docRaw.codPaisOrigem ?? docRaw.codigoPaisOrigem ?? null,
-      codigoPaisResidencia: docRaw.codigoPaisResidencia ?? docRaw.codPaisResidencia ?? null,
+      codigoPaisOrigem: this.onlyDigits(docRaw.codigoPaisOrigem) || docRaw.codigoPaisOrigem || null,
+      codigoPaisResidencia: this.onlyDigits(docRaw.codigoPaisResidencia) || docRaw.codigoPaisResidencia || null,
 
       naturezaJuridica: docRaw.naturezaJuridica ?? this.formJuridica.get('naturezaJuridica')?.value ?? null,
       registroJuntaComercial: docRaw.registroJuntaComercial ?? this.formJuridica.get('regJuntaComercial')?.value ?? null,
@@ -705,6 +697,8 @@ export class CadastroPessoasComponent implements OnInit {
         });
         alert('Pessoa vinculada com sucesso ao lote!');
         this.onLimpar(); // ← limpa os dados para novo cadastro
+
+        this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
       },
       error: (e) => {
         alert('Erro ao salvar pessoa!');
@@ -766,7 +760,10 @@ export class CadastroPessoasComponent implements OnInit {
       capitalEstrangeiro: toNumOrNull(docRaw.capitalEstrangeiro),
       percentCapitalNacional: docRaw.percentCapitalNacional ?? null,   // backend espera string
       percentCapitalEstrangeiro: docRaw.percentCapitalEstrangeiro ?? null,
-      pcePercentCapital: docRaw.pcePercentCapital ?? null
+      pcePercentCapital: docRaw.pcePercentCapital ?? null,
+      codigoPaisOrigem: this.onlyDigits(docRaw.codigoPaisOrigem) || docRaw.codigoPaisOrigem || null,
+      codigoPaisResidencia: this.onlyDigits(docRaw.codigoPaisResidencia) || docRaw.codigoPaisResidencia || null,
+
     };
 
     // 4) pessoa (PF/PJ + anexo + datas)
@@ -832,13 +829,25 @@ export class CadastroPessoasComponent implements OnInit {
         }
 
         // 4) Endereço
-        if (resp.endereco) this.formEnderecoPessoa.patchValue(resp.endereco);
+        if (resp.endereco) this.formEnderecoPessoa.patchValue({
+          logradouro: resp.endereco.logradouro ?? '',
+          complemento: resp.endereco.complemento ?? '',
+          numero: resp.endereco.numero ?? '',
+          bairro: resp.endereco.bairro ?? '',
+          cep: resp.endereco.cep ?? '',
+          //codigoPaisResidencia: resp.endereco.codigoPaisResidencia ?? '931',
+          uf: resp.endereco.uf ?? null,
+        }, { emitEvent: true }); // <- TRUE para disparar valueChanges da UF
+
+        // pode setar já; o filho vai validar quando a lista chegar
+        this.formEnderecoPessoa.get('municipioId')
+          ?.setValue(resp.endereco.municipioId ?? null, { emitEvent: false });
 
         // 5) Vínculo pessoa-lote
         if (resp.pessoaLote) this.formPessoaLote.patchValue(resp.pessoaLote);
 
         // navegação opcional:
-        // this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
+         this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
       },
       error: (err) => {
         console.error('Erro ao atualizar detentor:', err);

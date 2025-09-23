@@ -1,82 +1,86 @@
-<div fxLayout="row" fxLayoutAlign="center">
-    <div fxLayout="column" fxFlex="1000px">
-      <form [formGroup]="formAnexo" (ngSubmit)="onSalvar()">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Informações do Anexo</mat-card-title>
-          </mat-card-header>
-          <mat-card-content class="mt-20">
-  
-            <div fxLayout="row" fxLayoutGap="16px">
-              <div fxFlex="250px">
-                <mat-form-field class="full-width">
-                  <mat-label>UTM - Este</mat-label>
-                  <input matInput formControlName="coordenadaEste" />
-                </mat-form-field>
-              </div>
-              <div fxFlex="250px">
-                <mat-form-field class="full-width">
-                  <mat-label>UTM - Norte</mat-label>
-                  <input matInput formControlName="coordenadaNorte" />
-                </mat-form-field>
-              </div>
-              <div fxFlex="400px">
-                <mat-form-field class="full-width">
-                  <mat-label>Atividade Principal</mat-label>
-                  <mat-select formControlName="atividadePrincipal">
-                    <mat-option *ngFor="let a of atividadesPrincipais" [value]="a.value">
-                      {{ a.label }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
-  
-            <div fxLayout="row" fxLayoutGap="16px" style="margin-top: 10px;">
-              <div fxFlex="200px">
-                <mat-label>Recebe PRONAF?</mat-label>
-                <mat-button-toggle-group formControlName="isRecebePronaf">
-                  <mat-button-toggle [value]="true">Sim</mat-button-toggle>
-                  <mat-button-toggle [value]="false">Não</mat-button-toggle>
-                </mat-button-toggle-group>
-              </div>
-              <div fxFlex="100px">
-                <mat-form-field class="full-width">
-                  <mat-label>Quantos</mat-label>
-                  <input matInput type="number" formControlName="qtdPronaf" />
-                </mat-form-field>
-              </div>
-              <div fxFlex="400px">
-                <mat-form-field class="full-width">
-                  <mat-label>Tipos</mat-label>
-                  <mat-select formControlName="tiposPronaf" multiple>
-                    <mat-option *ngFor="let t of tiposPronaf" [value]="t.value">
-                      {{ t.label }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div fxFlex="180px">
-                <mat-form-field class="full-width">
-                  <mat-label>Valor Total</mat-label>
-                  <input matInput formControlName="valorTotalPronafs" />
-                </mat-form-field>
-              </div>
-            </div>
-  
-            <div fxLayout="row" fxLayoutGap="16px" style="margin-top: 10px;">
-              <div fxFlex="240px">
-                <mat-label>Recebe ajuda de algum programa de governo?</mat-label>
-                <mat-button-toggle-group formControlName="recebeProgramaGoverno">
-                  <mat-button-toggle [value]="true">Sim</mat-button-toggle>
-                  <mat-button-toggle [value]="false">Não</mat-button-toggle>
-                </mat-button-toggle-group>
-              </div>
-            </div>
-  
-          </mat-card-content>
-        </mat-card>
-      </form>
-    </div>
-  </div>
-  
+<form [formGroup]="formAnexo" (ngSubmit)="onSalvar()">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Informações do Anexo</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="mt-20">
+
+      <!-- UTM e atividade -->
+      <div class="form-grid">
+        <div class="col-3 md-6">
+          <mat-form-field class="full-width">
+            <mat-label>UTM - Este</mat-label>
+            <input matInput formControlName="coordenadaEste" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-3 md-6">
+          <mat-form-field class="full-width">
+            <mat-label>UTM - Norte</mat-label>
+            <input matInput formControlName="coordenadaNorte" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-6 md-12">
+          <mat-form-field class="full-width">
+            <mat-label>Atividade Principal</mat-label>
+            <mat-select formControlName="atividadePrincipal">
+              <mat-option *ngFor="let a of atividadesPrincipais" [value]="a.value">
+                {{ a.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- PRONAF -->
+      <div class="form-grid" style="margin-top:10px;">
+        <div class="col-3 md-12">
+          <mat-label>Recebe PRONAF?</mat-label>
+          <mat-button-toggle-group formControlName="isRecebePronaf" aria-label="Recebe PRONAF?">
+            <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+            <mat-button-toggle [value]="false">Não</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <div class="col-2 md-6">
+          <mat-form-field class="full-width">
+            <mat-label>Quantos</mat-label>
+            <input matInput type="number" formControlName="qtdPronaf" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-5 md-12">
+          <mat-form-field class="full-width">
+            <mat-label>Tipos</mat-label>
+            <mat-select formControlName="tiposPronaf" multiple>
+              <mat-option *ngFor="let t of tiposPronaf" [value]="t.value">
+                {{ t.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-2 md-6">
+          <mat-form-field class="full-width">
+            <mat-label>Valor Total</mat-label>
+            <input matInput formControlName="valorTotalPronafs" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Programa de governo -->
+      <div class="form-grid" style="margin-top:10px;">
+        <div class="col-6 md-12">
+          <mat-label>Recebe ajuda de algum programa de governo?</mat-label>
+          <mat-button-toggle-group formControlName="recebeProgramaGoverno" aria-label="Programa de governo">
+            <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+            <mat-button-toggle [value]="false">Não</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+</form>

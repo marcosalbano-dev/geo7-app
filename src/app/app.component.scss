@@ -1,15 +1,81 @@
-.spacer {
-    flex: 1 1 auto;
+/* ====== COMPONENT STYLES ====== */
+:host {
+  display: block;
+  height: 100vh;
 }
 
-mat-toolbar a {
-    color: white;
-    text-decoration: none;
-    margin-left: 16px; /* opcional, para espaçamento entre os links */
-    display: flex;
-    align-items: center;
+/* ====== TOOLBAR STYLES ====== */
+.mat-toolbar.toolbar { 
+  padding: 0 var(--spacing-md); 
+}
+
+.toolbar-row-1 {
+  display: flex; 
+  align-items: center; 
+  width: 100%;
+}
+
+.toolbar-row-2 {
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: var(--spacing-xs) var(--spacing-sm);
+}
+
+.top-links a, 
+.toolbar-row-2 a { 
+  white-space: nowrap; 
+}
+
+.spacer { 
+  flex: 1 1 auto; 
+}
+
+/* ====== LOGO STYLES ====== */
+.sidenav-logo {
+  max-width: 170px;
+  height: auto;
+  margin: var(--spacing-md) auto;
+  display: block;
+  padding: 0 var(--spacing-md);
+}
+
+.brand {
+  height: 28px;
+  width: auto;
+  margin-left: var(--spacing-sm);
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  transition: all var(--transition-duration);
+}
+
+.brand:hover {
+  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+  transform: scale(1.05);
+}
+
+/* ====== RESPONSIVE STYLES ====== */
+@media (max-width: 1024px) {
+  .toolbar-row-2 { 
+    display: none !important; 
   }
-  
-  mat-toolbar a mat-icon {
-    margin-right: 4px; /* opcional, para dar espaço entre o ícone e o texto */
-  }
+}
+
+@media (min-width: 1280px) { 
+  .brand { 
+    height: 32px;
+  } 
+}
+
+/* ====== LAYOUT UTILITIES ====== */
+.topbar { 
+  display: flex; 
+  align-items: center; 
+}
+
+.sidenav-title { 
+  margin: 0; 
+  font-weight: var(--font-weight-semibold); 
+}
+
+
+

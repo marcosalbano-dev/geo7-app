@@ -3,6 +3,15 @@
 import { FormGroup } from '@angular/forms';
 import { PessoaDTO } from '../models/pessoa.dto';
 
+export function pessoaToFormPessoas(p?: any) {
+    return {
+      nome: p?.nome ?? '',
+      telefone: p?.telefone ?? '',
+      email: p?.email ?? '',
+      tipoPessoa: 'FISICA', // o patchAll troca se vier JURIDICA
+    };
+  }
+
 export function mapFormToPessoaDTO(dto: Partial<PessoaDTO>) {
     return {
       // ...outros campos
@@ -11,61 +20,35 @@ export function mapFormToPessoaDTO(dto: Partial<PessoaDTO>) {
     };
   }
 
-export function pessoaDtoToFormPessoas(dto: Partial<PessoaDTO>) {
-    return {
-        municipioId: (dto as any).municipioId ?? null,        // pode ser necessário
-        loteId: (dto as any).loteId ?? null,
-        nome: dto.nome ?? '',
-        endereco: dto.endereco ?? '',
-        numero: dto.numero ?? '',
-        complemento: dto.complemento ?? '',
-        bairro: dto.bairro ?? '',
-        municipioResidencia: dto.municipioResidencia ?? '',
-        uf: dto.uf ?? '',
-        cep: dto.cep ?? '',
-        telefone: dto.telefone ?? '',
-        email: dto.email ?? '',
-        tipoPessoa: dto.tipoPessoa ?? 'FISICA',
-    };
-}
 
-export function pessoaDtoToFormFisica(dto: Partial<PessoaDTO>) {
+export function pessoaToFormFisica(p?: any) {
     return {
-        cpf: dto.cpf ?? '',
-        dataNascimento: dto.dataNascimento ?? '',
-        sexoPessoa: dto.sexoPessoa ?? '',
-        isEspolio: dto.isEspolio ?? '',
-        raca: dto.raca ?? '',
-        estadoCivil: dto.estadoCivil ?? '',
-        dataCasamento: dto.dataCasamento ?? '',
-        regimeBens: dto.regimeBens ?? '',
-        tipoDocumento: dto.tipoDocumento ?? '',
-        numeroDocumento: dto.numeroDocumento ?? '',
-        orgaoEmissor: dto.orgaoEmissor ?? '',
-        ufOrgaoEmissor: dto.ufOrgaoEmissor ?? '',
-        nacionalidade: dto.nacionalidade ?? '',
-        ufNaturalidade: dto.ufNaturalidade ?? '',
-        municipioNaturalidade: dto.municipioNaturalidade ?? '',
-        codPaisOrigem: dto.codPaisOrigem ?? '',
-        codPaisResidencia: dto.codPaisResidencia ?? '',
-        nomePai: dto.nomePai ?? '',
-        nomeMae: dto.nomeMae ?? '',
+      dataNascimento: p?.dataNascimento ? new Date(p.dataNascimento) : null,
+      sexoPessoa: p?.sexoPessoa ?? '',
+      isEspolio: !!p?.isEspolio,
+      racaCor: p?.racaCor ?? '',
+      dataCasamento: p?.dataCasamento ?? null,
+      regimeBens: p?.regimeDeBens ?? '',
+      nomePai: p?.nomePai ?? '',
+      nomeMae: p?.nomeMae ?? '',
     };
-}
+  }
 
-export function pessoaDtoToFormJuridica(dto: Partial<PessoaDTO>) {
+  export function enderecoToForm(e?: any) {
     return {
-        cnpj: dto.cnpj ?? '',
-        natureza: dto.natureza ?? '',
-        tipoPoder: dto.tipoPoder ?? '',
-        tipoGoverno: dto.tipoGoverno ?? '',
-        ufPaisSede: dto.ufPaisSede ?? '',
-        codPaisSede: dto.codPaisSede ?? '',
-        capitalNacional: dto.capitalNacional ?? '',
-        capitalEstrangeiro: dto.capitalEstrangeiro ?? '',
-        regJuntaComercial: dto.regJuntaComercial ?? '',
+      logradouro: e?.logradouro ?? '',
+      complemento: e?.complemento ?? '',
+      numero: e?.numero ?? '',
+      bairro: e?.bairro ?? '',
+      cep: e?.cep ?? '',
+      codigoPaisResidencia: e?.codigoPaisResidencia ?? '931',
+      municipioId: e?.municipioId ?? null,
+      uf: e?.uf ?? null,
     };
-}
+  }
+  
+
+
 
 export function pessoaDtoToFormPessoaLote(dto: Partial<PessoaDTO>) {
     return {

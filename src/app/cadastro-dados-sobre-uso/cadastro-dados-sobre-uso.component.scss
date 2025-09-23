@@ -1,0 +1,125 @@
+/* ====== COMPONENT STYLES ====== */
+:host {
+  display: block;
+  overflow-x: hidden;
+}
+
+/* ====== CARD STYLES ====== */
+:host ::ng-deep mat-card-title {
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.3px;
+}
+
+:host ::ng-deep mat-card-content {
+  padding-top: var(--spacing-sm);
+}
+
+/* ====== FORM STYLES ====== */
+:host ::ng-deep mat-form-field {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+:host ::ng-deep input[type="number"][matinput] {
+  text-align: right;
+}
+
+/* ====== ACCORDION STYLES ====== */
+:host ::ng-deep mat-accordion {
+  margin-top: var(--spacing-sm);
+}
+
+:host ::ng-deep mat-expansion-panel {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  overflow: hidden;
+}
+
+:host ::ng-deep mat-expansion-panel-header {
+  background: var(--color-background-secondary);
+  min-height: 52px;
+}
+
+:host ::ng-deep .mat-expansion-panel-header-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+:host ::ng-deep .mat-expansion-panel-body {
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm) var(--spacing-md);
+}
+
+/* ====== LIST STYLES ====== */
+:host ::ng-deep mat-list {
+  margin-top: var(--spacing-xs);
+}
+
+:host ::ng-deep mat-list-item {
+  border-bottom: 1px dashed var(--color-border-dashed);
+  cursor: pointer;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background: var(--color-background-hover);
+  }
+}
+
+:host ::ng-deep mat-list-item mat-icon[matListItemMeta] {
+  opacity: 0.75;
+  
+  &:hover {
+    opacity: 1;
+  }
+}
+
+/* ====== NAV LIST STYLES ====== */
+:host ::ng-deep .mat-mdc-nav-list .mat-mdc-list-item {
+  border-radius: var(--radius-sm);
+  
+  &:hover {
+    background: var(--color-background-hover);
+  }
+}
+
+/* ====== BUTTON STYLES ====== */
+:host ::ng-deep .mb-10 > button[mat-stroked-button] {
+  margin-bottom: var(--spacing-sm);
+}
+
+:host ::ng-deep button[mat-stroked-button] mat-icon {
+  margin-right: var(--spacing-xs);
+}
+
+/* ====== CARD ACTIONS ====== */
+:host ::ng-deep mat-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: nowrap;
+  
+  @media (max-width: 980px) {
+    flex-wrap: wrap;
+  }
+}
+
+/* ====== CAPTION STYLES ====== */
+:host ::ng-deep .mat-caption {
+  color: var(--color-text-secondary);
+}
+
+/* ====== PAGE LAYOUT ====== */
+.page-inner {
+  max-width: var(--container-max-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-sm);
+}
+
+mat-card { 
+  width: 100%; 
+}
+

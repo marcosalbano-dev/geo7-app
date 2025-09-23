@@ -1,14 +1,14 @@
 import { FormGroup } from '@angular/forms';
 import { EnderecoLoteDTO } from '../models/endereco-lote-dto';
 
-export function mapFormToEnderecoLoteDTO(form: any): EnderecoLoteDTO {
+export function mapFormToEnderecoLoteDTO(form: FormGroup): EnderecoLoteDTO {
   const raw = form.getRawValue();
 
   return {
     id: raw.id,
     loteId: raw.loteId,
-    numero: raw.numero,
-    municipioId: raw.municipioId,
+    //numero: raw.numero,
+    //municipioId: raw.municipioId,
     distritoId: raw.distritoId,
     pontoDeReferencia: raw.pontoDeReferencia,
     codImoReceita: raw.codImoReceita,

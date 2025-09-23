@@ -27,6 +27,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { mapFormToLoteDTO, mapLoteDTOToForm } from '../helpers/lote-mapper';
 
+import { FormFieldComponent } from '../shared/components/form-field/form-field.component';
+import { CardComponent } from '../shared/components/card/card.component';
+import { LoadingComponent } from '../shared/components/loading/loading.component';
+import { DataTableComponent } from '../shared/components/data-table/data-table.component';
+import { ConfirmDialogComponent } from '../shared/components/confirm-dialog/confirm-dialog.component';
+
 @Component({
   selector: 'app-cadastro-lotes',
   templateUrl: './cadastro-lotes.component.html',
@@ -49,6 +55,10 @@ import { mapFormToLoteDTO, mapLoteDTOToForm } from '../helpers/lote-mapper';
     MatProgressSpinnerModule,
     ReactiveFormsModule,
     CommonModule,
+    FormFieldComponent,
+    CardComponent,
+    LoadingComponent,
+    DataTableComponent
   ]
 })
 export class CadastroLotesComponent implements OnInit {
@@ -113,20 +123,26 @@ export class CadastroLotesComponent implements OnInit {
     });
     console.log('✅ formLotes inicializado:', this.formLotes);
 
+    // Carregar dados básicos
     this.loadMunicipiosCe();
     this.carregarLotes();
 
-    this.loadMunicipiosCe().then(() => {
-      this.route.queryParams.subscribe(params => {
-        const id = params['id'];
-        if (id) {
-          this.atualizando = true;
-          this.carregarLotePorId(+id); // só carrega depois que municípios estão prontos
-        }
-      });
+    // Verificar se há ID para edição
+    this.route.queryParams.subscribe(params => {
+      const id = params['id'];
+      console.log('🔍 Parâmetros da URL:', params);
+      console.log('🔍 ID encontrado:', id);
+      if (id) {
+        this.atualizando = true;
+        console.log('🔄 Modo de edição ativado para ID:', id);
+        // Aguardar municípios carregarem antes de carregar o lote
+        this.loadMunicipiosCe().then(() => {
+          this.carregarLotePorId(+id);
+        });
+      }
     });
 
-
+    // Configurar mudanças no município
     this.formLotes.get('municipioId')?.valueChanges.subscribe((municipioId) => {
       if (municipioId) {
         this.loadDistritosByMunicipio(municipioId);
@@ -139,18 +155,23 @@ export class CadastroLotesComponent implements OnInit {
 
 
   carregarLotePorId(id: number) {
+    console.log('🔄 Carregando lote com ID:', id);
     this.loteService.obterPorId(id).subscribe({
       next: (loteDto: LoteDTO) => {
         this.loteSelecionado = loteDto;
-        console.log('LOTE:', loteDto);
+        console.log('✅ Lote carregado:', loteDto);
 
+        // Carregar distritos do município do lote
         this.loadDistritosByMunicipio(loteDto.municipioId).then(() => {
           const formPatch = mapLoteDTOToForm(loteDto);
+          console.log('🔄 Aplicando dados ao formulário:', formPatch);
           this.formLotes.patchValue(formPatch);
+          console.log('✅ Formulário atualizado com dados do lote');
         });
       },
       error: (err) => {
-        console.error('Erro ao buscar lote:', err);
+        console.error('❌ Erro ao buscar lote:', err);
+        this.snackBar.open('Erro ao carregar dados do lote', 'Fechar', { duration: 3000 });
       }
     });
   }

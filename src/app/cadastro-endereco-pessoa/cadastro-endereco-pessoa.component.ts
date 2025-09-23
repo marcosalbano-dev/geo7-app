@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -32,20 +32,31 @@ import { MunicipioService } from '../services/municipio.service';
   templateUrl: './cadastro-endereco-pessoa.component.html',
   styleUrl: './cadastro-endereco-pessoa.component.scss'
 })
-export class CadastroEnderecoPessoaComponent implements OnInit{
+export class CadastroEnderecoPessoaComponent implements OnInit {
 
   @Input() formEnderecoPessoa!: FormGroup; // Recebe do pai!
-  console: any;
+  ufs: string[] = [];
+  municipios: Municipio[] = [];
+  isLoadingUf = false;
+  isLoadingMunicipio = false;
+  @Input() loteId: number | null = null;
 
-constructor(
-  private fb: FormBuilder,
-  private municipioService: MunicipioService
-){
- 
-}
+  constructor(
+    private fb: FormBuilder,
+    private municipioService: MunicipioService,
+    private cdr: ChangeDetectorRef, 
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadUfs();
+    const ufCtrl = this.formEnderecoPessoa.get('uf')!;
+    // carrega municípios quando a UF mudar (inclusive via patchValue)
+    ufCtrl.valueChanges.subscribe(uf => this.loadMunicipios(uf));
+
+    // se o pai já preencheu uf, carrega agora
+    const ufInicial = ufCtrl.value;
+    if (ufInicial) this.loadMunicipios(ufInicial);
   }
 
   errorStateMatcher: ErrorStateMatcher = {
@@ -63,18 +74,34 @@ constructor(
     });
   }
 
-  ufs: string[] = [];
-  municipios: Municipio[] = [];
-  isLoadingUf = false;
-  isLoadingMunicipio = false;
-  @Input() loteId: number | null = null;
+  private loadMunicipios(uf: string): void {
+    if (!uf) {
+      this.municipios = [];
+      this.formEnderecoPessoa.get('municipioId')?.setValue(null, { emitEvent: false });
+      return;
+    }
+    this.isLoadingMunicipio = true;
+    this.municipioService.getMunicipiosPorUf(uf).subscribe({
+      next: lista => {
+        this.municipios = lista;
+        const ctrl = this.formEnderecoPessoa.get('municipioId');
+        if (ctrl?.value != null) {
+          // força o select a reconciliar com as opções já carregadas
+          ctrl.setValue(ctrl.value, { emitEvent:false });
+        }
+        this.isLoadingMunicipio = false;
+        this.cdr.detectChanges(); // garante render imediato do label
+      },
+      error: () => { this.municipios = []; this.isLoadingMunicipio = false; this.cdr.detectChanges(); }
+    });
+  }
 
   onUfChange(uf: string): void {
     this.isLoadingMunicipio = true;
     this.municipioService.getMunicipiosPorUf(uf).subscribe({
       next: (municipios) => {
         this.municipios = municipios;
-        this.formEnderecoPessoa.get('municipioResidencia')?.setValue(null);
+        this.formEnderecoPessoa.get('municipioId')?.setValue(null);
         this.isLoadingMunicipio = false;
       },
       error: () => {

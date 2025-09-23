@@ -1,114 +1,159 @@
-/* You can add global styles to this file, and also import other style files */
+/* ====== IMPORTS ====== */
+@import 'styles/design-tokens';
+@import 'styles/mixins';
+@import 'styles/utilities';
+@import 'styles/components';
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-.mt-20 {
-    margin-top: 20px;
+/* ====== GLOBAL STYLES ====== */
+html, body { 
+  height: 100%; 
+  margin: 0;
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
 }
 
-.mt-40 {
-    margin-top: 40px;
-}
-
-.mt-60 {
-    margin-top: 60px;
-}
-
-.full-width {
-    width: 100%;
-}
-
-.main-container {
-  height: 100vh;
-}
-
-.sidenav {
-  width: 220px;
-  background-color: #f5f5f5;
-  padding: 16px 8px;
-}
-
-.sidenav-title {
-  margin: 0 0 16px 8px;
-  font-weight: bold;
-  font-size: 20px;
-}
-
+/* ====== ANGULAR MATERIAL OVERRIDES ====== */
 .mat-toolbar {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: var(--z-index-sticky);
+  background-color: var(--color-primary-700);
+  color: white;
 }
 
-.content {
-  padding: 16px;
+.mat-sidenav-container {
+  height: 100vh;
 }
 
-/* Oculta o botão de menu em telas grandes */
-.hide-on-large {
-  display: none;
-}
-
-.ml-5 {
-  margin-left: 5px;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .sidenav {
-    width: 200px;
+.mat-sidenav {
+  background-color: var(--color-background-secondary);
+  width: var(--sidenav-width);
+  
+  @include mobile {
+    width: var(--sidenav-width-mobile);
   }
+}
 
+/* Form fields */
+mat-form-field {
+  @include form-field-base;
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}
+
+/* Disabled inputs */
+input[matinput][disabled],
+input[matinput][readonly],
+.mdc-text-field--disabled .mdc-text-field__input {
+  @include form-field-disabled;
+}
+
+/* ====== LEGACY SUPPORT ====== */
+/* Mantendo compatibilidade com classes existentes */
+.mt-20 { margin-top: var(--spacing-lg); }
+.mt-40 { margin-top: var(--spacing-xl); }
+.mt-60 { margin-top: var(--spacing-2xl); }
+.full-width { width: 100%; }
+.ml-5 { margin-left: var(--spacing-xs); }
+.spacer { flex: 1 1 auto; }
+
+/* ====== SPECIFIC COMPONENT OVERRIDES ====== */
+/* Sidenav title */
+.sidenav-title {
+  margin: 0 0 var(--spacing-md) var(--spacing-sm);
+  font-weight: var(--font-weight-bold);
+  @include text-xl;
+}
+
+/* Page center */
+.page-center { 
+  max-width: var(--container-max-width); 
+  margin: 0 auto; 
+}
+
+/* Item list */
+.item-list {
+  max-height: 380px;
+  @include scrollbar;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+}
+
+/* Hint text */
+.hint {
+  @include text-xs;
+  color: var(--color-text-hint);
+  padding: var(--spacing-xs) 2px var(--spacing-sm) 2px;
+}
+
+/* Panel actions */
+.panel-actions {
+  @include flex-start;
+  margin-bottom: var(--spacing-sm);
+  gap: var(--spacing-sm);
+}
+
+/* Table styles */
+.table-wrap { 
+  width: 100%; 
+  overflow-x: auto; 
+  @include scrollbar;
+}
+
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+}
+
+th, td { 
+  padding: var(--spacing-sm) var(--spacing-md); 
+  border-bottom: 1px solid var(--color-border); 
+  white-space: nowrap; 
+}
+
+/* List cards for mobile */
+.list-cards { 
+  display: grid; 
+  gap: var(--spacing-sm); 
+}
+
+/* Safe area for mobile devices */
+.page { 
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); 
+}
+
+/* ====== RESPONSIVE OVERRIDES ====== */
+@include mobile {
+  .sidenav {
+    position: absolute;
+  }
+  
   .hide-on-large {
     display: inline-flex;
   }
-
-  mat-sidenav {
-    position: absolute;
-  }
 }
 
-section {
-  display: table;
+/* ====== ANIMATIONS ====== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.example-label {
-  display: table-cell;
-  font-size: 14px;
-  margin-left: 8px;
-  min-width: 120px;
+@keyframes slideIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-.example-button-row {
-  display: table-cell;
-  max-width: 600px;
+.fade-in {
+  animation: fadeIn var(--transition-normal);
 }
 
-.example-button-row .mat-mdc-button-base {
-  margin: 8px 8px 8px 0;
+.slide-in {
+  animation: slideIn var(--transition-normal);
 }
 
-.example-flex-container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
 
-.example-button-container {
-  display: flex;
-  justify-content: center;
-  width: 140px;
-}
 
-.full-width {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}

@@ -1,0 +1,49 @@
+/* ====== COMPONENT STYLES ====== */
+:host {
+  display: block;
+  overflow-x: hidden;
+}
+
+/* ====== FORM STYLES ====== */
+:host ::ng-deep mat-form-field {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+:host ::ng-deep input[matinput][readonly],
+:host ::ng-deep input[matinput]:disabled,
+:host ::ng-deep .mdc-text-field--disabled .mdc-text-field__input {
+  background: var(--color-background-disabled);
+  border-radius: var(--radius-xs);
+}
+
+/* ====== CARD ACTIONS ====== */
+:host ::ng-deep mat-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: nowrap;
+  
+  @media (max-width: 1100px) {
+    flex-wrap: wrap;
+  }
+}
+
+/* ====== BUTTON TOGGLE STYLES ====== */
+:host ::ng-deep .mat-button-toggle-group {
+  border-radius: var(--radius-2xl);
+}
+
+:host ::ng-deep .mat-button-toggle {
+  height: var(--button-height);
+  line-height: var(--button-height);
+}
+
+:host ::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+  padding: 0 var(--spacing-md);
+}
+
+/* ====== SECTION DIVIDER ====== */
+.section-divider { 
+  margin: var(--spacing-md) 0 var(--spacing-sm); 
+}

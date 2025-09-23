@@ -1,0 +1,374 @@
+/* ====== FORM COMPONENTS ====== */
+.form-field {
+  @include form-field-base;
+  
+  &--disabled {
+    @include form-field-disabled;
+  }
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(12, 1fr);
+  
+  .col-12 { grid-column: span 12; }
+  .col-9  { grid-column: span 9;  }
+  .col-8  { grid-column: span 8;  }
+  .col-6  { grid-column: span 6;  }
+  .col-4  { grid-column: span 4;  }
+  .col-3  { grid-column: span 3;  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  @include tablet {
+    grid-template-columns: repeat(6, 1fr);
+    .md-6 { grid-column: span 6; }
+    .md-4 { grid-column: span 4; }
+    .md-3 { grid-column: span 3; }
+    .md-12 { grid-column: span 6; }
+  }
+  
+  @include mobile {
+    grid-template-columns: 1fr;
+    .col-12, .col-9, .col-8, .col-6, .col-4, .col-3,
+    .md-12, .md-6, .md-4, .md-3 { grid-column: 1 / -1; }
+  }
+}
+
+/* ====== CARD COMPONENTS ====== */
+.card {
+  @include card-base;
+  @include card-padding;
+  
+  &--sm {
+    @include card-padding-sm;
+  }
+  
+  &--no-padding {
+    padding: 0;
+  }
+}
+
+.card-header {
+  @include flex-between;
+  margin-bottom: var(--spacing-md);
+  
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    @include text-xl;
+  }
+}
+
+.card-actions {
+  @include flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  
+  @include mobile {
+    flex-wrap: wrap;
+  }
+}
+
+/* ====== BUTTON COMPONENTS ====== */
+.btn {
+  @include button-base;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  
+  &--primary {
+    background-color: var(--color-primary-500);
+    color: white;
+    
+    &:hover {
+      background-color: var(--color-primary-600);
+    }
+    
+    &:disabled {
+      background-color: var(--color-secondary-300);
+      cursor: not-allowed;
+    }
+  }
+  
+  &--secondary {
+    background-color: var(--color-secondary-100);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    
+    &:hover {
+      background-color: var(--color-secondary-200);
+    }
+  }
+  
+  &--outline {
+    background-color: transparent;
+    color: var(--color-primary-500);
+    border: 1px solid var(--color-primary-500);
+    
+    &:hover {
+      background-color: var(--color-primary-50);
+    }
+  }
+  
+  &--large {
+    @include button-large;
+  }
+  
+  &--small {
+    height: 32px;
+    padding: 0 var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+  
+  mat-icon {
+    margin-right: var(--spacing-xs);
+  }
+}
+
+/* ====== LIST COMPONENTS ====== */
+.list {
+  @include scrollbar;
+  
+  &--compact {
+    .mat-mdc-list-item {
+      min-height: 40px;
+    }
+  }
+  
+  &--bordered {
+    .mat-mdc-list-item {
+      border-bottom: 1px solid var(--color-border-light);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+  
+  &--hover {
+    .mat-mdc-list-item {
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+      
+      &:hover {
+        background-color: var(--color-background-hover);
+      }
+    }
+  }
+}
+
+/* ====== LOADING COMPONENTS ====== */
+.loading-container {
+  @include flex-center;
+  @include flex-column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  
+  p {
+    margin: 0;
+    @include text-sm;
+    color: var(--color-text-secondary);
+  }
+}
+
+/* ====== NOTIFICATION COMPONENTS ====== */
+.notification {
+  &--success {
+    background-color: var(--color-success);
+    color: white;
+  }
+  
+  &--error {
+    background-color: var(--color-error);
+    color: white;
+  }
+  
+  &--warning {
+    background-color: var(--color-warning);
+    color: white;
+  }
+  
+  &--info {
+    background-color: var(--color-info);
+    color: white;
+  }
+}
+
+/* ====== LAYOUT COMPONENTS ====== */
+.page-container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+.sidenav {
+  width: var(--sidenav-width);
+  background-color: var(--color-background-secondary);
+  padding: var(--spacing-md) var(--spacing-sm);
+  
+  @include mobile {
+    width: var(--sidenav-width-mobile);
+  }
+}
+
+.content {
+  padding: var(--spacing-md);
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* ====== RESPONSIVE UTILITIES ====== */
+.hide-mobile {
+  @include mobile {
+    display: none !important;
+  }
+}
+
+.hide-tablet {
+  @include tablet {
+    display: none !important;
+  }
+}
+
+.hide-desktop {
+  @include desktop {
+    display: none !important;
+  }
+}
+
+.show-mobile {
+  display: none !important;
+  
+  @include mobile {
+    display: block !important;
+  }
+}
+
+.show-tablet {
+  display: none !important;
+  
+  @include tablet {
+    display: block !important;
+  }
+}
+
+.show-desktop {
+  display: none !important;
+  
+  @include desktop {
+    display: block !important;
+  }
+}
+
+/* ====== FORM FIELD COMPONENT ====== */
+app-form-field {
+  display: block;
+  width: 100%;
+}
+
+app-form-field mat-form-field {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ====== CARD COMPONENT ====== */
+app-card mat-card {
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+app-card mat-card:hover {
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--transition-duration);
+}
+
+/* ====== DATA TABLE COMPONENT ====== */
+app-data-table {
+  display: block;
+  width: 100%;
+}
+
+app-data-table .mat-table {
+  background: white;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+app-data-table .mat-header-cell {
+  background-color: var(--color-background-light);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+app-data-table .mat-cell {
+  border-bottom: 1px solid var(--color-border);
+}
+
+app-data-table .mat-row:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* ====== ACTION BUTTONS ====== */
+app-data-table .mat-cell button {
+  margin: 0 var(--spacing-xs);
+}
+
+app-data-table .mat-cell button:first-child {
+  margin-left: 0;
+}
+
+app-data-table .mat-cell button:last-child {
+  margin-right: 0;
+}
+
+/* ====== LOADING COMPONENT ====== */
+app-loading {
+  display: block;
+}
+
+/* ====== CONFIRM DIALOG COMPONENT ====== */
+app-confirm-dialog {
+  display: block;
+}
+
+/* ====== RESPONSIVE COMPONENTS ====== */
+@media (max-width: 768px) {
+  app-card mat-card {
+    margin: var(--spacing-sm);
+  }
+  
+  app-data-table {
+    font-size: var(--font-size-sm);
+  }
+  
+  app-data-table .mat-cell button {
+    margin: 0 var(--spacing-xs);
+  }
+}
+
+/* ====== COMPONENT SPECIFIC STYLES ====== */
+.cadastro-pessoas-container,
+.cadastro-lotes-container,
+.consulta-lotes-container {
+  padding: var(--spacing-md);
+}
+
+.section-title {
+  color: var(--color-primary-600);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+  border-bottom: 2px solid var(--color-primary-100);
+  padding-bottom: var(--spacing-xs);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}

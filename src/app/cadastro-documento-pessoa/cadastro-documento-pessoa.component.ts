@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -48,20 +48,57 @@ interface estadoCivil {
 
 export class CadastroDocumentoPessoaComponent implements OnInit {
 
-  constructor(private municipioService: MunicipioService){}
-  ngOnInit(): void {
-   
-  }
-
   @Input() formDocumentoPessoa!: FormGroup;
   @Input() ufs: string[] = [];
-  // @Input() pessoaId: number | null = null;
   @Input() loteId: number | null = null;
   @Input() formFisica!: FormGroup;
 
   municipios: Municipio[] = [];
   isLoadingUf = false;
   isLoadingMunicipio = false;
+  municipiosNaturalidade: { id:number; nome:string }[] = [];
+
+  constructor(private municipioService: MunicipioService, private cdr: ChangeDetectorRef){}
+  ngOnInit(): void {
+    const ufCtrl = this.formDocumentoPessoa.get('ufNaturalidade')!;
+    ufCtrl.valueChanges.subscribe(uf => this.loadMunicipiosNaturalidade(uf));
+    // dispara o carregamento inicial se já vier UF do backend
+    const uf = ufCtrl.value;
+    if (uf) this.loadMunicipiosNaturalidade(uf);
+  }
+
+  onUfChange(uf: string): void {
+    this.isLoadingMunicipio = true;
+    // zera o município de naturalidade no próprio form de documento
+    this.formDocumentoPessoa.get('naturalidadeId')?.setValue(null);
+
+    this.municipioService.getMunicipiosPorUf(uf).subscribe({
+      next: (municipios) => {
+        this.municipios = municipios;
+        this.isLoadingMunicipio = false;
+      },
+      error: () => {
+        this.municipios = [];
+        this.isLoadingMunicipio = false;
+      }
+    });
+  }
+
+  private loadMunicipiosNaturalidade(uf: string) {
+    if (!uf) { 
+      this.municipiosNaturalidade = []; 
+      this.formDocumentoPessoa.get('naturalidadeId')?.setValue(null, {emitEvent:false}); 
+      return; 
+    }
+    this.municipioService.getMunicipiosPorUf(uf).subscribe(lista => {
+      this.municipiosNaturalidade = lista;
+      const ctrl = this.formDocumentoPessoa.get('naturalidadeId');
+      if (ctrl?.value != null) {
+        ctrl.setValue(ctrl.value, { emitEvent:false }); // reemite o mesmo ID
+      }
+      this.cdr.detectChanges();
+    });
+  }
 
   tiposGovernos = [
     { value: 'E - Executivo', viewValue: 'E - Executivo' },
@@ -96,21 +133,6 @@ export class CadastroDocumentoPessoaComponent implements OnInit {
     { value: 'estrangeira', viewValue: 'Estrangeira' }
   ];
 
-  onUfChange(uf: string): void {
-    this.isLoadingMunicipio = true;
-    // zera o município de naturalidade no próprio form de documento
-    this.formDocumentoPessoa.get('naturalidadeId')?.setValue(null);
 
-    this.municipioService.getMunicipiosPorUf(uf).subscribe({
-      next: (municipios) => {
-        this.municipios = municipios;
-        this.isLoadingMunicipio = false;
-      },
-      error: () => {
-        this.municipios = [];
-        this.isLoadingMunicipio = false;
-      }
-    });
-  }
 
 }

@@ -1,0 +1,70 @@
+/* utilitários */
+.mt-20 { margin-top: 20px; }
+.mt-60 { margin-top: 60px; }
+.full-width { width: 100%; }
+.ml-5 { margin-left: 12px; }
+.spacer { flex: 1 1 auto; }
+
+/* container do componente */
+:host {
+  display: block;
+  overflow-x: hidden;              /* evita “vazar” horizontal */
+}
+
+/* aparência geral dos cards */
+:host ::ng-deep mat-card-content {
+  padding-top: 8px;
+}
+:host ::ng-deep mat-card-title {
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+/* campos */
+:host ::ng-deep mat-form-field {
+  margin-bottom: 8px;
+}
+
+/* inputs desabilitados/readonly com leve destaque */
+:host ::ng-deep input[matinput][disabled],
+:host ::ng-deep input[matinput][readonly],
+:host ::ng-deep .mdc-text-field--disabled .mdc-text-field__input {
+  background: #f5f7fb;
+  border-radius: 4px;
+}
+
+/* numéricos com alinhamento mais agradável (opcional) */
+:host ::ng-deep input[type="number"][matinput] {
+  text-align: right;
+}
+
+/* barra de ações sempre em uma linha (quebra apenas em telas pequenas) */
+:host ::ng-deep mat-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+@media (max-width: 980px) {
+  :host ::ng-deep mat-card-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* ícone com respiro dentro do botão */
+:host ::ng-deep button[mat-flat-button] mat-icon {
+  margin-right: 6px;
+}
+
+/* autocomplete (painel e opções) */
+:host ::ng-deep .mat-mdc-autocomplete-panel {
+  max-height: 280px;               /* rolagem agradável */
+}
+:host ::ng-deep .mat-mdc-option {
+  padding: 6px 12px;
+}
+
+/* melhora os cantos do filled */
+:host ::ng-deep .mdc-text-field--filled {
+  border-radius: 6px 6px 0 0;
+}

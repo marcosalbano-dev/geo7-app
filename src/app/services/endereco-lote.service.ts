@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError } from 'rxjs';
 import { EnderecoLoteDTO } from '../models/endereco-lote-dto';
 import { environment } from '../../environments/environment';
 
@@ -12,6 +12,10 @@ export class EnderecoLoteService {
 
   constructor(private http: HttpClient) {}
 
+  getPorLote(loteId: number): Observable<EnderecoLoteDTO | null> {
+    return this.http.get<EnderecoLoteDTO>(`${this.apiUrl}/por-lote/${loteId}`);
+  }
+
   salvar(dto: EnderecoLoteDTO): Observable<EnderecoLoteDTO> {
     return this.http.post<EnderecoLoteDTO>(this.apiUrl, dto);
   }
@@ -22,5 +26,13 @@ export class EnderecoLoteService {
 
   buscarPorId(id: number): Observable<EnderecoLoteDTO> {
     return this.http.get<EnderecoLoteDTO>(`${this.apiUrl}/${id}`);
+  }
+
+  buscarPorLoteId(loteId: number): Observable<EnderecoLoteDTO> {
+    return this.http.get<EnderecoLoteDTO>(`${this.apiUrl}/por-lote/${loteId}`);
+  }
+
+  delete(id: number) {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }
