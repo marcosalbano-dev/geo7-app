@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
 
 import { LoteDTO } from '../models/lote-dto';
 import { Municipio } from '../models/municipio';
@@ -32,6 +33,8 @@ import { CardComponent } from '../shared/components/card/card.component';
 import { LoadingComponent } from '../shared/components/loading/loading.component';
 import { DataTableComponent } from '../shared/components/data-table/data-table.component';
 import { ConfirmDialogComponent } from '../shared/components/confirm-dialog/confirm-dialog.component';
+import { Location } from '@angular/common';
+
 
 @Component({
   selector: 'app-cadastro-lotes',
@@ -58,8 +61,9 @@ import { ConfirmDialogComponent } from '../shared/components/confirm-dialog/conf
     FormFieldComponent,
     CardComponent,
     LoadingComponent,
-    DataTableComponent
-  ]
+    DataTableComponent,
+    BackButtonComponent
+]
 })
 export class CadastroLotesComponent implements OnInit {
 
@@ -100,7 +104,8 @@ export class CadastroLotesComponent implements OnInit {
     private distritoService: DistritoService,
     private snackBar: MatSnackBar,
     private router: Router,
-    private route: ActivatedRoute // Captura dados da rota que foi acessada
+    private route: ActivatedRoute,
+    private location: Location// Captura dados da rota que foi acessada
   ) { }
 
   ngOnInit(): void {
@@ -127,17 +132,24 @@ export class CadastroLotesComponent implements OnInit {
     this.loadMunicipiosCe();
     this.carregarLotes();
 
-    // Verificar se há ID para edição
+    // Verificar se há ID ou loteId para edição
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
+      const loteId = params['loteId']; // Adicionar verificação de loteId
+      
       console.log('🔍 Parâmetros da URL:', params);
       console.log('🔍 ID encontrado:', id);
-      if (id) {
+      console.log('🔍 LoteId encontrado:', loteId);
+      
+      // Priorizar loteId se ambos estiverem presentes
+      const idParaCarregar = loteId || id;
+      
+      if (idParaCarregar) {
         this.atualizando = true;
-        console.log('🔄 Modo de edição ativado para ID:', id);
+        console.log('🔄 Modo de edição ativado para ID:', idParaCarregar);
         // Aguardar municípios carregarem antes de carregar o lote
         this.loadMunicipiosCe().then(() => {
-          this.carregarLotePorId(+id);
+          this.carregarLotePorId(+idParaCarregar);
         });
       }
     });
@@ -294,5 +306,20 @@ export class CadastroLotesComponent implements OnInit {
 
   limparFormulario(): void {
     this.formLotes.reset();
+  }
+
+  onVoltarClick(): void {
+    // Lógica customizada antes de voltar
+    const loteId = this.formLotes.get('id')?.value; // Corrigir: usar 'id' em vez de 'loteId'
+    
+    if (loteId) {
+      // Navega para a página de consulta de lotes com o loteId específico
+      this.router.navigate(['/consulta-lotes'], { 
+        queryParams: { loteId: loteId } 
+      });
+    } else {
+      // Volta para a página anterior
+      this.location.back();
+    }
   }
 }

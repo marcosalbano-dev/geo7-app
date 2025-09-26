@@ -31,6 +31,8 @@ import { CadastroEnderecoPessoaComponent } from "../cadastro-endereco-pessoa/cad
 import { EditarDetentorResponseDTO } from '../models/editar-detentor-response-dto';
 import { ChangeDetectorRef } from '@angular/core';
 import { enderecoToForm, pessoaToFormFisica, pessoaToFormPessoas } from '../helpers/pessoa-mapper';
+import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
+import { Location } from '@angular/common';
 
 interface distrito {
   value: string;
@@ -89,7 +91,8 @@ interface tipoDocumento {
     MatNativeDateModule,
     CadastroPessoaLoteComponent,
     CadastroEnderecoPessoaComponent,
-    CadastroDocumentoPessoaComponent
+    CadastroDocumentoPessoaComponent,
+    BackButtonComponent
   ],
   templateUrl: './cadastro-pessoas.component.html',
   styleUrl: './cadastro-pessoas.component.scss',
@@ -243,7 +246,8 @@ export class CadastroPessoasComponent implements OnInit {
     private pessoaLoteService: PessoaLoteService,
     private snackBar: MatSnackBar,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private location: Location
   ) {
 
     this.formAnexo = this.fb.group({
@@ -829,29 +833,46 @@ export class CadastroPessoasComponent implements OnInit {
         }
 
         // 4) Endereço
-        if (resp.endereco) this.formEnderecoPessoa.patchValue({
-          logradouro: resp.endereco.logradouro ?? '',
-          complemento: resp.endereco.complemento ?? '',
-          numero: resp.endereco.numero ?? '',
-          bairro: resp.endereco.bairro ?? '',
-          cep: resp.endereco.cep ?? '',
-          //codigoPaisResidencia: resp.endereco.codigoPaisResidencia ?? '931',
-          uf: resp.endereco.uf ?? null,
-        }, { emitEvent: true }); // <- TRUE para disparar valueChanges da UF
+        if (resp.endereco) {
+          this.formEnderecoPessoa.patchValue({
+            logradouro: resp.endereco.logradouro ?? '',
+            complemento: resp.endereco.complemento ?? '',
+            numero: resp.endereco.numero ?? '',
+            bairro: resp.endereco.bairro ?? '',
+            cep: resp.endereco.cep ?? '',
+            //codigoPaisResidencia: resp.endereco.codigoPaisResidencia ?? '931',
+            uf: resp.endereco.uf ?? null,
+          }, { emitEvent: true }); // <- TRUE para disparar valueChanges da UF
 
-        // pode setar já; o filho vai validar quando a lista chegar
-        this.formEnderecoPessoa.get('municipioId')
-          ?.setValue(resp.endereco.municipioId ?? null, { emitEvent: false });
+          // pode setar já; o filho vai validar quando a lista chegar
+          this.formEnderecoPessoa.get('municipioId')
+            ?.setValue(resp.endereco.municipioId ?? null, { emitEvent: false });
+        }
 
         // 5) Vínculo pessoa-lote
         if (resp.pessoaLote) this.formPessoaLote.patchValue(resp.pessoaLote);
 
-        // navegação opcional:
-         this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
+        // navegação com tratamento de erro e detecção de mudanças
+        if (loteId) {
+          this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } })
+            .then(() => {
+              // Navegação bem-sucedida
+              console.log('Navegação para cadastro-endereco-lote realizada com sucesso');
+            })
+            .catch((error) => {
+              // Tratamento de erro na navegação
+              console.error('Erro na navegação:', error);
+              this.snackBar.open('Erro ao navegar para a próxima página.', 'Fechar', { duration: 3000 });
+            });
+        }
+        
+        // Força detecção de mudanças após todas as operações
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Erro ao atualizar detentor:', err);
         this.snackBar.open('Erro ao atualizar detentor.', 'Fechar', { duration: 4000 });
+        this.cdr.markForCheck();
       }
     });
   }
@@ -893,6 +914,21 @@ export class CadastroPessoasComponent implements OnInit {
       CondicaoPessoaImovel.Comodatario,
       CondicaoPessoaImovel.Concessionario
     ].includes(this.condicaoSelecionada);
+  }
+
+  onVoltarClick(): void {
+    // Lógica customizada antes de voltar
+    const loteId = this.formPessoas.get('loteId')?.value;
+    
+    if (loteId) {
+      // Navega para a página de estrutura (anterior na sequência)
+      this.router.navigate(['/cadastro-estrutura'], { 
+        queryParams: { loteId: loteId } 
+      });
+    } else {
+      // Volta para a página anterior
+      this.location.back();
+    }
   }
 }
 

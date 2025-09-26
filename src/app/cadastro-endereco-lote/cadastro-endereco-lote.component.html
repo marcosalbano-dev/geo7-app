@@ -4,6 +4,15 @@
         [formGroup]="formEnderecoLote"
         (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
 
+          <!-- Botão Voltar -->
+      <div class="back-button-container mb-20">
+        <app-back-button 
+          text="Voltar" 
+          (backClick)="onVoltarClick()"
+          [useHistory]="false">
+        </app-back-button>
+      </div>
+
     <mat-card appearance="outlined" class="card">
       <mat-card-header>
         <mat-card-title>Endereço do Lote</mat-card-title>

@@ -1,6 +1,15 @@
 <!-- dados-sobre-uso.component.html (novo, sem fxLayout) -->
 <div class="page">
   <form [formGroup]="formDadosSobreUso" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
+
+         <!-- Botão Voltar -->
+         <div class="back-button-container mb-20">
+          <app-back-button 
+            text="Voltar" 
+            (backClick)="onVoltarClick()"
+            [useHistory]="false">
+          </app-back-button>
+        </div>
     <mat-card appearance="outlined" class="card">
       <mat-card-header>
         <mat-card-title>Quadro de Áreas de Uso</mat-card-title>

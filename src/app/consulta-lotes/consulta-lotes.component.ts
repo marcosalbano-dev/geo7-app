@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ActivatedRoute } from '@angular/router';
 
 // Importando os componentes reutilizáveis
 import { FormFieldComponent } from '../shared/components/form-field/form-field.component';
@@ -415,7 +416,6 @@ export class ConsultaLotesComponent implements OnInit {
   municipioSelecionadoNome = '';
   
   loteColumns = [
-    { key: 'id', label: 'Id', sortable: true },
     { key: 'numero', label: 'Código do Imóvel', sortable: true },
     { key: 'proprietario', label: 'Detentor', sortable: true },
     { key: 'denominacaoImovel', label: 'Denominação do Imóvel', sortable: true },
@@ -428,6 +428,7 @@ export class ConsultaLotesComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private router: Router,
+    private route: ActivatedRoute, // Adicionar ActivatedRoute
     private loteService: LoteService,
     private municipioService: MunicipioService,
     private situacaoJuridicaService: SituacaoJuridicaService,
@@ -439,7 +440,17 @@ export class ConsultaLotesComponent implements OnInit {
   ngOnInit(): void {
     this.loadMunicipios();
     this.loadSituacoes().then(() => {
-      this.loadLotes();
+      // Verificar se há loteId nos query parameters
+      this.route.queryParams.subscribe(params => {
+        const loteId = params['loteId'];
+        if (loteId) {
+          // Carregar lote específico
+          this.carregarLoteEspecifico(+loteId);
+        } else {
+          // Carregar todos os lotes
+          this.loadLotes();
+        }
+      });
     }).catch((error) => {
       console.error('Erro ao carregar situações:', error);
       // Mesmo com erro, tenta carregar os lotes
@@ -498,6 +509,41 @@ export class ConsultaLotesComponent implements OnInit {
         console.error('Erro ao carregar lotes:', error);
         this.snackBar.open('Erro ao carregar lotes', 'Fechar', { duration: 3000 });
         this.isLoading = false;
+      }
+    });
+  }
+
+  private carregarLoteEspecifico(loteId: number): void {
+    this.isLoading = true;
+    this.loteService.obterPorId(loteId).subscribe({
+      next: (lote) => {
+        // Adicionar situação jurídica formatada
+        const loteComSituacao = {
+          ...lote,
+          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId)
+        };
+        
+        this.listaLotes = [loteComSituacao];
+        this.total = 1;
+        this.isLoading = false;
+        
+        // Preencher os filtros com os dados do lote para mostrar na interface
+        this.filtrosForm.patchValue({
+          numero: lote.numero,
+          proprietario: lote.proprietario,
+          municipioId: lote.municipioId,
+          situacaoJuridicaId: lote.situacaoJuridicaId,
+          denominacaoImovel: lote.denominacaoImovel
+        });
+        
+        this.snackBar.open(`Lote ${lote.numero} carregado com sucesso!`, 'Fechar', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Erro ao carregar lote específico:', error);
+        this.snackBar.open('Erro ao carregar lote específico', 'Fechar', { duration: 3000 });
+        this.isLoading = false;
+        // Em caso de erro, carregar todos os lotes
+        this.loadLotes();
       }
     });
   }

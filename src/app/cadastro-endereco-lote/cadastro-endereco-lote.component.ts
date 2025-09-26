@@ -23,6 +23,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { LoteService } from '../services/lote.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
 
 @Component({
   selector: 'app-cadastro-endereco-lote',
@@ -46,7 +48,8 @@ import { ActivatedRoute, Router } from '@angular/router';
     MatProgressSpinnerModule,
     ReactiveFormsModule,
     CommonModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    BackButtonComponent
   ]
 })
 export class CadastroEnderecoLoteComponent implements OnInit {
@@ -70,7 +73,8 @@ export class CadastroEnderecoLoteComponent implements OnInit {
     private loteService: LoteService,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -330,5 +334,18 @@ export class CadastroEnderecoLoteComponent implements OnInit {
   //   const item = this.distritos.find(d => d.id === id);
   //   return item ? item.nomeDistrito : '';
   // };
+
+  onVoltarClick(): void {
+    const loteId = this.formEnderecoLote.get('loteId')?.value;
+    
+    if (loteId) {
+      // Navega para a página de dados pessoais (anterior na sequência)
+      this.router.navigate(['/cadastro-pessoas'], { 
+        queryParams: { loteId: loteId } 
+      });
+    } else {
+      this.location.back();
+    }
+  }
 
 }

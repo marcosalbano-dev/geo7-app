@@ -3,6 +3,16 @@
         [formGroup]="formEstrutura"
         (ngSubmit)="isAtualizando ? onAtualizar() : onSalvar()">
 
+        <!-- Botão Voltar -->
+      <div class="back-button-container mb-20">
+        <app-back-button 
+          text="Voltar" 
+          (backClick)="onVoltarClick()"
+          [useHistory]="false">
+        </app-back-button>
+      </div>
+
+
     <mat-card appearance="outlined">
       <mat-card-header>
         <mat-card-title>Estrutura</mat-card-title>
@@ -14,8 +24,8 @@
         <div class="form-grid">
           <div class="col-4 md-6">
             <mat-form-field appearance="fill" class="full-width">
-              <mat-label>Número do Lote</mat-label>
-              <input matInput formControlName="numero" readonly>
+              <mat-label>Controle de Campo</mat-label>
+              <input matInput formControlName="numero">
             </mat-form-field>
           </div>
 

@@ -1,25 +1,26 @@
 <div fxLayout="row" fxLayoutAlign="center">
   <div fxLayout="column" fxFlex="1000px">
     <form class="mt-60" [formGroup]="formLotes" (ngSubmit)="onSubmit()">
+
+      <!-- Botão Voltar -->
+      <div class="back-button-container mb-20">
+        <app-back-button text="Voltar" (backClick)="onVoltarClick()" [useHistory]="false">
+        </app-back-button>
+      </div>
+
       <mat-card appearance="outlined">
         <mat-card-header>
           <mat-card-title>Imóveis</mat-card-title>
         </mat-card-header>
+
+
         <mat-card-content class="mt-20">
           <div fxLayout="row" fxLayoutGap="16px">
             <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Controle de Campo</mat-label>
-                <input
-                  type="text"
-                  formControlName="numero"
-                  placeholder="Ex: 00001"
-                  matInput
-                  required
-                />
-                <mat-error
-                  *ngIf="formLotes.get('numero')?.hasError('required')"
-                >
+                <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput required />
+                <mat-error *ngIf="formLotes.get('numero')?.hasError('required')">
                   O Controle de Campo é obrigatório
                 </mat-error>
               </mat-form-field>
@@ -28,31 +29,18 @@
             <div fxFlex="335px">
               <mat-form-field class="full-width">
                 <mat-label>SNCR</mat-label>
-                <input
-                  type="text"
-                  formControlName="sncr"
-                  placeholder="Ex: 1234567890"
-                  matInput
-                />
+                <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
               </mat-form-field>
             </div>
 
             <div fxFlex="300px">
               <mat-form-field class="full-width">
                 <mat-label>Área (Ha)</mat-label>
-                <input
-                  type="number"
-                  matInput
-                  formControlName="area"
-                  placeholder="Ex: 2.0000"
-                  required
-                />
-                <mat-error
-                  *ngIf="
+                <input type="number" matInput formControlName="area" placeholder="Ex: 2.0000" required />
+                <mat-error *ngIf="
                     formLotes.get('area')?.hasError('required') &&
                     formLotes.get('area')?.touched
-                  "
-                >
+                  ">
                   A área é obrigatória
                 </mat-error>
               </mat-form-field>
@@ -62,15 +50,8 @@
             <div fxFlex="970px">
               <mat-form-field class="full-width">
                 <mat-label>Proprietário</mat-label>
-                <input
-                  matInput
-                  formControlName="proprietario"
-                  placeholder="Nome do proprietário"
-                  required
-                />
-                <mat-error
-                  *ngIf="formLotes.get('proprietario')?.hasError('required')"
-                >
+                <input matInput formControlName="proprietario" placeholder="Nome do proprietário" required />
+                <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
                   O nome do proprietário é obrigatório
                 </mat-error>
               </mat-form-field>
@@ -81,23 +62,14 @@
             <div fxFlex="600px">
               <mat-form-field class="full-width">
                 <mat-label>Denominação do imóvel</mat-label>
-                <input
-                  type="text"
-                  formControlName="denominacaoImovel"
-                  placeholder="Ex: Sítio..."
-                  matInput
-                />
+                <input type="text" formControlName="denominacaoImovel" placeholder="Ex: Sítio..." matInput />
               </mat-form-field>
             </div>
 
             <div fxFlex="350px">
               <mat-form-field mat-form-field class="full-width">
-                <mat-label>Situação Jurídica</mat-label
-                ><mat-select formControlName="situacaoJuridicaId">
-                  <mat-option
-                    *ngFor="let situacao of situacoes"
-                    [value]="situacao.value"
-                  >
+                <mat-label>Situação Jurídica</mat-label><mat-select formControlName="situacaoJuridicaId">
+                  <mat-option *ngFor="let situacao of situacoes" [value]="situacao.value">
                     {{ situacao.viewValue }}
                   </mat-option>
                 </mat-select>
@@ -109,21 +81,13 @@
             <div fxFlex="260px">
               <mat-form-field class="full-width">
                 <mat-label>Município</mat-label>
-                <mat-select
-                  formControlName="municipioId"
-                  (selectionChange)="loadDistritosByMunicipio($event.value)"
-                  [errorStateMatcher]="errorStateMatcher"
-                >
-                  <mat-option
-                    *ngFor="let municipio of municipios"
-                    [value]="municipio.id"
-                  >
+                <mat-select formControlName="municipioId" (selectionChange)="loadDistritosByMunicipio($event.value)"
+                  [errorStateMatcher]="errorStateMatcher">
+                  <mat-option *ngFor="let municipio of municipios" [value]="municipio.id">
                     {{ municipio.nome }}
                   </mat-option>
                 </mat-select>
-                <mat-error
-                  *ngIf="formLotes.get('municipioId')?.hasError('required')"
-                >
+                <mat-error *ngIf="formLotes.get('municipioId')?.hasError('required')">
                   Município é obrigatório
                 </mat-error>
               </mat-form-field>
@@ -132,20 +96,12 @@
             <div fxFlex="260px">
               <mat-form-field class="full-width">
                 <mat-label>Distrito</mat-label>
-                <mat-select
-                  formControlName="distritoId"
-                  [errorStateMatcher]="errorStateMatcher"
-                >
-                  <mat-option
-                    *ngFor="let distrito of filteredDistritos"
-                    [value]="distrito.id"
-                  >
+                <mat-select formControlName="distritoId" [errorStateMatcher]="errorStateMatcher">
+                  <mat-option *ngFor="let distrito of filteredDistritos" [value]="distrito.id">
                     {{ distrito.nomeDistrito }}
                   </mat-option>
                 </mat-select>
-                <mat-error
-                  *ngIf="formLotes.get('distritoId')?.hasError('required')"
-                >
+                <mat-error *ngIf="formLotes.get('distritoId')?.hasError('required')">
                   Distrito é obrigatório
                 </mat-error>
               </mat-form-field>
@@ -160,12 +116,7 @@
             <div fxFlex="150px">
               <mat-form-field class="full-width">
                 <mat-label>Perímetro</mat-label>
-                <input
-                  type="number"
-                  formControlName="perimetro"
-                  placeholder="Ex: 3.0000"
-                  matInput
-                />
+                <input type="number" formControlName="perimetro" placeholder="Ex: 3.0000" matInput />
               </mat-form-field>
             </div>
           </div>
@@ -173,23 +124,17 @@
           <mat-divider></mat-divider>
           <mat-card-actions>
             @if(!atualizando){
-              <button mat-flat-button color="primary" type="submit">
-                <mat-icon fontIcon="save"></mat-icon>
-                Salvar
-              </button>
-             } @else {
+            <button mat-flat-button color="primary" type="submit">
+              <mat-icon fontIcon="save"></mat-icon>
+              Salvar
+            </button>
+            } @else {
             <button mat-flat-button color="primary" type="button" (click)="atualizarLote()">
               <mat-icon fontIcon="refresh"></mat-icon>
               Atualizar
             </button>
-          }
-            <button
-              mat-flat-button
-              color="accent"
-              class="ml-5"
-              type="button"
-              (click)="limparFormulario()"
-            >
+            }
+            <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
               <mat-icon fontIcon="backspace"></mat-icon>
               Limpar
             </button>

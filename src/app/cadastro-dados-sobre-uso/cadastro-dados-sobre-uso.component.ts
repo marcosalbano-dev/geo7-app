@@ -21,6 +21,8 @@ import { AreaComOutroUso, AreaComOutroUsoService } from "../services/area-com-ou
 import { AreasRestricoes, AreasRestricoesService } from '../services/areas-restricoes.service';
 import { CategoriaAnimal, CategoriaAnimalService } from '../services/categoria-animal.service';
 import { forkJoin, of } from 'rxjs';
+import { Location } from '@angular/common';
+import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
 
 type ItemExt = ItemDadosUsoDTO & { meta?: { label: string } };
 type ItemView = ItemExt & { _k: number };
@@ -39,6 +41,7 @@ type ItemView = ItemExt & { _k: number };
     MatDialogModule,
     MatExpansionModule,
     MatSnackBarModule,
+    BackButtonComponent
   ],
   templateUrl: './cadastro-dados-sobre-uso.component.html',
   styleUrl: './cadastro-dados-sobre-uso.component.scss',
@@ -95,6 +98,7 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
     private areaComOutroUsoService: AreaComOutroUsoService,
     private areasRestricoesService: AreasRestricoesService,
     private categoriaAnimalService: CategoriaAnimalService,
+    private location: Location
   ) { }
 
   private makeEmptyDto(): DadosSobreUsoDTO {
@@ -575,5 +579,18 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
       this.recalculaTotais();
       this.cdr.markForCheck();
     });
+  }
+
+  onVoltarClick(): void {
+    const loteId = this.formDadosSobreUso.get('loteId')?.value;
+    
+    if (loteId) {
+      // Navega para a página de endereço do lote (anterior na sequência)
+      this.router.navigate(['/cadastro-endereco-lote'], { 
+        queryParams: { loteId: loteId } 
+      });
+    } else {
+      this.location.back();
+    }
   }
 }

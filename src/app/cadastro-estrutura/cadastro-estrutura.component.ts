@@ -25,6 +25,10 @@ import { CadastroSituacaoJuridicaComponent } from '../cadastro-situacao-juridica
 import { estruturaDTOToFormValue, mapFormToEstruturaDTO } from '../helpers/estrutura-mapper';
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 
+import { Location } from '@angular/common';
+import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
+
+
 type SelectOption<T = any> = { value: T; viewValue: string };
 
 @Component({
@@ -46,7 +50,8 @@ type SelectOption<T = any> = { value: T; viewValue: string };
     MatProgressSpinnerModule,
     // Seu componente filho
     CadastroSituacaoJuridicaComponent,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    BackButtonComponent
   ],
   templateUrl: './cadastro-estrutura.component.html',
   styleUrl: './cadastro-estrutura.component.scss',
@@ -168,7 +173,8 @@ export class CadastroEstruturaComponent implements OnInit {
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private cd: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) { }
 
   /** Modo edição é derivado do form (se tem id, atualiza) */
@@ -252,10 +258,10 @@ export class CadastroEstruturaComponent implements OnInit {
     });
 
     // bloqueios somente leitura
-    this.formEstrutura.get('municipioId')?.disable();
-    this.formEstrutura.get('numero')?.disable();
-    this.formEstrutura.get('distritoId')?.disable();
-    this.formEstrutura.get('denominacaoImovel')?.disable();
+    //this.formEstrutura.get('municipioId')?.disable();
+    //this.formEstrutura.get('numero')?.disable();
+    //this.formEstrutura.get('distritoId')?.disable();
+    //this.formEstrutura.get('denominacaoImovel')?.disable();
 
     // carregar dados base
     this.carregarMunicipios();
@@ -487,5 +493,20 @@ export class CadastroEstruturaComponent implements OnInit {
   }
   compareDistritos(d1: Distrito, d2: Distrito): boolean {
     return d1 && d2 ? d1.id === d2.id : d1 === d2;
+  }
+
+  onVoltarClick(): void {
+    // Lógica customizada antes de voltar
+    const loteId = this.formEstrutura.get('loteId')?.value;
+    
+    if (loteId) {
+      // Navega para a página de cadastro de lotes (anterior na sequência)
+      this.router.navigate(['/cadastro-lotes'], { 
+        queryParams: { id: loteId } 
+      });
+    } else {
+      // Volta para a página anterior
+      this.location.back();
+    }
   }
 }

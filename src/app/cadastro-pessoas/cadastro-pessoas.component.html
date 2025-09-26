@@ -1,4 +1,13 @@
 <div class="page-center">
+  <!-- Botão Voltar -->
+  <div class="back-button-container mb-20">
+    <app-back-button 
+      text="Voltar"
+      [useHistory]="true"
+      color="primary">
+    </app-back-button>
+  </div>
+
   <form class="mt-60" [formGroup]="formPessoas" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
     <mat-card appearance="outlined">
       <mat-card-content class="mt-20">
