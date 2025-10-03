@@ -1,40 +1,61 @@
 import { LoteDTO } from '../models/lote-dto';
 
 // Função para converter os dados do formulário para LoteDTO
-export function mapFormToLoteDTO(formValue: any): LoteDTO {
-  return {
-    id: formValue.id || null,
-    numero: formValue.numero,
-    sncr: formValue.sncr,
-    area: Number(formValue.area), // garante que é number
-    denominacaoImovel: formValue.denominacaoImovel,
-    perimetro: formValue.perimetro != null && formValue.perimetro !== '' ? Number(formValue.perimetro) : undefined,
-    cpf: formValue.cpf,
+export function mapFormToLoteDTO(formValue: any): any {
+  // Criar o DTO base com estrutura compatível com o backend
+  const dto: any = {
+    // Campos obrigatórios - devem ter valores válidos
+    numero: formValue.numero || '',
+    municipioId: Number(formValue.municipioId) || 0,
+    distritoId: Number(formValue.distritoId) || 0,
+    situacaoJuridicaId: Number(formValue.situacaoJuridicaId) || 0,
+    area: Number(formValue.area) || 0,
     proprietario: formValue.proprietario || '',
-    municipioId: Number(formValue.municipioId),
-    distritoId: Number(formValue.distritoId),
-    situacaoJuridicaId: formValue.situacaoJuridicaId ? Number(formValue.situacaoJuridicaId) : null,
-    dataTerminoPeriodoDeUso: formValue.dataTerminoPeriodoDeUso || null,
-    formaObtencao: formValue.formaObtencao ?? [],
-    // adicione outros campos se necessário
+    cpf: formValue.cpf || '',
+    
+    // Campos opcionais - podem ser null se vazios
+    perimetro: formValue.perimetro && formValue.perimetro !== null && formValue.perimetro !== '' ? Number(formValue.perimetro) : null,
+    dataTerminoPeriodoDeUso: formValue.dataTerminoPeriodoDeUso && formValue.dataTerminoPeriodoDeUso.trim() !== '' ? formValue.dataTerminoPeriodoDeUso : null,
+    denominacaoImovel: formValue.denominacaoImovel && formValue.denominacaoImovel.trim() !== '' ? formValue.denominacaoImovel : null, // ✅ ADICIONADO
+    sncr: formValue.sncr && formValue.sncr.trim() !== '' ? formValue.sncr : null, // ✅ ADICIONADO
   };
+
+  // Só inclui o ID se existir e for válido (para atualizações)
+  if (formValue.id && formValue.id !== null && formValue.id !== '' && formValue.id !== 0) {
+    dto.id = Number(formValue.id);
+  }
+
+  console.log('🔍 DTO mapeado (compatível com backend):', dto);
+  console.log('🔍 DTO tem situacaoJuridicaId?', 'situacaoJuridicaId' in dto);
+  console.log('🔍 DTO situacaoJuridicaId valor:', dto.situacaoJuridicaId);
+  console.log('🔍 DTO tem denominacaoImovel?', 'denominacaoImovel' in dto);
+  console.log('🔍 DTO denominacaoImovel valor:', dto.denominacaoImovel);
+  console.log('🔍 DTO tem sncr?', 'sncr' in dto);
+  console.log('🔍 DTO sncr valor:', dto.sncr);
+  
+  return dto;
 }
 
-// Se quiser, pode criar também o inverso, do DTO para o form:
-export function mapLoteDTOToForm(dto: LoteDTO): any {
-  return {
-    id: dto.id,
-    numero: dto.numero,
-    sncr: dto.sncr,
-    area: dto.area,
-    denominacaoImovel: dto.denominacaoImovel,
-    perimetro: dto.perimetro,
-    cpf: dto.cpf,
-    proprietario: dto.proprietario,
-    municipioId: dto.municipioId,
-    distritoId: dto.distritoId,
-    situacaoJuridicaId: dto.situacaoJuridicaId,
-    dataTerminoPeriodoDeUso: dto.dataTerminoPeriodoDeUso,
-    formaObtencao: dto.formaObtencao,
+// Função para converter DTO para formulário
+export function mapLoteDTOToForm(dto: any): any {
+  console.log('🔍 DTO recebido para mapeamento:', dto);
+  console.log('🔍 Campos do DTO:', Object.keys(dto));
+  
+  const formData = {
+    id: dto.id || null,
+    numero: dto.numero || '',
+    area: dto.area || 0,
+    perimetro: dto.perimetro || 0,
+    cpf: dto.cpf || '',
+    proprietario: dto.proprietario || '',
+    municipioId: dto.municipioId || null,
+    distritoId: dto.distritoId || null,
+    situacaoJuridicaId: dto.situacaoJuridicaId || null, // Sem valor padrão
+    dataTerminoPeriodoDeUso: dto.dataTerminoPeriodoDeUso || '',
+    denominacaoImovel: dto.denominacaoImovel || '', // ✅ ADICIONADO
+    sncr: dto.sncr || '', // ✅ ADICIONADO
   };
+  
+  console.log('🔍 Dados mapeados para formulário:', formData);
+  return formData;
 }

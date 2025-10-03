@@ -18,9 +18,9 @@ const obtencoes = [
   { value: 14, viewValue: '14 - Incorporação' },
   { value: 15, viewValue: '15 - Recebimento de Herança' },
   { value: 16, viewValue: '16 - Usucapião' },
-  { value: 17, viewValue: '17 - Usufruto' },
+  { value: 17, viewValue: '17 - Usofruto' },
   { value: 18, viewValue: '18 - Doação em Pagamento' },
-  { value: 19, viewValue: '19 - Desapropriação' },
+  { value: 19, viewValue: '19 - Desapropiação' },
   { value: 20, viewValue: '20 - Outras' }
 ];
 
@@ -77,9 +77,7 @@ export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
     situacaoJuridicaId: getValueOrNull(raw.situacaoJuridicaId) ?? safeNumber(raw.situacaoJuridicaId),
     formaObtencaoSelecionada: getValueOrNull(raw.formaObtencaoSelecionada) ?? safeNumber(raw.formaObtencaoSelecionada),
     formaObtencaoId: getValueOrNull(raw.formaObtencaoId) ?? safeNumber(raw.formaObtencaoId),
-    descricaoFormaDeObtencao:
-      getValueOrNull(raw.descricaoFormaDeObtencao)
-      || (obtencoes.find(o => o.value === raw.formaObtencaoId)?.viewValue),
+    descricaoFormaDeObtencao: raw.descricaoFormaDeObtencao || descricaoByCodigoForma(raw.formaObtencaoId) || '',
     // Forma de obtenção — campos dinâmicos por situação
     dataPosse: toISODateString(raw.dataPosse),
     areaMedida: safeString(raw.areaPosse ?? raw.areaMedida), // << garante envio
@@ -100,6 +98,12 @@ export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
     distritoId: safeNumber(raw.distritoId),
     area: safeNumber(raw.area)!,
     sncr: safeString(raw.sncr),
+
+    // Campos de localização
+    localidade: safeString(raw.localidade),
+    comunidade: safeString(raw.comunidade),
+    indicacaoLocalizacao: safeString(raw.indicacaoLocalizacao),
+    codImoReceita: safeString(raw.codImoReceita),
 
     // Dados socioeconômicos
     familiasResidentes: safeNumber(raw.familiasResidentes),
@@ -164,11 +168,44 @@ function codigoFormaByDescricao(desc?: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
+// tenta achar a descrição na lista pelo código retornado do back
+function descricaoByCodigoForma(codigo?: number): string | null {
+  if (!codigo) return null;
+  const hit = obtencoes.find(o => o.value === codigo);
+  if (hit) return hit.viewValue;
+  
+  // Se não encontrou, retorna uma descrição genérica
+  console.warn('[EstruturaMapper] ⚠️ Código de forma de obtenção não encontrado:', codigo);
+  return `Código ${codigo} - Forma de Obtenção não identificada`;
+}
+
 export function estruturaDTOToFormValue(
   dto: Partial<EstruturaDTO>
 ) {
-  const codigoForma = codigoFormaByDescricao(dto.descricaoFormaDeObtencao);
-  return {
+  // ✅ CORREÇÃO: Mapeia pela descrição OU pelo ID se a descrição estiver vazia
+  let descricaoForma = dto.descricaoFormaDeObtencao ?? '';
+  let codigoForma = codigoFormaByDescricao(descricaoForma);
+  
+  // Se a descrição está vazia, mantém o campo vazio para seleção manual
+  if (!descricaoForma && dto.formaObtencaoId) {
+    console.log('[EstruturaMapper] 🔧 Descrição vazia, mas ID da tabela existe:', dto.formaObtencaoId);
+    console.log('[EstruturaMapper] 🔧 Mantendo campo vazio para seleção manual (ID da tabela não corresponde ao código do formulário)');
+    codigoForma = null; // Mantém vazio para seleção manual
+  }
+  
+  console.log('[EstruturaMapper] 🔍 Mapeamento forma de obtenção da estrutura:');
+  console.log('[EstruturaMapper] 🔍 - descricaoFormaDeObtencao original:', dto.descricaoFormaDeObtencao);
+  console.log('[EstruturaMapper] 🔍 - formaObtencaoId original:', dto.formaObtencaoId);
+  console.log('[EstruturaMapper] 🔍 - codigoForma mapeado pela descrição:', codigoFormaByDescricao(descricaoForma));
+  console.log('[EstruturaMapper] 🔍 - codigoForma final:', codigoForma);
+  
+  console.log('[EstruturaMapper] 🔍 - Resultado final da estrutura:');
+  console.log('[EstruturaMapper] 🔍 - codigoForma:', codigoForma);
+  console.log('[EstruturaMapper] 🔍 - descricaoForma:', descricaoForma);
+  console.log('[EstruturaMapper] 🔍 - areaMedida original:', dto.areaMedida, 'tipo:', typeof dto.areaMedida);
+  console.log('[EstruturaMapper] 🔍 - dataPosse original:', dto.dataPosse, 'tipo:', typeof dto.dataPosse);
+  
+  const formValue = {
     // Identificadores principais
     id: dto.id,
     loteId: dto.loteId,
@@ -178,10 +215,10 @@ export function estruturaDTOToFormValue(
     situacaoJuridicaId: dto.situacaoJuridicaId ?? null,
     formaObtencaoSelecionada: dto.formaObtencaoSelecionada ?? null,
     formaObtencaoId: codigoForma,
-    descricaoFormaDeObtencao: codigoForma,
+    descricaoFormaDeObtencao: descricaoForma,
 
     // Forma de obtenção — campos dinâmicos
-    dataPosse: dto.dataPosse ?? null,
+    dataPosse: dto.dataPosse ? new Date(dto.dataPosse) : null,
     areaPosse: dto.areaMedida ? Number(dto.areaMedida) : null,
     livro: dto.livro ?? '',
     areaRegistrada: dto.areaRegistrada ?? '',
@@ -199,6 +236,12 @@ export function estruturaDTOToFormValue(
     distritoId: dto.distritoId ?? null,
     area: dto.area ?? null,
     sncr: dto.sncr ?? '',
+
+    // Campos de localização (ADICIONADOS)
+    localidade: dto.localidade ?? '',
+    comunidade: dto.comunidade ?? '',
+    indicacaoLocalizacao: dto.indicacaoLocalizacao ?? '',
+    codImoReceita: dto.codImoReceita ?? '',
 
     // Dados socioeconômicos
     familiasResidentes: dto.familiasResidentes ?? 0,
@@ -251,4 +294,10 @@ export function estruturaDTOToFormValue(
     dhc: dto.dhc ?? null,
     dhm: dto.dhm ?? null,
   };
+
+  console.log('[EstruturaMapper] 🔍 Valores mapeados para areaPosse e dataPosse:');
+  console.log('[EstruturaMapper] 🔍 - areaPosse mapeado:', formValue.areaPosse);
+  console.log('[EstruturaMapper] 🔍 - dataPosse mapeado:', formValue.dataPosse);
+  
+  return formValue;
 }

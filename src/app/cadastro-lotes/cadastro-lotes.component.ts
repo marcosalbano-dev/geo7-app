@@ -28,11 +28,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { mapFormToLoteDTO, mapLoteDTOToForm } from '../helpers/lote-mapper';
 
-import { FormFieldComponent } from '../shared/components/form-field/form-field.component';
-import { CardComponent } from '../shared/components/card/card.component';
-import { LoadingComponent } from '../shared/components/loading/loading.component';
-import { DataTableComponent } from '../shared/components/data-table/data-table.component';
-import { ConfirmDialogComponent } from '../shared/components/confirm-dialog/confirm-dialog.component';
 import { Location } from '@angular/common';
 
 
@@ -58,10 +53,6 @@ import { Location } from '@angular/common';
     MatProgressSpinnerModule,
     ReactiveFormsModule,
     CommonModule,
-    FormFieldComponent,
-    CardComponent,
-    LoadingComponent,
-    DataTableComponent,
     BackButtonComponent
 ]
 })
@@ -109,22 +100,24 @@ export class CadastroLotesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Formulário completo com todos os campos obrigatórios
     this.formLotes = this.fb.group({
       id: [null],
-      proprietario: ['', Validators.required],
-      area: ['', Validators.required],
-      denominacaoImovel: [''],
-      numero: ['', Validators.required],
-      perimetro: [''],
-      sncr: [''],
-      cpf: ['', Validators.required],
-      municipioId: [null, Validators.required],
-      distritoId: [null, Validators.required],
-      formaObtencao: [''],
-      situacaoJuridicaId: [null],
-      dataTerminoPeriodoDeUso: [],
+      numero: ['', Validators.required], // Controle de Campo - OBRIGATÓRIO
+      municipioId: [null, Validators.required], // OBRIGATÓRIO
+      distritoId: [null, Validators.required], // OBRIGATÓRIO
+      situacaoJuridicaId: [null, Validators.required], // OBRIGATÓRIO
+      area: [null, [Validators.required, Validators.min(0.01)]], // OBRIGATÓRIO - deve ser maior que zero
+      proprietario: ['', Validators.required], // OBRIGATÓRIO
+      cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]], // OBRIGATÓRIO com validação de CPF
+      
+      // Campos opcionais
+      perimetro: [null],
+      dataTerminoPeriodoDeUso: [''],
       situacaoJuridicaNome: [''],
       nomeDistrito: [''],
+      denominacaoImovel: [''], // ✅ ADICIONADO
+      sncr: [''], // ✅ ADICIONADO
     });
     console.log('✅ formLotes inicializado:', this.formLotes);
 
@@ -191,70 +184,142 @@ export class CadastroLotesComponent implements OnInit {
   onSubmit(): void {
     console.log('Valid:', this.formLotes.valid);
     console.log('Form Value:', this.formLotes.value);
+    
+    // Debug: mostrar quais campos estão inválidos
+    if (!this.formLotes.valid) {
+      console.log('❌ Campos inválidos:');
+      Object.keys(this.formLotes.controls).forEach(key => {
+        const control = this.formLotes.get(key);
+        if (control && control.invalid) {
+          console.log(`- ${key}:`, control.errors);
+        }
+      });
+    }
 
     if (this.formLotes.valid) {
       this.salvarLote();
     } else {
       this.formLotes.markAllAsTouched();
+      this.snackBar.open('Preencha todos os campos obrigatórios.', 'Fechar', { duration: 3000 });
     }
   }
 
   salvarLote(): void {
     const formValue = this.formLotes.value;
+    console.log('🔍 Form Value antes do mapeamento:', formValue);
+    console.log('🔍 Modo atualizando:', this.atualizando);
+    console.log('🔍 situacaoJuridicaId no form:', formValue.situacaoJuridicaId);
+    
+    // Garantir que não temos ID para novo lote
+    if (!this.atualizando) {
+      formValue.id = null;
+    }
+    
     const loteDTO = mapFormToLoteDTO(formValue);
+    console.log('🔄 LoteDTO após mapeamento:', loteDTO);
+    console.log('🔄 LoteDTO JSON:', JSON.stringify(loteDTO, null, 2));
+    console.log('🔍 situacaoJuridicaId no DTO:', loteDTO.situacaoJuridicaId);
 
-    console.log('🔄 Enviando loteDTO:', loteDTO);
-
-    this.loteService.salvar(loteDTO).subscribe(saved => {
-      this.snackBar.open('Lote cadastrado com sucesso!', 'Fechar', { duration: 3000 });
-      console.log('🚦 Lote salvo:', saved);
-      // 🚀 Navegar para cadastro de estrutura com dados do lote via query params
-      this.router.navigate(['/cadastro-estrutura'], {
-        queryParams: {
-          loteId: saved.id,
-          numero: saved.numero,
-          municipioId: saved.municipioId,
-          distritoId: saved.distritoId,
-          situacaoJuridicaId: saved.situacaoJuridicaId,
-          area: saved.area,
-          denominacaoImovel: saved.denominacaoImovel,
-          sncr: saved.sncr
-        }
-      });
+    this.loteService.salvar(loteDTO).subscribe({
+      next: (saved) => {
+        this.snackBar.open('Lote cadastrado com sucesso!', 'Fechar', { duration: 3000 });
+        console.log('🚦 Lote salvo:', saved);
+        
+        // Navegar para cadastro de estrutura com dados do lote
+        this.router.navigate(['/cadastro-estrutura'], {
+          queryParams: {
+            loteId: saved.id,
+            numero: saved.numero,
+            municipioId: saved.municipioId,
+            distritoId: saved.distritoId,
+            situacaoJuridicaId: saved.situacaoJuridicaId,
+            area: saved.area,
+            proprietario: saved.proprietario,
+            cpf: saved.cpf,
+            perimetro: saved.perimetro,
+            dataTerminoPeriodoDeUso: saved.dataTerminoPeriodoDeUso,
+            denominacaoImovel: saved.denominacaoImovel, // ✅ ADICIONADO
+            sncr: saved.sncr // ✅ ADICIONADO
+          }
+        });
+      },
+      error: (err) => {
+        console.error('❌ Erro ao salvar lote:', err);
+        console.error('❌ Status do erro:', err.status);
+        console.error('❌ Mensagem do erro:', err.error);
+        console.error('❌ Dados enviados:', loteDTO);
+        console.error('❌ Dados enviados JSON:', JSON.stringify(loteDTO, null, 2));
+        this.snackBar.open('Erro ao salvar lote. Verifique os dados e tente novamente.', 'Fechar', { duration: 4000 });
+      }
     });
-
   }
 
   atualizarLote() {
-    const loteDTO = this.formLotes.value;
-    console.log('Atualizando lote com ID:', loteDTO.id); // Debug
-
-    if (this.formLotes.valid && loteDTO.id) {
-      this.loteService.atualizar(loteDTO.id, loteDTO).subscribe({
-        next: (res) => {
-          this.snackBar.open('Lote atualizado com sucesso!', 'Fechar', { duration: 3000 });
-          console.log('🚦 Lote salvo:', loteDTO);
-          // 🚀 Navegar para cadastro de estrutura com dados do lote via query params
-          this.router.navigate(['/cadastro-estrutura'], {
-            queryParams: {
-              loteId: loteDTO.id,
-              numero: loteDTO.numero,
-              municipioId: loteDTO.municipioId,
-              distritoId: loteDTO.distritoId,
-              situacaoJuridicaId: loteDTO.situacaoJuridicaId,
-              area: loteDTO.area,
-              denominacaoImovel: loteDTO.denominacaoImovel,
-              sncr: loteDTO.sncr
-            }
-          });
-        },
-        error: (err) => {
-          console.error('Erro ao atualizar Lote', err);
-          this.snackBar.open('Erro ao atualizar lote.', 'Fechar', { duration: 3000 });
+    console.log('Valid:', this.formLotes.valid);
+    console.log('Form Value:', this.formLotes.value);
+    
+    // Debug: mostrar quais campos estão inválidos
+    if (!this.formLotes.valid) {
+      console.log('❌ Campos inválidos:');
+      Object.keys(this.formLotes.controls).forEach(key => {
+        const control = this.formLotes.get(key);
+        if (control && control.invalid) {
+          console.log(`- ${key}:`, control.errors);
         }
       });
+    }
+
+    if (this.formLotes.valid) {
+      const formValue = this.formLotes.value;
+      console.log('🔍 Form Value antes do mapeamento:', formValue);
+      console.log('🔍 Modo atualizando:', this.atualizando);
+      console.log('🔍 situacaoJuridicaId no form:', formValue.situacaoJuridicaId);
+      
+      const loteDTO = mapFormToLoteDTO(formValue);
+      console.log('🔄 LoteDTO após mapeamento:', loteDTO);
+      console.log('🔄 LoteDTO JSON:', JSON.stringify(loteDTO, null, 2));
+      console.log('🔍 situacaoJuridicaId no DTO:', loteDTO.situacaoJuridicaId);
+
+      if (loteDTO.id) {
+        this.loteService.atualizar(loteDTO.id, loteDTO).subscribe({
+          next: (res) => {
+            this.snackBar.open('Lote atualizado com sucesso!', 'Fechar', { duration: 3000 });
+            console.log('🚦 Lote atualizado:', res);
+            
+            // Navegar para cadastro de estrutura com dados atualizados do lote
+            this.router.navigate(['/cadastro-estrutura'], {
+              queryParams: {
+                loteId: loteDTO.id,
+                numero: loteDTO.numero,
+                municipioId: loteDTO.municipioId,
+                distritoId: loteDTO.distritoId,
+                situacaoJuridicaId: loteDTO.situacaoJuridicaId,
+                area: loteDTO.area,
+                proprietario: loteDTO.proprietario,
+                cpf: loteDTO.cpf,
+                perimetro: loteDTO.perimetro,
+                dataTerminoPeriodoDeUso: loteDTO.dataTerminoPeriodoDeUso,
+                denominacaoImovel: loteDTO.denominacaoImovel, // ✅ ADICIONADO
+                sncr: loteDTO.sncr // ✅ ADICIONADO
+              }
+            });
+          },
+          error: (err) => {
+            console.error('❌ Erro ao atualizar lote:', err);
+            console.error('❌ Status do erro:', err.status);
+            console.error('❌ Mensagem do erro:', err.error);
+            console.error('❌ Dados enviados:', loteDTO);
+            console.error('❌ Dados enviados JSON:', JSON.stringify(loteDTO, null, 2));
+            this.snackBar.open('Erro ao atualizar lote. Verifique os dados e tente novamente.', 'Fechar', { duration: 4000 });
+          }
+        });
+      } else {
+        console.error('❌ ID do lote não encontrado no formulário');
+        this.snackBar.open('ID do lote não encontrado. Não é possível atualizar.', 'Fechar', { duration: 3000 });
+      }
     } else {
-      this.snackBar.open('Formulário inválido ou ID ausente.', 'Fechar', { duration: 3000 });
+      this.formLotes.markAllAsTouched();
+      this.snackBar.open('Preencha todos os campos obrigatórios.', 'Fechar', { duration: 3000 });
     }
   }
 

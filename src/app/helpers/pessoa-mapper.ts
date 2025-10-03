@@ -22,16 +22,35 @@ export function mapFormToPessoaDTO(dto: Partial<PessoaDTO>) {
 
 
 export function pessoaToFormFisica(p?: any) {
-    return {
+    console.log('[PessoaMapper] 🔍 Dados recebidos para mapeamento:', p);
+    console.log('[PessoaMapper] 🔍 sexoPessoa:', p?.sexoPessoa);
+    console.log('[PessoaMapper] 🔍 atividadePrincipal:', p?.atividadePrincipal);
+    console.log('[PessoaMapper] 🔍 isEspolio:', p?.isEspolio);
+    console.log('[PessoaMapper] 🔍 racaCor:', p?.racaCor);
+    console.log('[PessoaMapper] 🔍 regimeDeBens:', p?.regimeDeBens);
+    console.log('[PessoaMapper] 🔍 estadoCivil:', p?.estadoCivil);
+    
+    const result = {
       dataNascimento: p?.dataNascimento ? new Date(p.dataNascimento) : null,
-      sexoPessoa: p?.sexoPessoa ?? '',
+      sexoPessoa: p?.sexoPessoa?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo para corresponder aos options
       isEspolio: !!p?.isEspolio,
-      racaCor: p?.racaCor ?? '',
-      dataCasamento: p?.dataCasamento ?? null,
-      regimeBens: p?.regimeDeBens ?? '',
+      racaCor: p?.racaCor?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo
+      estadoCivil: p?.estadoCivil?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo
+      dataCasamento: p?.dataCasamento ? new Date(p.dataCasamento) : null, // ✅ CORRIGIDO: converte String para Date
+      regimeBens: p?.regimeDeBens?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo para corresponder aos options
+      escolaridade: p?.escolaridade ?? '', // ✅ ADICIONADO
+      profissao: p?.atividadePrincipal ?? '', // ✅ CORRIGIDO: usa atividadePrincipal do backend
       nomePai: p?.nomePai ?? '',
       nomeMae: p?.nomeMae ?? '',
     };
+    
+    console.log('[PessoaMapper] 🔍 Resultado do mapeamento:', result);
+    console.log('[PessoaMapper] 🔍 Valores específicos:');
+    console.log('[PessoaMapper] 🔍 - sexo:', result.sexoPessoa);
+    console.log('[PessoaMapper] 🔍 - racaCor:', result.racaCor);
+    console.log('[PessoaMapper] 🔍 - regimeBens:', result.regimeBens);
+    console.log('[PessoaMapper] 🔍 - estadoCivil:', result.estadoCivil);
+    return result;
   }
 
   export function enderecoToForm(e?: any) {

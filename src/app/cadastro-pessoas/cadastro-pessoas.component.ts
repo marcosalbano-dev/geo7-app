@@ -20,6 +20,7 @@ import { EstadoService } from '../services/estado.service';
 import { MunicipioService } from '../services/municipio.service';
 import { ErrorStateMatcher, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatRadioModule } from '@angular/material/radio';
 import { CadastroPessoaLoteComponent } from '../cadastro-pessoa-lote/cadastro-pessoa-lote.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoteService } from '../services/lote.service';
@@ -87,11 +88,12 @@ interface tipoDocumento {
     ReactiveFormsModule,
     MatIconModule,
     CadastroPessoasAnexoComponent,
+    CadastroDocumentoPessoaComponent,
+    CadastroEnderecoPessoaComponent,
+    CadastroPessoaLoteComponent,
     MatDatepickerModule,
     MatNativeDateModule,
-    CadastroPessoaLoteComponent,
-    CadastroEnderecoPessoaComponent,
-    CadastroDocumentoPessoaComponent,
+    MatRadioModule,
     BackButtonComponent
   ],
   templateUrl: './cadastro-pessoas.component.html',
@@ -126,8 +128,8 @@ export class CadastroPessoasComponent implements OnInit {
   ];
 
   sexos: sexo[] = [
-    { value: 'masculino', viewValue: 'Masculino' },
-    { value: 'feminino', viewValue: 'Feminino' },
+    { value: 'Masculino', viewValue: 'Masculino' },
+    { value: 'Feminino', viewValue: 'Feminino' },
   ];
 
   racas: raca[] = [
@@ -236,6 +238,7 @@ export class CadastroPessoasComponent implements OnInit {
   formAnexo: FormGroup;
   formEnderecoPessoa: FormGroup;
   formDocumentoPessoa: FormGroup;
+  formVinculacao: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -266,49 +269,76 @@ export class CadastroPessoasComponent implements OnInit {
       municipioId: [null, Validators.required],
       loteId: [null, Validators.required],
       nome: [''],
+      endereco: [''],
       numero: [''],
       complemento: [''],
       bairro: [''],
-      //municipioResidencia: [''],
+      municipio: [''],
       uf: [''],
       cep: [''],
       telefone: [''],
       email: [''],
-      tipoPessoa: [this.tipoPessoaSelecionada()]
+      tipoPessoa: [this.tipoPessoaSelecionada()],
+      ramal: [''],
+      observacoes: [''] // Adicionado campo de observações
     });
 
     this.formFisica = this.fb.group({
-      //cpf: [''],
+      cpf: [''],
       dataNascimento: [''],
-      sexoPessoa: [''],
+      sexoPessoa: [''], // Alterado de sexoPessoa para sexo
       isEspolio: [false],
       racaCor: [''],
-      //estadoCivil: [''],
+      estadoCivil: [''], // ✅ ADICIONADO DE VOLTA
       dataCasamento: [''],
-      regimeBens: [''],
+      regimeBens: [''], // Regime de bens
+      escolaridade: [''], // Adicionado
+      profissao: [''], // Adicionado
       tipoDocumento: [''],
       numeroDocumento: [''],
       orgaoEmissor: [''],
       ufOrgaoEmissor: [''],
-      tipoNacionalidade: [''],
+      nacionalidade: [''],
       ufNaturalidade: [''],
-      naturalidadeId: [''],
-      //codigoPaisOrigem: [''],
-      //codigoPaisResidencia: [''],
+      municipioNaturalidade: [''],
+      codigoPaisOrigem: [''],
+      codigoPaisResidencia: [''],
       nomePai: [''],
       nomeMae: [''],
     });
 
     this.formJuridica = this.fb.group({
       cnpj: [''],
+      razaoSocial: [''], // Adicionado
+      nomeFantasia: [''], // Adicionado
       naturezaJuridica: [''],
+      capitalNacional: [''],
+      capitalEstrangeiro: [''],
+      registroJuntaComercial: [''],
       tipoPoder: [''],
       tipoGoverno: [''],
       ufPaisSede: [''],
       codigoPaisSede: [''],
-      capitalNacional: [''],
-      capitalEstrangeiro: [''],
-      registroJuntaComercial: [''],
+    });
+
+    this.formVinculacao = this.fb.group({
+      condicaoImovel: [''],
+      porcentagemDetencao: [''],
+      isDeclarante: [false],
+      resideImovel: [false],
+      areaCedida: [''],
+      titularidadeIndenizado: [false],
+      tipoContrato: [''],
+      nomeAto: [''],
+      dataAto: [''],
+      utmBase: [''],
+      utmNorte: [''],
+      atividadePrincipal: [''],
+      recebePronaf: [false],
+      recebeProgramaGoverno: [false],
+      quotas: [''],
+      programasGoverno: [[]],
+      valorTotal: [''],
     });
 
     this.formPessoaLote = this.fb.group({
@@ -410,14 +440,46 @@ export class CadastroPessoasComponent implements OnInit {
       if (!loteId) return;
 
       this.formPessoaLote.get('loteId')?.setValue(loteId);
-      this.loteService.obterPorId(loteId).subscribe(l => this.numero = l.numero);
-
+      
+      // Carrega dados do lote (incluindo CPF para sincronização)
+      this.loteService.obterPorId(loteId).subscribe({
+        next: (lote) => {
+          this.numero = lote.numero;
+          console.log('[Pessoas] Dados do lote carregados:', lote);
+          console.log('[Pessoas] CPF do lote:', lote.cpf);
+          
+          // Tenta carregar dados da pessoa existente
       this.pessoasService.buscarParaEdicaoPorLote(loteId).subscribe({
-        next: (resp) => this.patchAll(resp),
+            next: (resp) => {
+              console.log('[Pessoas] ✅ Dados carregados para edição:', resp);
+              console.log('[Pessoas] 🔄 Ativando modo ATUALIZAÇÃO');
+              this.atualizando = true;
+              this.patchAll(resp);
+              this.cdr.markForCheck();
+            },
         error: (err) => {
-          // sem vínculo => permanece em modo "Salvar"
-          if (err.status !== 404) console.error('Erro ao carregar edição por lote', err);
+              // sem vínculo => permanece em modo "Salvar" e pré-preenche CPF do lote
+              if (err.status === 404) {
+                console.log('[Pessoas] Nenhuma pessoa encontrada para o lote', loteId, '- Modo SALVAR');
+                
+                // Verificar se já existe pessoa com o CPF do lote
+                if (lote.cpf) {
+                  console.log('[Pessoas] 🔍 Verificando se já existe pessoa com CPF:', lote.cpf);
+                  this.verificarPessoaExistentePorCPF(lote.cpf, loteId, lote.proprietario);
+                } else {
+                  // Não há CPF, prossegue com pré-preenchimento normal
+                  this.preencherDadosNovoDetentor(lote);
+                }
+              } else {
+                console.error('[Pessoas] Erro ao carregar edição por lote:', err);
+              }
           this.atualizando = false;
+              this.cdr.markForCheck();
+            }
+          });
+        },
+        error: (err) => {
+          console.error('[Pessoas] Erro ao carregar dados do lote:', err);
           this.cdr.markForCheck();
         }
       });
@@ -444,10 +506,24 @@ export class CadastroPessoasComponent implements OnInit {
   }
 
   private patchAll(resp: EditarDetentorResponseDTO) {
+    console.log('[Pessoas] 🔍 Debug patchAll - dados recebidos:', resp);
+    
     // Pessoa
     if (resp.pessoa) {
-      this.formPessoas.patchValue(pessoaToFormPessoas(resp.pessoa), { emitEvent: false });
-      this.formFisica.patchValue(pessoaToFormFisica(resp.pessoa), { emitEvent: false });
+      console.log('[Pessoas] 🔍 Aplicando dados da pessoa:', resp.pessoa);
+      console.log('[Pessoas] 🔍 Chamando pessoaToFormPessoas...');
+      const pessoaFormData = pessoaToFormPessoas(resp.pessoa);
+      console.log('[Pessoas] 🔍 Chamando pessoaToFormFisica...');
+      const fisicaFormData = pessoaToFormFisica(resp.pessoa);
+      
+      console.log('[Pessoas] 🔍 Dados mapeados para formPessoas:', pessoaFormData);
+      console.log('[Pessoas] 🔍 Dados mapeados para formFisica:', fisicaFormData);
+      
+      this.formPessoas.patchValue(pessoaFormData, { emitEvent: false });
+      this.formFisica.patchValue(fisicaFormData, { emitEvent: false });
+      
+      // Log adicional para verificar se o patchValue funcionou
+      console.log('[Pessoas] 🔍 formFisica após patchValue:', this.formFisica.value);
       this.formAnexo.patchValue({
         coordenadaEste: resp.pessoa.coordenadaEste ?? '',
         coordenadaNorte: resp.pessoa.coordenadaNorte ?? '',
@@ -460,12 +536,22 @@ export class CadastroPessoasComponent implements OnInit {
     }
     // Documento
     if (resp.documento) {
+      console.log('[Pessoas] 🔍 Aplicando dados do documento:', resp.documento);
+      
       const tp = resp.documento.tipoPessoa || 'FISICA';
       this.formPessoas.get('tipoPessoa')?.setValue(tp, { emitEvent: false });
       this.applyTipoPessoaMode(tp);
 
       const docForm = documentoToForm(resp.documento, resp.endereco);
+      console.log('[Pessoas] 🔍 Dados mapeados para formDocumentoPessoa:', docForm);
       this.formDocumentoPessoa.patchValue(docForm, { emitEvent: false });
+      
+      // Aplicar estadoCivil do documento no formFisica também
+      if (resp.documento.estadoCivil) {
+        console.log('[Pessoas] 🔍 Aplicando estadoCivil do documento no formFisica:', resp.documento.estadoCivil);
+        this.formFisica.patchValue({ estadoCivil: resp.documento.estadoCivil }, { emitEvent: false });
+        console.log('[Pessoas] 🔍 formFisica.estadoCivil após aplicar do documento:', this.formFisica.get('estadoCivil')?.value);
+      }
 
       // normalizações
       const toLow = (s?: string | null) => s?.toString().trim().toLowerCase() ?? null;
@@ -584,6 +670,59 @@ export class CadastroPessoasComponent implements OnInit {
       alert('Lote não selecionado!');
       return;
     }
+
+    // Validação de sincronização do CPF e Nome
+    const loteId = this.formPessoaLote.get('loteId')?.value;
+    const cpfPessoa = this.formDocumentoPessoa.get('cpf')?.value;
+    const nomePessoa = this.formPessoas.get('nome')?.value;
+    
+    if (loteId && (cpfPessoa || nomePessoa)) {
+      // Verifica se os dados da pessoa são iguais aos dados do lote
+      this.loteService.obterPorId(loteId).subscribe({
+        next: (lote) => {
+          const erros: string[] = [];
+          
+          // Validação do CPF
+          if (lote.cpf && cpfPessoa && lote.cpf !== cpfPessoa) {
+            erros.push(`CPF deve ser igual ao cadastrado no lote (${lote.cpf})`);
+            console.warn('[Pessoas] ⚠️ CPF da pessoa diferente do CPF do lote');
+            console.warn('[Pessoas] CPF do lote:', lote.cpf);
+            console.warn('[Pessoas] CPF da pessoa:', cpfPessoa);
+          }
+          
+          // Validação do Nome
+          if (lote.proprietario && nomePessoa && lote.proprietario !== nomePessoa) {
+            erros.push(`Nome do detentor deve ser igual ao proprietário do lote (${lote.proprietario})`);
+            console.warn('[Pessoas] ⚠️ Nome da pessoa diferente do proprietário do lote');
+            console.warn('[Pessoas] Proprietário do lote:', lote.proprietario);
+            console.warn('[Pessoas] Nome da pessoa:', nomePessoa);
+          }
+          
+          if (erros.length > 0) {
+            this.snackBar.open(
+              erros.join('. '), 
+              'Fechar', 
+              { duration: 8000 }
+            );
+            return;
+          }
+          
+          // Dados estão sincronizados, prossegue com o salvamento
+          this.executarSalvamento();
+        },
+        error: (err) => {
+          console.error('[Pessoas] Erro ao validar dados do lote:', err);
+          // Prossegue mesmo com erro na validação
+          this.executarSalvamento();
+        }
+      });
+    } else {
+      // Não há loteId ou dados para validar, prossegue normalmente
+      this.executarSalvamento();
+    }
+  }
+
+  private executarSalvamento() {
     const pessoaLoteCamposData = [
       'dataAto',
       'dataTerminoContrato', // e outros campos de data
@@ -605,6 +744,7 @@ export class CadastroPessoasComponent implements OnInit {
       tipoPessoa: this.formPessoas.get('tipoPessoa')?.value,
       cpf: cpfDigits || null,          // <<<<<< garante string ou null
       cnpj: (docRaw.cnpj ?? '').toString().replace(/\D/g, '') || null,
+      estadoCivil: docRaw.estadoCivil || this.formFisica.get('estadoCivil')?.value || null, // estadoCivil pode vir de ambos
 
       capitalNacional: this.toNumberOrNull(docRaw.capitalNacional),
       capitalEstrangeiro: this.toNumberOrNull(docRaw.capitalEstrangeiro),
@@ -625,6 +765,8 @@ export class CadastroPessoasComponent implements OnInit {
         coordenadaNorte: this.formAnexo.get('coordenadaNorte')?.value,
         dataNascimento: this.formFisica.get('dataNascimento')?.value ?
           this.formFisica.get('dataNascimento')?.value.toISOString().slice(0, 10) : null,
+        // Garantir que sexo seja enviado corretamente
+        sexoPessoa: this.formFisica.get('sexoPessoa')?.value ?? null,
         atividadePrincipal: this.formAnexo.get('atividadePrincipal')?.value,
         isRecebePronaf: this.formAnexo.get('isRecebePronaf')?.value,
         qtdPronaf: this.formAnexo.get('qtdPronaf')?.value || null,
@@ -637,6 +779,12 @@ export class CadastroPessoasComponent implements OnInit {
       documento: nullifyEmptyStrings(documento)
     };
     console.log('Documento para salvar:', dados.documento);
+    console.log('[Pessoas] 🔍 Debug salvamento:');
+    console.log('[Pessoas] sexo do formFisica:', this.formFisica.get('sexoPessoa')?.value);
+    console.log('[Pessoas] sexo na pessoa:', dados.pessoa.sexoPessoa);
+    console.log('[Pessoas] estadoCivil do formFisica:', this.formFisica.get('estadoCivil')?.value);
+    console.log('[Pessoas] estadoCivil do documento raw:', docRaw.estadoCivil);
+    console.log('[Pessoas] estadoCivil no documento final:', dados.documento.estadoCivil);
     console.log('DADOS: ', dados)
     const dadosTratados = nullifyEmptyStrings(dados);
     console.log('DADOS TRATADOS: ', dadosTratados)
@@ -705,8 +853,40 @@ export class CadastroPessoasComponent implements OnInit {
         this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
       },
       error: (e) => {
-        alert('Erro ao salvar pessoa!');
-        console.error(e);
+        console.error('Erro ao salvar pessoa:', e);
+        console.log('Status do erro:', e.status);
+        console.log('Mensagem do erro:', e.error);
+        console.log('Erro completo:', JSON.stringify(e, null, 2));
+        
+        // Verifica se é erro de CPF duplicado
+        const errorMessage = e?.error?.message || e?.message || e?.error || '';
+        console.log('Mensagem extraída:', errorMessage);
+        
+        const isCpfDuplicado = errorMessage.includes('duplicate key value violates unique constraint "un_cpf"') ||
+                              errorMessage.includes('CPF') && errorMessage.includes('already exists') ||
+                              errorMessage.includes('duplicate key') && errorMessage.includes('cpf') ||
+                              errorMessage.includes('un_cpf') ||
+                              (e.status === 400 && errorMessage.includes('duplicate'));
+        
+        console.log('É CPF duplicado?', isCpfDuplicado);
+        
+        if (isCpfDuplicado) {
+          this.snackBar.open(
+            '❌ CPF já cadastrado! Esta pessoa já existe no sistema. Use a busca para editá-la ou altere o CPF.',
+            'Fechar',
+            { duration: 8000 }
+          );
+          // Limpa apenas o campo CPF para permitir correção
+          this.formDocumentoPessoa.get('cpf')?.setValue('');
+          this.formDocumentoPessoa.get('cpf')?.markAsTouched();
+          this.cdr.markForCheck();
+        } else {
+          this.snackBar.open(
+            '❌ Erro ao salvar pessoa! Verifique os dados e tente novamente.',
+            'Fechar',
+            { duration: 6000 }
+          );
+        }
       }
     });
   }
@@ -730,6 +910,60 @@ export class CadastroPessoasComponent implements OnInit {
       this.snackBar.open('Lote não selecionado.', 'Fechar', { duration: 3000 });
       return;
     }
+
+    // Validação de sincronização do CPF e Nome
+    const cpfPessoa = this.formDocumentoPessoa.get('cpf')?.value;
+    const nomePessoa = this.formPessoas.get('nome')?.value;
+    
+    if (loteId && (cpfPessoa || nomePessoa)) {
+      // Verifica se os dados da pessoa são iguais aos dados do lote
+      this.loteService.obterPorId(loteId).subscribe({
+        next: (lote) => {
+          const erros: string[] = [];
+          
+          // Validação do CPF
+          if (lote.cpf && cpfPessoa && lote.cpf !== cpfPessoa) {
+            erros.push(`CPF deve ser igual ao cadastrado no lote (${lote.cpf})`);
+            console.warn('[Pessoas] ⚠️ CPF da pessoa diferente do CPF do lote (atualização)');
+            console.warn('[Pessoas] CPF do lote:', lote.cpf);
+            console.warn('[Pessoas] CPF da pessoa:', cpfPessoa);
+          }
+          
+          // Validação do Nome
+          if (lote.proprietario && nomePessoa && lote.proprietario !== nomePessoa) {
+            erros.push(`Nome do detentor deve ser igual ao proprietário do lote (${lote.proprietario})`);
+            console.warn('[Pessoas] ⚠️ Nome da pessoa diferente do proprietário do lote (atualização)');
+            console.warn('[Pessoas] Proprietário do lote:', lote.proprietario);
+            console.warn('[Pessoas] Nome da pessoa:', nomePessoa);
+          }
+          
+          if (erros.length > 0) {
+            this.snackBar.open(
+              erros.join('. '), 
+              'Fechar', 
+              { duration: 8000 }
+            );
+            return;
+          }
+          
+          // Dados estão sincronizados, prossegue com a atualização
+          this.executarAtualizacao(toISO);
+        },
+        error: (err) => {
+          console.error('[Pessoas] Erro ao validar dados do lote (atualização):', err);
+          // Prossegue mesmo com erro na validação
+          this.executarAtualizacao(toISO);
+        }
+      });
+    } else {
+      // Não há loteId ou dados para validar, prossegue normalmente
+      this.executarAtualizacao(toISO);
+    }
+  }
+
+  private executarAtualizacao(toISO: (v: any) => string | null) {
+    // 1) validar lote e obter pessoaLoteId
+    const loteId = this.formPessoaLote.get('loteId')?.value;
     const pessoaLoteId =
       (this as any).pessoaLoteIdEmEdicao ??
       Number(this.route.snapshot.queryParamMap.get('pessoaLoteId'));
@@ -755,11 +989,16 @@ export class CadastroPessoasComponent implements OnInit {
     const docRaw = this.formDocumentoPessoa.getRawValue();
     const toNumOrNull = (v: any) => (v === '' || v === null || v === undefined ? null : Number(v));
     const cpfDigits = (docRaw.cpf ?? '').toString().replace(/\D/g, ''); // só números
+    
+    // estadoCivil pode vir do formFisica ou formDocumentoPessoa
+    const estadoCivilValue = docRaw.estadoCivil || this.formFisica.get('estadoCivil')?.value || null;
+    
     const documento = {
       ...docRaw,
       tipoPessoa: this.formPessoas.get('tipoPessoa')?.value,
       cpf: cpfDigits || null,          // <<<<<< garante string ou null
       cnpj: (docRaw.cnpj ?? '').toString().replace(/\D/g, '') || null,
+      estadoCivil: estadoCivilValue, // Garantir que estadoCivil seja enviado
       capitalNacional: toNumOrNull(docRaw.capitalNacional),
       capitalEstrangeiro: toNumOrNull(docRaw.capitalEstrangeiro),
       percentCapitalNacional: docRaw.percentCapitalNacional ?? null,   // backend espera string
@@ -767,8 +1006,15 @@ export class CadastroPessoasComponent implements OnInit {
       pcePercentCapital: docRaw.pcePercentCapital ?? null,
       codigoPaisOrigem: this.onlyDigits(docRaw.codigoPaisOrigem) || docRaw.codigoPaisOrigem || null,
       codigoPaisResidencia: this.onlyDigits(docRaw.codigoPaisResidencia) || docRaw.codigoPaisResidencia || null,
-
     };
+    
+    console.log('[Pessoas] 🔍 Debug documento para atualização:');
+    console.log('[Pessoas] estadoCivil do formFisica:', this.formFisica.get('estadoCivil')?.value);
+    console.log('[Pessoas] estadoCivil do documento raw:', docRaw.estadoCivil);
+    console.log('[Pessoas] estadoCivil final enviado:', documento.estadoCivil);
+    
+    console.log('[Pessoas] 🔍 Debug pessoa para atualização:');
+    console.log('[Pessoas] sexo do formFisica:', this.formFisica.get('sexoPessoa')?.value);
 
     // 4) pessoa (PF/PJ + anexo + datas)
     const pessoa = {
@@ -777,7 +1023,8 @@ export class CadastroPessoasComponent implements OnInit {
       // datas em yyyy-MM-dd
       dataNascimento: toISO(this.formFisica.get('dataNascimento')?.value),
       dataCasamento: toISO(this.formFisica.get('dataCasamento')?.value),
-
+      // campos específicos para garantir envio correto
+      sexoPessoa: this.formFisica.get('sexoPessoa')?.value ?? null, // Garantir que sexo seja enviado
       racaCor: this.formFisica.get('racaCor')?.value ?? null,
       regimeDeBens: this.formFisica.get('regimeBens')?.value ?? null,
       isEspolio: !!this.formFisica.get('isEspolio')?.value,
@@ -815,7 +1062,7 @@ export class CadastroPessoasComponent implements OnInit {
         const toDate = (s?: string | null) => (s ? new Date(s) : null);
         this.formFisica.patchValue({
           dataNascimento: toDate(resp.pessoa?.dataNascimento),
-          sexoPessoa: resp.pessoa?.sexoPessoa ?? null,
+          sexoPessoa: resp.pessoa?.sexoPessoa ?? null, // Corrigido: sexo em vez de sexoPessoa
           isEspolio: resp.pessoa?.isEspolio ?? false,
           racaCor: resp.pessoa?.racaCor ?? null,
           dataCasamento: resp.pessoa?.dataCasamento ?? null,
@@ -871,7 +1118,31 @@ export class CadastroPessoasComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao atualizar detentor:', err);
+        console.log('Status do erro:', err.status);
+        console.log('Mensagem do erro:', err.error);
+        console.log('Erro completo:', JSON.stringify(err, null, 2));
+        
+        // Verifica se é erro de CPF duplicado
+        const errorMessage = err?.error?.message || err?.message || err?.error || '';
+        console.log('Mensagem extraída:', errorMessage);
+        
+        const isCpfDuplicado = errorMessage.includes('duplicate key value violates unique constraint "un_cpf"') ||
+                              errorMessage.includes('CPF') && errorMessage.includes('already exists') ||
+                              errorMessage.includes('duplicate key') && errorMessage.includes('cpf') ||
+                              errorMessage.includes('un_cpf') ||
+                              (err.status === 400 && errorMessage.includes('duplicate'));
+        
+        console.log('É CPF duplicado?', isCpfDuplicado);
+        
+        if (isCpfDuplicado) {
+          this.snackBar.open('CPF já cadastrado no sistema! Verifique se esta pessoa já foi cadastrada anteriormente.', 'Fechar', { duration: 5000 });
+          // Limpa apenas o campo CPF para permitir correção
+          this.formDocumentoPessoa.get('cpf')?.setValue('');
+          this.formDocumentoPessoa.get('cpf')?.markAsTouched();
+        } else {
         this.snackBar.open('Erro ao atualizar detentor.', 'Fechar', { duration: 4000 });
+        }
+        
         this.cdr.markForCheck();
       }
     });
@@ -914,6 +1185,111 @@ export class CadastroPessoasComponent implements OnInit {
       CondicaoPessoaImovel.Comodatario,
       CondicaoPessoaImovel.Concessionario
     ].includes(this.condicaoSelecionada);
+  }
+
+  private verificarPessoaExistentePorCPF(cpf: string, loteId: number, proprietario: string) {
+    console.log('[Pessoas] 🔍 Verificando se já existe pessoa com CPF:', cpf);
+    
+    // Busca pessoa existente através de todos os lotes para encontrar por CPF
+    // Como não temos endpoint direto por CPF, vamos usar uma abordagem inteligente
+    this.buscarPessoaPorCPF(cpf).then((pessoaExistente) => {
+      if (pessoaExistente) {
+        console.log('[Pessoas] ✅ Pessoa encontrada com este CPF:', pessoaExistente);
+        console.log('[Pessoas] 🔄 Ativando modo ATUALIZAÇÃO automático');
+        
+        this.snackBar.open(
+          '✅ Pessoa encontrada com este CPF. Ativando modo de edição automaticamente.',
+          'Fechar',
+          { duration: 5000 }
+        );
+        
+        // Ativa modo de edição
+        this.atualizando = true;
+        this.patchAll(pessoaExistente);
+        this.cdr.markForCheck();
+      } else {
+        console.log('[Pessoas] ℹ️ Nenhuma pessoa encontrada com este CPF - modo SALVAR');
+        this.preencherDadosNovoDetentor({ cpf, proprietario });
+      }
+    }).catch((error) => {
+      console.error('[Pessoas] Erro ao buscar pessoa por CPF:', error);
+      // Em caso de erro, prossegue com pré-preenchimento normal
+      this.preencherDadosNovoDetentor({ cpf, proprietario });
+    });
+  }
+
+  private async buscarPessoaPorCPF(cpf: string): Promise<any> {
+    console.log('[Pessoas] 🔍 Buscando pessoa por CPF:', cpf);
+    
+    try {
+      // Estratégia otimizada: busca todos os lotes com este CPF
+      const lotes = await this.loteService.obterTodos().toPromise();
+      console.log('[Pessoas] 📋 Total de lotes encontrados:', lotes?.length);
+      
+      if (!lotes || lotes.length === 0) {
+        return null;
+      }
+
+      // Filtra lotes que têm o CPF correspondente
+      const lotesComCPF = lotes.filter(lote => lote.cpf === cpf && lote.id);
+      console.log('[Pessoas] 🎯 Lotes encontrados com CPF', cpf, ':', lotesComCPF.length);
+
+      if (lotesComCPF.length === 0) {
+        console.log('[Pessoas] ℹ️ Nenhum lote encontrado com este CPF');
+        return null;
+      }
+
+      // Para cada lote com o CPF, tenta buscar pessoa associada
+      for (const lote of lotesComCPF) {
+        console.log('[Pessoas] 🔍 Verificando lote ID:', lote.id);
+        
+        try {
+          // Tenta buscar pessoa para este lote
+          const pessoaData = await this.pessoasService.buscarParaEdicaoPorLote(lote.id!).toPromise();
+          if (pessoaData) {
+            console.log('[Pessoas] ✅ Pessoa encontrada para lote', lote.id, ':', pessoaData);
+            return pessoaData;
+          }
+        } catch (err: any) {
+          // 404 é normal - significa que não há pessoa para este lote ainda
+          if (err?.status !== 404) {
+            console.error('[Pessoas] Erro ao buscar pessoa para lote', lote.id, ':', err);
+          } else {
+            console.log('[Pessoas] 📝 Lote', lote.id, 'não tem pessoa cadastrada ainda (404)');
+          }
+        }
+      }
+      
+      console.log('[Pessoas] 🔍 CPF existe em lotes, mas nenhuma pessoa cadastrada ainda');
+      return null;
+      
+    } catch (error) {
+      console.error('[Pessoas] Erro ao buscar lotes:', error);
+      throw error;
+    }
+  }
+
+  private preencherDadosNovoDetentor(lote: any) {
+    console.log('[Pessoas] 🔄 Pré-preenchendo dados do lote:', {
+      cpf: lote.cpf,
+      proprietario: lote.proprietario
+    });
+    
+    // Pré-preenche o CPF do lote no documento da pessoa
+    if (lote.cpf) {
+      this.formDocumentoPessoa.patchValue({
+        cpf: lote.cpf
+      });
+      console.log('[Pessoas] ✅ CPF pré-preenchido:', lote.cpf);
+    }
+
+    // Pré-preenche o nome do detentor com o proprietário do lote
+    if (lote.proprietario) {
+      this.formPessoas.patchValue({
+        nome: lote.proprietario
+      });
+      console.log('[Pessoas] ✅ Nome do detentor pré-preenchido:', lote.proprietario);
+    }
   }
 
   onVoltarClick(): void {

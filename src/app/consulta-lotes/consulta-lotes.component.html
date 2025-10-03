@@ -47,6 +47,13 @@
 
             <div class="filtro-item">
               <mat-form-field class="full-width">
+                <mat-label>Denominação do Imóvel</mat-label>
+                <input matInput formControlName="denominacaoImovel" placeholder="Ex: Imovel...." />
+              </mat-form-field>
+            </div>
+
+            <div class="filtro-item">
+              <mat-form-field class="full-width">
                 <mat-label>Situação Jurídica</mat-label>
                 <mat-select formControlName="situacaoJuridicaId">
                   <mat-option *ngFor="let s of situacoes" [value]="s.value">{{ s.viewValue }}</mat-option>

@@ -4,6 +4,58 @@
   overflow-x: hidden;
 }
 
+/* ====== FORM HEADER ====== */
+.form-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  
+  h2 {
+    color: var(--color-primary-700);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+/* ====== QUADRO STYLES ====== */
+.quadro {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  
+  .quadro-header {
+    background: var(--color-secondary-100);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    
+    h3 {
+      margin: 0;
+      color: var(--color-text-primary);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+  
+  .quadro-content {
+    padding: var(--spacing-lg);
+  }
+  
+  &.quadro-destaque {
+    border-color: var(--color-primary-500);
+    
+    .quadro-header {
+      background: var(--color-primary-500);
+      
+      h3 {
+        color: white;
+      }
+    }
+  }
+}
+
 /* ====== FORM STYLES ====== */
 :host ::ng-deep mat-form-field {
   width: 100%;
@@ -15,18 +67,6 @@
 :host ::ng-deep .mdc-text-field--disabled .mdc-text-field__input {
   background: var(--color-background-disabled);
   border-radius: var(--radius-xs);
-}
-
-/* ====== CARD ACTIONS ====== */
-:host ::ng-deep mat-card-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  flex-wrap: nowrap;
-  
-  @media (max-width: 1100px) {
-    flex-wrap: wrap;
-  }
 }
 
 /* ====== BUTTON TOGGLE STYLES ====== */
@@ -43,7 +83,65 @@
   padding: 0 var(--spacing-md);
 }
 
+/* ====== FORM ACTIONS ====== */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: var(--color-background-secondary);
+  border-radius: var(--radius-md);
+  
+  @media (max-width: 1100px) {
+    flex-wrap: wrap;
+  }
+}
+
+/* ====== RESPONSIVE GRID ====== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  
+  .col-1 { grid-column: span 1; }
+  .col-2 { grid-column: span 2; }
+  .col-3 { grid-column: span 3; }
+  .col-4 { grid-column: span 4; }
+  .col-5 { grid-column: span 5; }
+  .col-6 { grid-column: span 6; }
+  .col-7 { grid-column: span 7; }
+  .col-8 { grid-column: span 8; }
+  .col-9 { grid-column: span 9; }
+  .col-10 { grid-column: span 10; }
+  .col-11 { grid-column: span 11; }
+  .col-12 { grid-column: span 12; }
+  
+  @media (max-width: 768px) {
+    .md-6 { grid-column: span 6; }
+    .md-12 { grid-column: span 12; }
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    
+    .col-1, .col-2, .col-3, .col-4, .col-5, .col-6,
+    .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+    .md-6, .md-12 {
+      grid-column: span 1;
+    }
+  }
+}
+
 /* ====== SECTION DIVIDER ====== */
 .section-divider { 
   margin: var(--spacing-md) 0 var(--spacing-sm); 
 }
+
+/* ====== UTILITY CLASSES ====== */
+.ml-5 { margin-left: var(--spacing-sm); }
+.mb-20 { margin-bottom: var(--spacing-md); }
+.mt-60 { margin-top: var(--spacing-xl); }

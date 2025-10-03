@@ -10,13 +10,14 @@
 
       <mat-card appearance="outlined">
         <mat-card-header>
-          <mat-card-title>Imóveis</mat-card-title>
+          <mat-card-title>Cadastro de Lote</mat-card-title>
+          <mat-card-subtitle>Informações completas do lote</mat-card-subtitle>
         </mat-card-header>
 
-
         <mat-card-content class="mt-20">
+          <!-- Primeira linha: Controle de Campo, Município, Distrito -->
           <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="300px">
+            <div fxFlex="310px">
               <mat-form-field class="full-width">
                 <mat-label>Controle de Campo</mat-label>
                 <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput required />
@@ -26,59 +27,7 @@
               </mat-form-field>
             </div>
 
-            <div fxFlex="335px">
-              <mat-form-field class="full-width">
-                <mat-label>SNCR</mat-label>
-                <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
-              </mat-form-field>
-            </div>
-
-            <div fxFlex="300px">
-              <mat-form-field class="full-width">
-                <mat-label>Área (Ha)</mat-label>
-                <input type="number" matInput formControlName="area" placeholder="Ex: 2.0000" required />
-                <mat-error *ngIf="
-                    formLotes.get('area')?.hasError('required') &&
-                    formLotes.get('area')?.touched
-                  ">
-                  A área é obrigatória
-                </mat-error>
-              </mat-form-field>
-            </div>
-          </div>
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="970px">
-              <mat-form-field class="full-width">
-                <mat-label>Proprietário</mat-label>
-                <input matInput formControlName="proprietario" placeholder="Nome do proprietário" required />
-                <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
-                  O nome do proprietário é obrigatório
-                </mat-error>
-              </mat-form-field>
-            </div>
-          </div>
-
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="600px">
-              <mat-form-field class="full-width">
-                <mat-label>Denominação do imóvel</mat-label>
-                <input type="text" formControlName="denominacaoImovel" placeholder="Ex: Sítio..." matInput />
-              </mat-form-field>
-            </div>
-
-            <div fxFlex="350px">
-              <mat-form-field mat-form-field class="full-width">
-                <mat-label>Situação Jurídica</mat-label><mat-select formControlName="situacaoJuridicaId">
-                  <mat-option *ngFor="let situacao of situacoes" [value]="situacao.value">
-                    {{ situacao.viewValue }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </div>
-
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="260px">
+            <div fxFlex="310px">
               <mat-form-field class="full-width">
                 <mat-label>Município</mat-label>
                 <mat-select formControlName="municipioId" (selectionChange)="loadDistritosByMunicipio($event.value)"
@@ -93,7 +42,7 @@
               </mat-form-field>
             </div>
 
-            <div fxFlex="260px">
+            <div fxFlex="310px">
               <mat-form-field class="full-width">
                 <mat-label>Distrito</mat-label>
                 <mat-select formControlName="distritoId" [errorStateMatcher]="errorStateMatcher">
@@ -106,18 +55,110 @@
                 </mat-error>
               </mat-form-field>
             </div>
+          </div>
 
-            <div fxFlex="250px">
+          <!-- Segunda linha: Situação Jurídica, Área, Perímetro -->
+          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
+            <div fxFlex="310px">
               <mat-form-field class="full-width">
-                <mat-label>CPF</mat-label>
-                <input matInput formControlName="cpf" />
+                <mat-label>Situação Jurídica</mat-label>
+                <mat-select formControlName="situacaoJuridicaId" [errorStateMatcher]="errorStateMatcher">
+                  <mat-option *ngFor="let situacao of situacoes" [value]="situacao.value">
+                    {{ situacao.viewValue }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="formLotes.get('situacaoJuridicaId')?.hasError('required')">
+                  Situação Jurídica é obrigatória
+                </mat-error>
               </mat-form-field>
             </div>
-            <div fxFlex="150px">
+
+            <div fxFlex="310px">
               <mat-form-field class="full-width">
-                <mat-label>Perímetro</mat-label>
-                <input type="number" formControlName="perimetro" placeholder="Ex: 3.0000" matInput />
+                <mat-label>Área (m²)</mat-label>
+                <input type="number" formControlName="area" placeholder="Ex: 1000" matInput required />
+                <mat-error *ngIf="formLotes.get('area')?.hasError('required')">
+                  Área é obrigatória
+                </mat-error>
+                <mat-error *ngIf="formLotes.get('area')?.hasError('min')">
+                  Área deve ser maior que zero
+                </mat-error>
               </mat-form-field>
+            </div>
+
+            <!-- <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>Perímetro (m)</mat-label>
+                <input type="number" formControlName="perimetro" placeholder="Ex: 120" matInput />
+              </mat-form-field>
+            </div> -->
+          </div>
+
+          <!-- Terceira linha: Proprietário, CPF -->
+          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
+            <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>Proprietário</mat-label>
+                <input type="text" formControlName="proprietario" placeholder="Nome do proprietário" matInput required />
+                <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
+                  Proprietário é obrigatório
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>CPF</mat-label>
+                <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput required />
+                <mat-error *ngIf="formLotes.get('cpf')?.hasError('required')">
+                  CPF é obrigatório
+                </mat-error>
+                <mat-error *ngIf="formLotes.get('cpf')?.hasError('pattern')">
+                  CPF deve ter formato válido
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Quarta linha: Denominação do Imóvel, SNCR -->
+          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
+            <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>Denominação do Imóvel</mat-label>
+                <input type="text" formControlName="denominacaoImovel" placeholder="Ex: Sítio São José" matInput />
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>Código do Imóvel Rural (SNCR)</mat-label>
+                <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Quinta linha: Data Término Período de Uso -->
+          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
+            <div fxFlex="310px">
+              <mat-form-field class="full-width">
+                <mat-label>Data Término Período de Uso</mat-label>
+                <input type="date" formControlName="dataTerminoPeriodoDeUso" matInput />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Informações sobre o formulário -->
+          <div class="info-section">
+            <mat-divider></mat-divider>
+            <div class="info-content">
+              <h4>Formulário de Cadastro de Lote:</h4>
+              <ul>
+                <li><strong>Campos Obrigatórios:</strong> Controle de Campo, Município, Distrito, Situação Jurídica, Área, Proprietário e CPF</li>
+                <li><strong>Campos Opcionais:</strong> Perímetro, Data Término Período de Uso, Denominação do Imóvel e SNCR</li>
+                <li><strong>Validações:</strong> CPF com formato válido, Área maior que zero</li>
+                <li><strong>Próximo Passo:</strong> Após salvar, você será redirecionado para o Cadastro de Estrutura com os dados preenchidos</li>
+                <li><strong>Nota:</strong> Forma de Obtenção é preenchida no Cadastro de Estrutura</li>
+              </ul>
             </div>
           </div>
 
@@ -126,21 +167,18 @@
             @if(!atualizando){
             <button mat-flat-button color="primary" type="submit">
               <mat-icon fontIcon="save"></mat-icon>
-              Salvar
+              Salvar e Ir para Estrutura
             </button>
             } @else {
             <button mat-flat-button color="primary" type="button" (click)="atualizarLote()">
               <mat-icon fontIcon="refresh"></mat-icon>
-              Atualizar
+              Atualizar e Ir para Estrutura
             </button>
             }
             <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
               <mat-icon fontIcon="backspace"></mat-icon>
               Limpar
             </button>
-            <!-- <button mat-flat-button color="primary" (click)="irParaCadastroEstrutura()">
-                <mat-icon>arrow_forward</mat-icon> Cadastrar Estrutura
-              </button> -->
           </mat-card-actions>
         </mat-card-content>
       </mat-card>

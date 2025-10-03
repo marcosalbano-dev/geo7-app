@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,6 +21,9 @@ import { MunicipioService } from '../services/municipio.service';
 import { DistritoService } from '../services/distrito.service';
 import { LoteService } from '../services/lote.service';
 import { EstruturaService } from '../services/estrutura.service';
+import { EnderecoLoteService } from '../services/endereco-lote.service';
+import { FormaObtencaoService } from '../services/forma-obtencao.service';
+import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { CadastroSituacaoJuridicaComponent } from '../cadastro-situacao-juridica/cadastro-situacao-juridica.component';
 import { estruturaDTOToFormValue, mapFormToEstruturaDTO } from '../helpers/estrutura-mapper';
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
@@ -55,7 +58,7 @@ type SelectOption<T = any> = { value: T; viewValue: string };
   ],
   templateUrl: './cadastro-estrutura.component.html',
   styleUrl: './cadastro-estrutura.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default,
 })
 export class CadastroEstruturaComponent implements OnInit {
   formEstrutura!: FormGroup;
@@ -64,6 +67,7 @@ export class CadastroEstruturaComponent implements OnInit {
   filteredDistritos: Distrito[] = [];
   lotes: LoteDTO[] = [];
   lotesFiltrados: LoteDTO[] = [];
+  situacoes: SelectOption[] = [];
 
   isLoadingDistrito = false;
 
@@ -132,13 +136,6 @@ export class CadastroEstruturaComponent implements OnInit {
     { value: 'semUso', viewValue: 'Sem Uso' },
   ];
 
-  situacoes = [
-    { value: 1, viewValue: 'Posse Por Simples Ocupação' },
-    { value: 2, viewValue: 'Posse a Justo Título' },
-    { value: 3, viewValue: 'Área Registrada (Domínio)' },
-    { value: 99, viewValue: 'Indefinido' },
-  ];
-
   obtencoes = [
     { value: 1, viewValue: '01 - Aquisição do Governo Estadual' },
     { value: 2, viewValue: '02 - Adjudicação' },
@@ -170,9 +167,11 @@ export class CadastroEstruturaComponent implements OnInit {
     private municipioService: MunicipioService,
     private distritoService: DistritoService,
     private estruturaService: EstruturaService,
+    private enderecoLoteService: EnderecoLoteService,
+    private formaObtencaoService: FormaObtencaoService,
+    private situacaoJuridicaService: SituacaoJuridicaService,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private cd: ChangeDetectorRef,
     private router: Router,
     private location: Location
   ) { }
@@ -194,6 +193,12 @@ export class CadastroEstruturaComponent implements OnInit {
       area: [null, Validators.required],
       sncr: [''],
       situacaoJuridicaId: [null, Validators.required],
+      
+      // Campos de localização
+      localidade: [''],
+      comunidade: [''],
+      indicacaoLocalizacao: [''],
+      codImoReceita: [''],
 
       formaObtencaoId: [null],
       descricaoFormaDeObtencao: [''],
@@ -257,11 +262,6 @@ export class CadastroEstruturaComponent implements OnInit {
       dhm: [null],
     });
 
-    // bloqueios somente leitura
-    //this.formEstrutura.get('municipioId')?.disable();
-    //this.formEstrutura.get('numero')?.disable();
-    //this.formEstrutura.get('distritoId')?.disable();
-    //this.formEstrutura.get('denominacaoImovel')?.disable();
 
     // carregar dados base
     this.carregarMunicipios();
@@ -285,11 +285,11 @@ export class CadastroEstruturaComponent implements OnInit {
         console.warn('[Estrutura] loteId não encontrado na URL/estado de navegação.');
       }
 
-      const formaId = this.formEstrutura.get('formaObtencaoId')?.value;
-      const descricao = this.obtencoes.find(o => o.value === formaId)?.viewValue || '';
-
       this.paramCache = params;
 
+      console.log('[Estrutura] Parâmetros recebidos:', params);
+      console.log('[Estrutura] denominacaoImovel dos params:', params['denominacaoImovel']);
+      
       this.formEstrutura.patchValue({
         id: params['id'] ? +params['id'] : null,
         municipioId: params['municipioId'] ? +params['municipioId'] : null,
@@ -299,8 +299,13 @@ export class CadastroEstruturaComponent implements OnInit {
         denominacaoImovel: params['denominacaoImovel'] || '',
         sncr: params['sncr'] ?? '',
         situacaoJuridicaId: params['situacaoJuridicaId'] ?? null,
-        descricaoFormaDeObtencao: descricao,
+        // Campos de localização ficam em branco para serem preenchidos
+        localidade: '',
+        comunidade: '',
+        indicacaoLocalizacao: '',
       });
+      
+      console.log('[Estrutura] Formulário após aplicar params:', this.formEstrutura.getRawValue());
 
       if (params['municipioId']) {
         this.distritoService.getDistritosByMunicipio(+params['municipioId']).subscribe(distritos => {
@@ -309,11 +314,14 @@ export class CadastroEstruturaComponent implements OnInit {
           if (distritoIdParam) {
             this.formEstrutura.get('distritoId')?.enable();
             this.formEstrutura.patchValue({ distritoId: distritoIdParam });
-            this.formEstrutura.get('distritoId')?.disable();
+            // mantém campo habilitado para edição
           }
         });
       }
     });
+
+    // Carrega situações jurídicas
+    this.carregarSituacoesJuridicas();
   }
 
   /** Nome a partir do id — útil em campos readonly */
@@ -328,9 +336,32 @@ export class CadastroEstruturaComponent implements OnInit {
     return this.filteredDistritos.find(d => d.id === id)?.nomeDistrito ?? '';
   }
 
+  getMunicipioNomeByLote(lote: any): string {
+    if (!lote || !lote.municipioId) return 'Sem município';
+    const municipio = this.municipios.find(m => m.id === lote.municipioId);
+    return municipio ? municipio.nome : 'Município não encontrado';
+  }
+
   onMunicipioChange(municipioId: number): void {
     this.loadDistritosByMunicipio(municipioId);
     this.lotesFiltrados = this.lotes.filter(l => l.municipioId === municipioId);
+  }
+
+  onLoteChange(loteId: number): void {
+    const lote = this.lotes.find(l => l.id === loteId);
+    if (lote) {
+      this.formEstrutura.patchValue({
+        numero: lote.numero,
+        municipioId: lote.municipioId,
+        distritoId: lote.distritoId,
+        denominacaoImovel: lote.denominacaoImovel,
+        area: lote.area,
+        sncr: lote.sncr
+      });
+      if (lote.municipioId) {
+        this.loadDistritosByMunicipio(lote.municipioId);
+      }
+    }
   }
 
   carregarMunicipios(): void {
@@ -347,7 +378,9 @@ export class CadastroEstruturaComponent implements OnInit {
 
   carregarLotes(): void {
     this.loteService.obterTodos().subscribe({
-      next: (res) => (this.lotes = res),
+      next: (res) => {
+        this.lotes = res;
+      },
       error: (err) => console.error('Erro ao carregar lotes:', err),
     });
   }
@@ -380,22 +413,96 @@ export class CadastroEstruturaComponent implements OnInit {
           return;
         }
 
+        console.log('[Estrutura] DTO recebido do serviço:', estruturaDTO);
+        console.log('[Estrutura] 🔍 Dados de forma de obtenção na estrutura:');
+        console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', estruturaDTO.descricaoFormaDeObtencao);
+        console.log('[Estrutura] 🔍 - areaMedida:', estruturaDTO.areaMedida, 'tipo:', typeof estruturaDTO.areaMedida);
+        console.log('[Estrutura] 🔍 - dataPosse:', estruturaDTO.dataPosse, 'tipo:', typeof estruturaDTO.dataPosse);
+        console.log('[Estrutura] 🔍 - formaObtencaoId:', estruturaDTO.formaObtencaoId);
+        console.log('[Estrutura] 🔍 - Todos os campos do DTO:', Object.keys(estruturaDTO));
+
         this.loadDistritosByMunicipio(estruturaDTO.municipioId).then(() => {
-          // habilita p/ patch integral e volta a desabilitar
+          // habilita campos para preenchimento
           this.formEstrutura.get('municipioId')?.enable();
           this.formEstrutura.get('distritoId')?.enable();
           this.formEstrutura.get('numero')?.enable();
           this.formEstrutura.get('denominacaoImovel')?.enable();
 
-          this.formEstrutura.patchValue(estruturaDTOToFormValue(estruturaDTO));
+          const formValue = estruturaDTOToFormValue(estruturaDTO);
+          console.log('[Estrutura] Valores mapeados para o form:', formValue);
+          
+          // Aplica TODOS os dados da estrutura no formulário
+          this.formEstrutura.patchValue(formValue);
 
-          this.formEstrutura.get('municipioId')?.disable();
-          this.formEstrutura.get('distritoId')?.disable();
-          this.formEstrutura.get('numero')?.disable();
-          this.formEstrutura.get('denominacaoImovel')?.disable();
+          console.log('[Estrutura] Formulário após aplicar dados da estrutura:', this.formEstrutura.getRawValue());
 
+          // Se o loteId está presente, carrega os dados do lote APENAS para campos que não estão na estrutura
+          console.log('[Estrutura] Verificando loteId:', estruturaDTO.loteId);
+          if (estruturaDTO.loteId) {
+            console.log('[Estrutura] Carregando dados do lote com ID:', estruturaDTO.loteId);
+            this.loteService.obterPorId(estruturaDTO.loteId).subscribe({
+              next: (lote) => {
+                console.log('[Estrutura] Dados do lote carregados:', lote);
+                console.log('[Estrutura] denominacaoImovel do lote:', lote.denominacaoImovel);
+                
+                // Só atualiza campos que não estão preenchidos na estrutura
+                const currentFormValue = this.formEstrutura.getRawValue();
+                const loteData: any = {};
+                
+                console.log('[Estrutura] Valores atuais do formulário antes de aplicar dados do lote:', currentFormValue);
+                
+                // Só preenche se não estiver preenchido na estrutura (verifica se é null, undefined ou string vazia)
+                if ((!currentFormValue.numero || currentFormValue.numero === '') && lote.numero) {
+                  loteData.numero = lote.numero;
+                }
+                if ((!currentFormValue.municipioId || currentFormValue.municipioId === null) && lote.municipioId) {
+                  loteData.municipioId = lote.municipioId;
+                }
+                if ((!currentFormValue.distritoId || currentFormValue.distritoId === null) && lote.distritoId) {
+                  loteData.distritoId = lote.distritoId;
+                }
+                // Sempre aplica denominacaoImovel e sncr do lote (campos específicos do lote)
+                if (lote.denominacaoImovel) {
+                  loteData.denominacaoImovel = lote.denominacaoImovel;
+                }
+                if (lote.sncr) {
+                  loteData.sncr = lote.sncr;
+                }
+                // Sempre aplica situacaoJuridicaId do lote
+                if (lote.situacaoJuridicaId) {
+                  loteData.situacaoJuridicaId = lote.situacaoJuridicaId;
+                }
+                if ((!currentFormValue.area || currentFormValue.area === null) && lote.area) {
+                  loteData.area = lote.area;
+                }
+                
+                // Aplica apenas os campos que não estão preenchidos
+                if (Object.keys(loteData).length > 0) {
+                  console.log('[Estrutura] Aplicando dados do lote que não estão na estrutura:', loteData);
+                  this.formEstrutura.patchValue(loteData);
+                } else {
+                  console.log('[Estrutura] Nenhum dado do lote será aplicado - todos os campos já estão preenchidos na estrutura');
+                }
+                
+                console.log('[Estrutura] Formulário final após carregar dados do lote:', this.formEstrutura.getRawValue());
+              },
+              error: (err) => {
+                console.error('[Estrutura] Erro ao carregar dados do lote:', err);
+              }
+            });
+          } else {
+            console.log('[Estrutura] Nenhum loteId encontrado, pulando carregamento de dados do lote');
+          }
+
+          // Carrega dados adicionais
+          this.carregarEnderecoLote(loteId);
+          
+          // ✅ CORREÇÃO: Não chama carregarFormaObtencao pois os dados já vêm da estrutura principal
+          // Os dados de forma de obtenção (areaPosse, dataPosse, descricaoFormaDeObtencao) 
+          // já estão sendo carregados corretamente do DTO da estrutura
+
+          // mantém campos habilitados para edição
           console.log('[Estrutura] DTO aplicado no form:', this.formEstrutura.getRawValue());
-          this.cd.markForCheck();
         });
       },
       error: (err) => {
@@ -406,6 +513,209 @@ export class CadastroEstruturaComponent implements OnInit {
         }
       }
     });
+  }
+
+  carregarFormaObtencao(loteId: number) {
+    console.log('[Estrutura] Carregando forma de obtenção para lote:', loteId);
+    this.formaObtencaoService.buscarPorLoteId(loteId).subscribe({
+      next: (formaObtencaoDTO) => {
+        console.log('[Estrutura] Forma de obtenção carregada:', formaObtencaoDTO);
+        console.log('[Estrutura] descricaoFormaDeObtencao recebida:', formaObtencaoDTO.descricaoFormaDeObtencao);
+        console.log('[Estrutura] areaMedida recebida:', formaObtencaoDTO.areaMedida, 'tipo:', typeof formaObtencaoDTO.areaMedida);
+        console.log('[Estrutura] dataPosse recebida:', formaObtencaoDTO.dataPosse, 'tipo:', typeof formaObtencaoDTO.dataPosse);
+        console.log('[Estrutura] formaObtencaoId recebido:', formaObtencaoDTO.id);
+        console.log('[Estrutura] Todos os campos recebidos:', Object.keys(formaObtencaoDTO));
+        
+        // Mapeia a descrição da forma de obtenção corretamente
+        let descricaoForma = formaObtencaoDTO.descricaoFormaDeObtencao || '';
+        let codigoForma = null;
+        
+        // Se a descrição está vazia, mantém vazio (não tenta mapear pelo ID da tabela)
+        if (descricaoForma) {
+          // Se tem descrição, mapeia para o código correspondente
+          const opcao = this.obtencoes.find(o => o.viewValue === descricaoForma);
+          codigoForma = opcao ? opcao.value : null;
+        }
+        
+        console.log('[Estrutura] 🔍 Mapeamento forma de obtenção por loteId:');
+        console.log('[Estrutura] 🔍 - loteId:', loteId);
+        console.log('[Estrutura] 🔍 - ID da tabela forma_obtencao:', formaObtencaoDTO.id);
+        console.log('[Estrutura] 🔍 - Descrição original do banco:', formaObtencaoDTO.descricaoFormaDeObtencao);
+        console.log('[Estrutura] 🔍 - Descrição mapeada:', descricaoForma);
+        console.log('[Estrutura] 🔍 - Código mapeado:', codigoForma);
+        
+        // Aplica os dados da forma de obtenção no formulário
+        const formaObtencaoData = {
+          formaObtencaoId: codigoForma,
+          descricaoFormaDeObtencao: descricaoForma,
+          livro: formaObtencaoDTO.livro || '',
+          matricula: formaObtencaoDTO.matricula || '',
+          nomeCartorio: formaObtencaoDTO.nomeCartorio || '',
+          municipioCartorio: formaObtencaoDTO.municipioCartorio || '',
+          dataRegistro: formaObtencaoDTO.dataRegistro || null,
+          numeroRegistro: formaObtencaoDTO.numeroRegistro || '',
+          areaRegistrada: formaObtencaoDTO.areaRegistrada || null,
+          areaMedida: formaObtencaoDTO.areaMedida || null,
+          areaPosse: formaObtencaoDTO.areaMedida ? Number(formaObtencaoDTO.areaMedida) : null, // areaPosse usa o mesmo valor que areaMedida
+          dataPosse: formaObtencaoDTO.dataPosse ? new Date(formaObtencaoDTO.dataPosse) : null,
+          numeroHerdeiros: formaObtencaoDTO.numeroHerdeiros || null,
+          oficio: formaObtencaoDTO.oficio || '',
+        };
+
+        // Se descricaoFormaDeObtencao está vazia, mas temos outros dados, alerta o usuário
+        if (!formaObtencaoDTO.descricaoFormaDeObtencao && (formaObtencaoDTO.areaMedida || formaObtencaoDTO.dataPosse)) {
+          console.warn('[Estrutura] ⚠️ ATENÇÃO: Dados de forma de obtenção encontrados, mas descrição está vazia no banco!');
+          console.warn('[Estrutura] 📝 Dados encontrados:', {
+            areaMedida: formaObtencaoDTO.areaMedida,
+            dataPosse: formaObtencaoDTO.dataPosse,
+            loteId: formaObtencaoDTO.loteId
+          });
+          console.warn('[Estrutura] 💡 Solução: Execute o SQL para corrigir o campo descricao_forma_d no banco');
+        }
+        
+        console.log('[Estrutura] Aplicando dados da forma de obtenção:', formaObtencaoData);
+        this.formEstrutura.patchValue(formaObtencaoData);
+        
+        console.log('[Estrutura] Formulário após aplicar dados da forma de obtenção:', this.formEstrutura.getRawValue());
+        console.log('[Estrutura] 🔍 Verificando campos específicos:');
+        console.log('[Estrutura] 🔍 - areaPosse no form:', this.formEstrutura.get('areaPosse')?.value);
+        console.log('[Estrutura] 🔍 - dataPosse no form:', this.formEstrutura.get('dataPosse')?.value);
+        console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao no form:', this.formEstrutura.get('descricaoFormaDeObtencao')?.value);
+      },
+      error: (err) => {
+        if (err?.status === 404) {
+          console.log('[Estrutura] ✅ 404: Nenhuma forma de obtenção cadastrada para o lote', loteId);
+          console.log('[Estrutura] 📝 Os campos de forma de obtenção ficarão vazios para preenchimento manual');
+          
+          // Limpa os campos relacionados à forma de obtenção para garantir que estejam vazios
+          const camposVazios = {
+            descricaoFormaDeObtencao: '',
+            livro: '',
+            matricula: '',
+            nomeCartorio: '',
+            municipioCartorio: '',
+            dataRegistro: null,
+            numeroRegistro: '',
+            areaRegistrada: null,
+            areaMedida: null,
+            areaPosse: null,
+            dataPosse: null,
+            numeroHerdeiros: null,
+            oficio: '',
+          };
+          
+          this.formEstrutura.patchValue(camposVazios);
+          console.log('[Estrutura] 🔄 Campos de forma de obtenção limpos para preenchimento manual');
+        } else {
+          console.error('[Estrutura] ❌ Erro inesperado ao carregar forma de obtenção:', err);
+          console.error('[Estrutura] 🔍 Detalhes do erro:', {
+            status: err?.status,
+            statusText: err?.statusText,
+            ok: err?.ok,
+            url: err?.url
+          });
+        }
+      }
+    });
+  }
+
+  carregarEnderecoLote(loteId: number) {
+    console.log('[Estrutura] Carregando endereço do lote:', loteId);
+    this.enderecoLoteService.buscarPorLoteId(loteId).subscribe({
+      next: (enderecoDTO) => {
+        console.log('[Estrutura] Endereço do lote carregado:', enderecoDTO);
+        
+        // Aplica os dados do endereço no formulário
+        const enderecoData = {
+          localidade: enderecoDTO.localidade || '',
+          comunidade: enderecoDTO.comunidade || '',
+          indicacaoLocalizacao: enderecoDTO.pontoDeReferencia || '',
+          codImoReceita: enderecoDTO.codImoReceita || '',
+        };
+        
+        console.log('[Estrutura] Aplicando dados do endereço:', enderecoData);
+        this.formEstrutura.patchValue(enderecoData);
+        
+        console.log('[Estrutura] Formulário após aplicar dados do endereço:', this.formEstrutura.getRawValue());
+      },
+      error: (err) => {
+        if (err?.status === 404) {
+          console.log('[Estrutura] Nenhum endereço encontrado para o lote', loteId);
+        } else {
+          console.error('[Estrutura] Erro ao carregar endereço do lote:', err);
+        }
+      }
+    });
+  }
+
+  carregarSituacoesJuridicas() {
+    console.log('[Estrutura] Carregando situações jurídicas...');
+    this.situacaoJuridicaService.getAll().subscribe({
+      next: (situacoes) => {
+        console.log('[Estrutura] Situações jurídicas carregadas:', situacoes);
+        this.situacoes = situacoes.map(s => {
+          // Extrai o nome da situação baseado no ID
+          let nome = '';
+          switch (s.id) {
+            case 1:
+              nome = 'Posse por Simples Ocupação';
+              break;
+            case 2:
+              nome = 'Posse a Justo Título';
+              break;
+            case 3:
+              nome = 'Área Registrada (Domínio)';
+              break;
+            case 99:
+              nome = 'Indefinido';
+              break;
+            default:
+              nome = `Situação ${s.id}`;
+          }
+          
+          return {
+            value: s.id || 0,
+            viewValue: nome
+          };
+        });
+        console.log('[Estrutura] Situações mapeadas:', this.situacoes);
+        
+        // Após carregar as situações, verifica se há um valor pendente para aplicar
+        this.aplicarSituacaoJuridicaPendente();
+      },
+      error: (err) => {
+        console.error('[Estrutura] Erro ao carregar situações jurídicas:', err);
+        // Fallback para valores hardcoded em caso de erro
+        this.situacoes = [
+          { value: 1, viewValue: 'Posse Por Simples Ocupação' },
+          { value: 2, viewValue: 'Posse a Justo Título' },
+          { value: 3, viewValue: 'Área Registrada (Domínio)' },
+          { value: 99, viewValue: 'Indefinido' },
+        ];
+        
+        // Aplica valor pendente mesmo com fallback
+        this.aplicarSituacaoJuridicaPendente();
+      }
+    });
+  }
+
+  private aplicarSituacaoJuridicaPendente() {
+    // Verifica se há um valor de situacaoJuridicaId nos parâmetros da URL
+    if (this.paramCache && this.paramCache['situacaoJuridicaId']) {
+      const situacaoId = +this.paramCache['situacaoJuridicaId'];
+      console.log('[Estrutura] Aplicando situacaoJuridicaId pendente:', situacaoId);
+      console.log('[Estrutura] Situações disponíveis no momento:', this.situacoes);
+      console.log('[Estrutura] Valor atual do form antes:', this.formEstrutura.get('situacaoJuridicaId')?.value);
+      
+      this.formEstrutura.patchValue({ situacaoJuridicaId: situacaoId });
+      
+      console.log('[Estrutura] Valor atual do form depois:', this.formEstrutura.get('situacaoJuridicaId')?.value);
+      
+      // Força detecção de mudanças para garantir que o UI seja atualizado
+      setTimeout(() => {
+        console.log('[Estrutura] Verificando valor após timeout:', this.formEstrutura.get('situacaoJuridicaId')?.value);
+      }, 100);
+    }
   }
 
   onSubmit(): void {
@@ -423,11 +733,17 @@ export class CadastroEstruturaComponent implements OnInit {
       return;
     }
 
-    const formaId = this.formEstrutura.get('formaObtencaoId')?.value;
-    const descricao = this.obtencoes.find(o => o.value === formaId)?.viewValue || '';
-    this.formEstrutura.patchValue({ descricaoFormaDeObtencao: descricao });
+    console.log('[Estrutura] 🔍 Formulário antes de mapear para DTO:', this.formEstrutura.getRawValue());
+    console.log('[Estrutura] 🔍 Campos de forma de obtenção no form:');
+    console.log('[Estrutura] 🔍 - formaObtencaoId:', this.formEstrutura.get('formaObtencaoId')?.value);
+    console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', this.formEstrutura.get('descricaoFormaDeObtencao')?.value);
 
     const dto = mapFormToEstruturaDTO(this.formEstrutura);
+    
+    console.log('[Estrutura] 🔍 DTO mapeado para envio:', dto);
+    console.log('[Estrutura] 🔍 Campos de forma de obtenção no DTO:');
+    console.log('[Estrutura] 🔍 - formaObtencaoId:', dto.formaObtencaoId);
+    console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', dto.descricaoFormaDeObtencao);
 
     this.estruturaService.atualizar(dto.id, dto).subscribe({
       next: () => {
@@ -448,9 +764,7 @@ export class CadastroEstruturaComponent implements OnInit {
       return;
     }
 
-    const formaId = this.formEstrutura.get('formaObtencaoId')?.value;
-    const descricao = this.obtencoes.find(o => o.value === formaId)?.viewValue || '';
-    this.formEstrutura.patchValue({ descricaoFormaDeObtencao: descricao, formaId });
+    // Não preencher descricaoFormaDeObtencao automaticamente
 
     const dto = mapFormToEstruturaDTO(this.formEstrutura);
 

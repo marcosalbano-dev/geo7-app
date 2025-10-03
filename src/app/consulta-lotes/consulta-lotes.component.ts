@@ -497,11 +497,38 @@ export class ConsultaLotesComponent implements OnInit {
     this.isLoading = true;
     this.loteService.obterTodos().subscribe({
       next: (lotes) => {
-        // Adicionar situação jurídica formatada
+        console.log('🔍 Lotes retornados pela API:', lotes);
+        console.log('🔍 Primeiro lote completo:', lotes[0]);
+        console.log('🔍 Campos do primeiro lote:', Object.keys(lotes[0]));
+        console.log('🔍 Valores específicos:', {
+          id: lotes[0].id,
+          numero: lotes[0].numero,
+          proprietario: lotes[0].proprietario,
+          denominacaoImovel: lotes[0].denominacaoImovel,
+          area: lotes[0].area,
+          situacaoJuridicaId: lotes[0].situacaoJuridicaId,
+          municipioId: lotes[0].municipioId,
+          distritoId: lotes[0].distritoId,
+          cpf: lotes[0].cpf,
+          perimetro: lotes[0].perimetro,
+          dataTerminoPeriodoDeUso: lotes[0].dataTerminoPeriodoDeUso
+        });
+        
+        // Adicionar situação jurídica formatada e tratar campos nulos
         this.listaLotes = lotes.map(lote => ({
           ...lote,
-          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId)
+          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId),
+          // Tratar campos nulos para exibição
+          denominacaoImovel: lote.denominacaoImovel || 'Não informado',
+          proprietario: lote.proprietario || 'Não informado',
+          cpf: lote.cpf || 'Não informado',
+          perimetro: lote.perimetro || 0,
+          dataTerminoPeriodoDeUso: lote.dataTerminoPeriodoDeUso || 'Não informado'
         }));
+        
+        console.log('🔍 Lotes processados para exibição:', this.listaLotes);
+        console.log('🔍 Primeiro lote processado:', this.listaLotes[0]);
+        
         this.total = lotes.length;
         this.isLoading = false;
       },
@@ -517,11 +544,23 @@ export class ConsultaLotesComponent implements OnInit {
     this.isLoading = true;
     this.loteService.obterPorId(loteId).subscribe({
       next: (lote) => {
-        // Adicionar situação jurídica formatada
+        console.log('🔍 Lote específico retornado pela API:', lote);
+        console.log('🔍 Campos do lote:', Object.keys(lote));
+        console.log('🔍 Valores dos campos:', Object.values(lote));
+        
+        // Adicionar situação jurídica formatada e tratar campos nulos
         const loteComSituacao = {
           ...lote,
-          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId)
+          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId),
+          // Tratar campos nulos para exibição
+          denominacaoImovel: lote.denominacaoImovel || 'Não informado',
+          proprietario: lote.proprietario || 'Não informado',
+          cpf: lote.cpf || 'Não informado',
+          perimetro: lote.perimetro || 0,
+          dataTerminoPeriodoDeUso: lote.dataTerminoPeriodoDeUso || 'Não informado'
         };
+        
+        console.log('🔍 Lote com situação jurídica:', loteComSituacao);
         
         this.listaLotes = [loteComSituacao];
         this.total = 1;
@@ -562,10 +601,16 @@ export class ConsultaLotesComponent implements OnInit {
     
     this.loteService.filtrarLotes(filtros).subscribe({
       next: (lotes) => {
-        // Adicionar situação jurídica formatada
+        // Adicionar situação jurídica formatada e tratar campos nulos
         this.listaLotes = lotes.map(lote => ({
           ...lote,
-          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId)
+          situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId),
+          // Tratar campos nulos para exibição
+          denominacaoImovel: lote.denominacaoImovel || 'Não informado',
+          proprietario: lote.proprietario || 'Não informado',
+          cpf: lote.cpf || 'Não informado',
+          perimetro: lote.perimetro || 0,
+          dataTerminoPeriodoDeUso: lote.dataTerminoPeriodoDeUso || 'Não informado'
         }));
         this.total = lotes.length;
         this.isLoading = false;

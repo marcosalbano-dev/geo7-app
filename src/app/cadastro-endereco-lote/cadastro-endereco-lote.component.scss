@@ -68,3 +68,12 @@
 :host ::ng-deep .mdc-text-field--filled {
   border-radius: 6px 6px 0 0;
 }
+
+/* spinner para carregamento de distritos */
+.spinner {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}

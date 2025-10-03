@@ -1,7 +1,5 @@
 // src/app/models/lote-dto.ts
 
-import { FormaObtencaoDTO } from './forma-obtencao-dto';
-
 export interface LoteDTO {
   id?: number;
   numero: string;
@@ -13,8 +11,15 @@ export interface LoteDTO {
   proprietario: string;
   municipioId: number;
   distritoId: number;
-  situacaoJuridicaId?: number | null;
+  situacaoJuridicaId: number; // Obrigatório no backend
   situacaoJuridica?: string;
-  dataTerminoPeriodoDeUso?: string | null; // ou Date, dependendo do formato esperado
-  formaObtencao: FormaObtencaoDTO[];
+  dataTerminoPeriodoDeUso?: string | null;
+  // Backend espera formaObtencaoSelecionada (string) em vez de formaObtencao (array)
+  formaObtencaoSelecionada?: string;
+  // Campos adicionais do backend
+  dhc?: string | Date;
+  dhm?: string | Date;
+  municipioNome?: string;
+  distritoNome?: string;
+  situacaoJuridicaNome?: string;
 }

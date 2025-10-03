@@ -2,7 +2,9 @@
   <!-- Drawer / menu lateral -->
   <mat-sidenav #drawer class="sidenav" [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="!(isHandset$ | async)">
 
-    <h3 class="sidenav-title">Geo7</h3>lass="sidenav-logo">
+    <div class="sidenav-header">
+      <img src="assets/brand/logo-horizontal-256w.png" alt="Geo7" class="sidenav-logo">
+    </div>
 
     <mat-nav-list>
       <a mat-list-item routerLink="/cadastro-lotes" (click)="closeIfHandset(drawer)">

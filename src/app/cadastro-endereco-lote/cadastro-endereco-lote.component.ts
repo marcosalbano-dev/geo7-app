@@ -62,8 +62,11 @@ export class CadastroEnderecoLoteComponent implements OnInit {
 
   municipios: any[] = [];
   distritos: any[] = [];
+  lotes: any[] = [];
+  lotesFiltrados: any[] = [];
   filteredMunicipios$!: Observable<any[]>;
   filteredDistritos$!: Observable<any[]>;
+  isLoadingDistrito = false;
 
   constructor(
     private fb: FormBuilder,
@@ -81,12 +84,12 @@ export class CadastroEnderecoLoteComponent implements OnInit {
     this.formEnderecoLote = this.fb.group({
       id: [null],
       loteId: [null, Validators.required],
-      numero: [{ value: '', disabled: true }, Validators.required],
-      municipioId: [{ value: null, disabled: true }], // só display
-      distritoId: [{ value: null, disabled: true }], 
-      pontoDeReferencia: ['', Validators.required],
-      codImoReceita: ['', Validators.required],
-      areaUrbana: [0, [Validators.required, Validators.min(0)]],
+      numero: ['', Validators.required],
+      municipioId: [null, Validators.required],
+      distritoId: [null, Validators.required], 
+      pontoDeReferencia: [''],
+      codImoReceita: [''],
+      areaUrbana: [0],
       comunidade: [''],
       localidade: [''],
       ativo: [true],
@@ -94,15 +97,20 @@ export class CadastroEnderecoLoteComponent implements OnInit {
       dhm: [null],
     });
 
-    // 1) carrega lista de municípios (antes do patch para o display funcionar)
+    // 1) carrega lista de municípios e lotes
     this.municipioService.getMunicipiosCe().subscribe(res => {
       this.municipios = res;
       this.setupMunicipioAutocomplete();
+    });
 
-      // 2) lê loteId da rota e preenche campos (numero, municipio, distrito)
-      const loteId = Number(this.route.snapshot.queryParamMap.get('loteId'));
-      if (!loteId) return;
+    this.loteService.obterTodos().subscribe({
+      next: (res) => (this.lotes = res),
+      error: (err) => console.error('Erro ao carregar lotes:', err),
+    });
 
+    // 2) lê loteId da rota e preenche campos (numero, municipio, distrito)
+    const loteId = Number(this.route.snapshot.queryParamMap.get('loteId'));
+    if (loteId) {
       this.formEnderecoLote.get('loteId')?.setValue(loteId);
 
       // tenta achar endereço existente p/ o lote
@@ -123,17 +131,14 @@ export class CadastroEnderecoLoteComponent implements OnInit {
 
           this.atualizando = true;
 
-          // completa cabeçalho (numero/municipio) a partir do lote
+          // completa cabeçalho (numero/municipio/distrito) a partir do lote
           this.loteService.obterPorId(loteId).subscribe(lote => {
             this.formEnderecoLote.patchValue(
-              { numero: lote.numero, municipioId: lote.municipioId },
+              { numero: lote.numero, municipioId: lote.municipioId, distritoId: lote.distritoId },
               { emitEvent: false }
             );
             if (lote.municipioId) {
-              this.distritoService.getDistritosByMunicipio(lote.municipioId).subscribe(d => {
-                this.distritos = d;
-                this.filteredDistritos$ = of(this.distritos);
-              });
+              this.loadDistritosByMunicipio(lote.municipioId);
             }
           });
         },
@@ -142,22 +147,22 @@ export class CadastroEnderecoLoteComponent implements OnInit {
           if (err.status !== 404) console.error(err);
           this.atualizando = false;
 
-          // ainda assim preenche número/município via lote
+          // ainda assim preenche número/município/distrito via lote
           this.loteService.obterPorId(loteId).subscribe(lote => {
             this.formEnderecoLote.patchValue(
-              { numero: lote.numero, municipioId: lote.municipioId },
+              { numero: lote.numero, municipioId: lote.municipioId, distritoId: lote.distritoId },
               { emitEvent: false }
             );
             if (lote.municipioId) {
-              this.distritoService.getDistritosByMunicipio(lote.municipioId).subscribe(d => {
-                this.distritos = d;
-                this.filteredDistritos$ = of(this.distritos);
-              });
+              this.loadDistritosByMunicipio(lote.municipioId);
             }
           });
         }
       });
-    });
+    } else {
+      // Se não há loteId na rota, permite seleção livre
+      this.atualizando = false;
+    }
   }
 
   setupMunicipioAutocomplete() {
@@ -176,16 +181,48 @@ export class CadastroEnderecoLoteComponent implements OnInit {
 
   setupDistritoAutocomplete() {
     this.filteredDistritos$ = of(this.distritos);
-    // this.filteredDistritos$ = this.formEnderecoLote.get('distritoId')!.valueChanges.pipe(
-    //   startWith(''),
-    //   map(val => {
-    //     if (!val) return this.distritos;
-    //     const termo = typeof val === 'string'
-    //       ? val.toLowerCase()
-    //       : (this.distritos.find(d => d.id === val)?.nomeDistrito?.toLowerCase() ?? '');
-    //     return this.distritos.filter((d: any) => d.nomeDistrito.toLowerCase().includes(termo));
-    //   })
-    // );
+  }
+
+  loadDistritosByMunicipio(municipioId: number): Promise<void> {
+    this.isLoadingDistrito = true;
+    return new Promise((resolve, reject) => {
+      this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
+        next: (distritos) => {
+          this.distritos = distritos;
+          this.filteredDistritos$ = of(this.distritos);
+          this.isLoadingDistrito = false;
+          resolve();
+        },
+        error: (err) => {
+          console.error('Erro ao carregar distritos:', err);
+          this.distritos = [];
+          this.filteredDistritos$ = of([]);
+          this.isLoadingDistrito = false;
+          reject();
+        },
+      });
+    });
+  }
+
+  onMunicipioChange(municipioId: number): void {
+    this.loadDistritosByMunicipio(municipioId);
+    this.lotesFiltrados = this.lotes.filter(l => l.municipioId === municipioId);
+    // Limpa o distrito quando muda o município
+    this.formEnderecoLote.get('distritoId')?.setValue(null);
+  }
+
+  onLoteChange(loteId: number): void {
+    const lote = this.lotes.find(l => l.id === loteId);
+    if (lote) {
+      this.formEnderecoLote.patchValue({
+        numero: lote.numero,
+        municipioId: lote.municipioId,
+        distritoId: lote.distritoId
+      });
+      if (lote.municipioId) {
+        this.loadDistritosByMunicipio(lote.municipioId);
+      }
+    }
   }
 
   displayMunicipio = (v: any) => {
@@ -203,6 +240,36 @@ export class CadastroEnderecoLoteComponent implements OnInit {
     if (!distritoId) return '';
     const distrito = this.distritos.find(d => d.id === distritoId);
     return distrito ? distrito.nomeDistrito : '';
+  }
+
+  getNomeMunicipio(): string {
+    const id = this.formEnderecoLote.get('municipioId')?.value;
+    const mun = this.municipios.find(m => m.id === id);
+    return mun ? mun.nome : '';
+  }
+
+  getNomeDistrito(): string {
+    const id = this.formEnderecoLote.get('distritoId')?.value;
+    return this.distritos.find(d => d.id === id)?.nomeDistrito ?? '';
+  }
+
+  getMunicipioNomeByLote(lote: any): string {
+    if (!lote || !lote.municipioId) return 'Sem município';
+    const municipio = this.municipios.find(m => m.id === lote.municipioId);
+    return municipio ? municipio.nome : 'Município não encontrado';
+  }
+
+  /** Utils de comparação (caso use compareWith no template) */
+  compareMunicipios(m1: any, m2: any): boolean {
+    return m1 && m2 ? m1.id === m2.id : m1 === m2;
+  }
+
+  compareDistritos(d1: any, d2: any): boolean {
+    return d1 && d2 ? d1.id === d2.id : d1 === d2;
+  }
+
+  compareLotes(l1: any, l2: any): boolean {
+    return l1 && l2 ? l1.id === l2.id : l1 === l2;
   }
 
   onSubmit(): void {

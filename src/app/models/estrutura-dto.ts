@@ -28,7 +28,13 @@ export interface EstruturaDTO {
 
   denominacaoImovel?: string;
   distritoId?: number;
-  sncr?:string;
+  sncr?: string;
+  
+  // Campos de localização
+  localidade?: string;
+  comunidade?: string;
+  indicacaoLocalizacao?: string;
+  codImoReceita?: string;
 
 
   familiasResidentes?: number;

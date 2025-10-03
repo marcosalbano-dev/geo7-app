@@ -39,6 +39,8 @@ export class PessoasService {
   }
 
   buscarParaEdicaoPorLote(loteId: number) {
-  return this.http.get<EditarDetentorResponseDTO>(`${this.apiUrl}/editar/por-lote/${loteId}`);
-}
+    // Endpoint para buscar dados de pessoa por lote
+    // Se o endpoint não existir, retorna 404 (comportamento esperado)
+    return this.http.get<EditarDetentorResponseDTO>(`${this.apiUrl}/editar/por-lote/${loteId}`);
+  }
 }

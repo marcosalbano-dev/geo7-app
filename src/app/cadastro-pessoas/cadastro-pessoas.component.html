@@ -1,38 +1,63 @@
 <div class="page-center">
-  <!-- Botão Voltar -->
-  <div class="back-button-container mb-20">
-    <app-back-button 
-      text="Voltar"
-      [useHistory]="true"
-      color="primary">
-    </app-back-button>
-  </div>
+  <form class="mt-60" *ngIf="formPessoas" [formGroup]="formPessoas" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
 
-  <form class="mt-60" [formGroup]="formPessoas" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
-    <mat-card appearance="outlined">
-      <mat-card-content class="mt-20">
+    <!-- Botão Voltar -->
+    <div class="back-button-container mb-20">
+      <app-back-button 
+        text="Voltar"
+        [useHistory]="true"
+        color="primary">
+      </app-back-button>
+    </div>
 
-        <!-- Número do lote (exibição) -->
+    <!-- Cabeçalho -->
+    <div class="form-header">
+      <h2>Cadastro de Pessoas</h2>
+      <div class="form-grid">
+        <div class="col-3 md-6">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Número do Lote</mat-label>
+            <input matInput [value]="numero" disabled />
+            <input type="hidden" formControlName="loteId" />
+          </mat-form-field>
+        </div>
+        <div class="col-9 md-6">
+          <div class="info-summary">
+            <p><strong>Modo:</strong> {{ atualizando ? 'Edição' : 'Novo Cadastro' }}</p>
+            <p *ngIf="atualizando"><strong>Status:</strong> ✅ Pessoa encontrada automaticamente</p>
+            <p *ngIf="!atualizando"><strong>Status:</strong> 📝 Novo cadastro</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUADRO 1 - Identificação da Pessoa Física -->
+    <div class="quadro">
+      <div class="quadro-header">
+        <h3>Quadro 1 - Identificação da Pessoa Física</h3>
+      </div>
+      <div class="quadro-content">
+        <!-- Tipo de pessoa -->
         <div class="form-grid">
           <div class="col-3 md-6">
-            <mat-form-field appearance="fill" class="full-width">
-              <mat-label>Número do Lote</mat-label>
-              <input matInput [value]="numero" disabled />
-              <input type="hidden" formControlName="loteId" />
+            <mat-form-field class="full-width">
+              <mat-label>Tipo de Pessoa</mat-label>
+              <mat-select formControlName="tipoPessoa" (selectionChange)="onTipoPessoaChange($event.value)">
+                @for (tipo of tiposPessoas; track tipo) {
+                  <mat-option [value]="tipo.value">{{ tipo.viewValue }}</mat-option>
+                }
+              </mat-select>
             </mat-form-field>
           </div>
         </div>
-
-        <mat-card-header>
-          <mat-card-title>Dados Pessoais</mat-card-title>
-        </mat-card-header>
 
         <!-- Nome / Telefone / Email -->
         <div class="form-grid">
           <div class="col-6 md-6">
             <mat-form-field class="full-width">
               <mat-label>Nome do Detentor</mat-label>
-              <input type="text" placeholder="Ex: José.." matInput formControlName="nome" />
+              <input type="text" placeholder="Ex: José Silva Santos" matInput formControlName="nome" />
+              <mat-hint>💡 Deve ser igual ao proprietário cadastrado no lote</mat-hint>
             </mat-form-field>
           </div>
 
@@ -50,28 +75,199 @@
             </mat-form-field>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Endereço da pessoa (componente) -->
-        <app-cadastro-endereco-pessoa
-          *ngIf="formEnderecoPessoa"
-          [formEnderecoPessoa]="formEnderecoPessoa"
-          [loteId]="formEnderecoPessoa.get('loteId')?.value">
-        </app-cadastro-endereco-pessoa>
+    <!-- QUADRO 2 - Informações de Pessoa Física -->
+    <div class="quadro" *ngIf="tipoPessoaSelecionada() === 'FISICA'">
+      <div class="quadro-header">
+        <h3>Quadro 2 - Informações de Pessoa Física</h3>
+      </div>
+      <div class="quadro-content">
+        <!-- Dados pessoais específicos da pessoa física -->
+        <div [formGroup]="formFisica">
+          <div class="form-grid">
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Data de Nascimento</mat-label>
+                <input matInput [matDatepicker]="picker1" formControlName="dataNascimento">
+                <mat-datepicker-toggle matIconSuffix [for]="picker1"></mat-datepicker-toggle>
+                <mat-datepicker #picker1></mat-datepicker>
+              </mat-form-field>
+            </div>
 
-        <!-- Tipo de pessoa -->
-        <div class="form-grid">
-          <div class="col-3 md-6">
-            <mat-form-field class="full-width">
-              <mat-label>Tipo de Pessoa</mat-label>
-              <mat-select formControlName="tipoPessoa" (selectionChange)="onTipoPessoaChange($event.value)">
-                @for (tipo of tiposPessoas; track tipo) {
-                  <mat-option [value]="tipo.value">{{ tipo.viewValue }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Sexo</mat-label>
+                <mat-select formControlName="sexoPessoa">
+                  <mat-option value="MASCULINO">Masculino</mat-option>
+                  <mat-option value="FEMININO">Feminino</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Regime de Bens</mat-label>
+                <mat-select formControlName="regimeBens">
+                  <mat-option value="COMUNHAO_PARCIAL">Comunhão Parcial de Bens</mat-option>
+                  <mat-option value="COMUNHAO_UNIVERSAL">Comunhão Universal de Bens</mat-option>
+                  <mat-option value="SEPARACAO_TOTAL">Separação Total de Bens</mat-option>
+                  <mat-option value="PARTICIPACAO_FINAL">Participação Final nos Aquestos</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Raça/Cor</mat-label>
+                <mat-select formControlName="racaCor">
+                  <mat-option value="BRANCA">Branca</mat-option>
+                  <mat-option value="PRETA">Preta</mat-option>
+                  <mat-option value="PARDA">Parda</mat-option>
+                  <mat-option value="AMARELA">Amarela</mat-option>
+                  <mat-option value="INDIGENA">Indígena</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Segunda linha -->
+          <div class="form-grid">
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Escolaridade</mat-label>
+                <mat-select formControlName="escolaridade">
+                  <mat-option value="ANALFABETO">Analfabeto</mat-option>
+                  <mat-option value="FUNDAMENTAL_INCOMPLETO">Ensino Fundamental Incompleto</mat-option>
+                  <mat-option value="FUNDAMENTAL_COMPLETO">Ensino Fundamental Completo</mat-option>
+                  <mat-option value="MEDIO_INCOMPLETO">Ensino Médio Incompleto</mat-option>
+                  <mat-option value="MEDIO_COMPLETO">Ensino Médio Completo</mat-option>
+                  <mat-option value="SUPERIOR_INCOMPLETO">Ensino Superior Incompleto</mat-option>
+                  <mat-option value="SUPERIOR_COMPLETO">Ensino Superior Completo</mat-option>
+                  <mat-option value="POS_GRADUACAO">Pós-graduação</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Profissão</mat-label>
+                <input matInput formControlName="profissao" placeholder="Ex: Agricultor" />
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Nome da Mãe</mat-label>
+                <input matInput formControlName="nomeMae" placeholder="Nome completo da mãe" />
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Nome do Pai</mat-label>
+                <input matInput formControlName="nomePai" placeholder="Nome completo do pai" />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Terceira linha - Informações complementares -->
+          <div class="form-grid">
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Data do Casamento</mat-label>
+                <input matInput [matDatepicker]="picker2" formControlName="dataCasamento">
+                <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+                <mat-datepicker #picker2></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <!-- <mat-form-field class="full-width">
+                <mat-label>Regime de Bens</mat-label>
+                <mat-select formControlName="regimeBens">
+                  <mat-option value="COMUNHAO_PARCIAL">Comunhão Parcial de Bens</mat-option>
+                  <mat-option value="COMUNHAO_UNIVERSAL">Comunhão Universal de Bens</mat-option>
+                  <mat-option value="SEPARACAO_TOTAL">Separação Total de Bens</mat-option>
+                  <mat-option value="PARTICIPACAO_FINAL">Participação Final nos Aquestos</mat-option>
+                </mat-select>
+              </mat-form-field> -->
+            </div>
+
+            <!-- <div class="col-6 md-6">
+              <mat-checkbox formControlName="isEspolio" *ngIf="formFisica">
+                É espólio
+              </mat-checkbox>
+            </div> -->
           </div>
         </div>
+      </div>
+    </div>
 
+    <!-- QUADRO 2 - Informações de Pessoa Jurídica -->
+    <div class="quadro" *ngIf="tipoPessoaSelecionada() === 'JURIDICA'">
+      <div class="quadro-header">
+        <h3>Quadro 2 - Informações de Pessoa Jurídica</h3>
+      </div>
+      <div class="quadro-content">
+        <!-- Dados específicos da pessoa jurídica -->
+        <div [formGroup]="formJuridica">
+          <div class="form-grid">
+            <div class="col-6 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Razão Social</mat-label>
+                <input matInput formControlName="razaoSocial" placeholder="Razão social da empresa" />
+              </mat-form-field>
+            </div>
+
+            <div class="col-6 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Nome Fantasia</mat-label>
+                <input matInput formControlName="nomeFantasia" placeholder="Nome fantasia da empresa" />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Natureza Jurídica</mat-label>
+                <input matInput formControlName="naturezaJuridica" placeholder="Ex: 2062 - Sociedade Empresária Limitada" />
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Capital Nacional</mat-label>
+                <input matInput type="number" formControlName="capitalNacional" placeholder="0.00" />
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Capital Estrangeiro</mat-label>
+                <input matInput type="number" formControlName="capitalEstrangeiro" placeholder="0.00" />
+              </mat-form-field>
+            </div>
+
+            <div class="col-3 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Registro Junta Comercial</mat-label>
+                <input matInput formControlName="registroJuntaComercial" placeholder="Número do registro" />
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUADRO 3 - Informações de Documento -->
+    <div class="quadro">
+      <div class="quadro-header">
+        <h3>Quadro 3 - Informações de Documento</h3>
+      </div>
+      <div class="quadro-content">
         <!-- Documento da pessoa (componente) -->
         <app-cadastro-documento-pessoa
           *ngIf="formDocumentoPessoa"
@@ -79,37 +275,77 @@
           [formFisica]="formFisica"
           [ufs]="ufs">
         </app-cadastro-documento-pessoa>
+      </div>
+    </div>
 
-        <!-- Vinculação -->
-        <mat-card class="mt-4">
-          <h3>Vinculação com o Imóvel Rural</h3>
-          <app-cadastro-pessoa-lote
-            [formPessoaLote]="formPessoaLote"
-            [loteId]="formPessoaLote.get('loteId')?.value">
-          </app-cadastro-pessoa-lote>
-        </mat-card>
+    <!-- QUADRO 4 - Endereço -->
+    <div class="quadro">
+      <div class="quadro-header">
+        <h3>Quadro 4 - Endereço</h3>
+      </div>
+      <div class="quadro-content">
+        <!-- Endereço da pessoa (componente) -->
+        <app-cadastro-endereco-pessoa
+          *ngIf="formEnderecoPessoa"
+          [formEnderecoPessoa]="formEnderecoPessoa"
+          [loteId]="formEnderecoPessoa.get('loteId')?.value">
+        </app-cadastro-endereco-pessoa>
+      </div>
+    </div>
 
-        <!-- Anexos -->
-        
-          <app-cadastro-pessoas-anexo
-            [formAnexo]="formAnexo"
-            [loteId]="formAnexo.get('loteId')?.value">
-          </app-cadastro-pessoas-anexo>
-        
+    <!-- QUADRO 5 - Vinculação com o Imóvel Rural -->
+    <div class="quadro quadro-destaque">
+      <div class="quadro-header">
+        <h3>Quadro 5 - Vinculação com o Imóvel Rural</h3>
+      </div>
+      <div class="quadro-content">
+        <app-cadastro-pessoa-lote
+          [formPessoaLote]="formPessoaLote"
+          [loteId]="formPessoaLote.get('loteId')?.value">
+        </app-cadastro-pessoa-lote>
+      </div>
+    </div>
 
-        <mat-card-actions>
-          <button mat-flat-button color="primary" type="submit">
-            <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
-            {{ atualizando ? 'Atualizar' : 'Salvar' }}
-          </button>
+    <!-- QUADRO 6 - Informações Adicionais -->
+    <div class="quadro">
+      <div class="quadro-header">
+        <h3>Quadro 6 - Informações Adicionais</h3>
+      </div>
+      <div class="quadro-content">
+        <app-cadastro-pessoas-anexo
+          [formAnexo]="formAnexo"
+          [loteId]="formAnexo.get('loteId')?.value">
+        </app-cadastro-pessoas-anexo>
 
-          <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
-            <mat-icon fontIcon="backspace"></mat-icon>
-            Limpar
-          </button>
-        </mat-card-actions>
+        <!-- Campo de observações -->
+        <div class="form-grid mt-16">
+          <div class="col-12">
+            <mat-form-field class="full-width">
+              <mat-label>Observações</mat-label>
+              <textarea 
+                matInput 
+                formControlName="observacoes" 
+                rows="3" 
+                placeholder="Informações adicionais sobre a pessoa...">
+              </textarea>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      </mat-card-content>
-    </mat-card>
+    <!-- Botões de Ação -->
+    <div class="form-actions">
+      <button mat-flat-button color="primary" type="submit">
+        <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
+        {{ atualizando ? 'Atualizar' : 'Salvar' }}
+      </button>
+
+      <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
+        <mat-icon fontIcon="backspace"></mat-icon>
+        Limpar
+      </button>
+    </div>
+
   </form>
 </div>
