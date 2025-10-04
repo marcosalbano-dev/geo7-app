@@ -60,8 +60,16 @@
                     {{ buildMeta(it).label || 'Item' }}
                   </div>
                   <div matListItemLine>
-                    Área:
-                    {{ areaOf(it) | number:'1.4-4' }}
+                    <span *ngIf="it.areaPlantada">Área Plantada: {{ it.areaPlantada | number:'1.4-4' }}</span>
+                    <span *ngIf="it.areaColhida"> | Área Colhida: {{ it.areaColhida | number:'1.4-4' }}</span>
+                    <span *ngIf="it.quantidadeColhida"> | Qtd. Colhida: {{ it.quantidadeColhida }}</span>
+                    <span *ngIf="it.areaUtilizada"> | Área Utilizada: {{ it.areaUtilizada | number:'1.4-4' }}</span>
+                    <span *ngIf="it.areaPastagem"> | Área Pastagem: {{ it.areaPastagem | number:'1.4-4' }}</span>
+                    <span *ngIf="it.areaExploradaGranjeiraAgricola"> | Área Granjeira: {{ it.areaExploradaGranjeiraAgricola | number:'1.4-4' }}</span>
+                    <span *ngIf="it.areaAproveitavelNaoUtilizada"> | Área Não Utilizada: {{ it.areaAproveitavelNaoUtilizada | number:'1.4-4' }}</span>
+                    <span *ngIf="!it.areaPlantada && !it.areaColhida && !it.quantidadeColhida && !it.areaUtilizada && !it.areaPastagem && !it.areaExploradaGranjeiraAgricola && !it.areaAproveitavelNaoUtilizada">
+                      Área: {{ areaOf(it) | number:'1.4-4' }}
+                    </span>
                   </div>
 
                   <button

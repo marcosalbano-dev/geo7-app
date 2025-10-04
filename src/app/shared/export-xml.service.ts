@@ -1,8 +1,15 @@
 // src/app/shared/export-xml.service.ts
 import { Injectable } from '@angular/core';
+import { Observable, forkJoin, map } from 'rxjs';
+import { CulturaService, Cultura } from '../services/cultura.service';
+import { CategoriaService, Categoria } from '../services/categoria.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExportXmlService {
+  constructor(
+    private culturaService: CulturaService,
+    private categoriaService: CategoriaService
+  ) {}
   /** util: cria elemento com texto opcional e anexa no pai */
   private el(doc: XMLDocument, parent: Element, name: string, text?: string | number | null) {
     const e = doc.createElement(name);
@@ -36,7 +43,7 @@ export class ExportXmlService {
   }
 
   /** Apende UM imóvel dentro de <imoveis> como <lotes><imovel>...</imovel></lotes> */
-  private appendImovel(doc: XMLDocument, imoveisEl: Element, data: ImovelCompleto) {
+  private appendImovel(doc: XMLDocument, imoveisEl: Element, data: ImovelCompleto, culturas: Cultura[] = [], categorias: Categoria[] = []) {
     const lotes = this.elAttr(doc, imoveisEl, 'lotes', { numeroLote: data.numeroLote });
 
     const imovel = this.elAttr(doc, lotes, 'imovel', {
@@ -106,11 +113,46 @@ export class ExportXmlService {
     });
     this.el(doc, du, 'codMunicipio', data.declaracaoUso.codMunicipio);
 
+    // ===================== <vegetalIsolado> =====================
+    const vegetalIsolado = this.el(doc, du, 'vegetalIsolado');
+    (data.declaracaoUso.vegetalIsolado || []).forEach(v => {
+      const item = this.el(doc, vegetalIsolado, 'item');
+      
+      // Para vegetalIsolado, categoriaIdVegetalIsolado deve ser o ID da tabela categorias
+      // Busca a categoria PRODUTO_VEGETAL_ISOLADO
+      const categoriaIsolado = categorias.find(c => c.nomeCategoria === 'PRODUTO_VEGETAL_ISOLADO');
+      const categoriaIdIsolado = categoriaIsolado?.id || '1'; // fallback para id=1
+      this.el(doc, item, 'categoriaIdVegetalIsolado', categoriaIdIsolado.toString());
+      
+      // Busca a cultura pelo ID e usa o codigoCultura
+      const culturaIsolado = culturas.find(c => c.id === parseInt(v.culturaIdVegetalIsolado));
+      const culturaIdIsolado = culturaIsolado?.codigoCultura || v.culturaIdVegetalIsolado;
+      this.el(doc, item, 'culturaIdVegetalIsolado', culturaIdIsolado);
+      this.el(doc, item, 'formaExploracaoVegetalIsolado', v.formaExploracaoVegetalIsolado);
+      this.el(doc, item, 'sequenciaProdutoVegetalIsolado', v.sequenciaProdutoVegetalIsolado);
+      this.el(doc, item, 'areaPlantadaVegetalIsolado', v.areaPlantadaVegetalIsolado);
+      this.el(doc, item, 'areaColhidaVegetalIsolado', v.areaColhidaVegetalIsolado);
+      this.el(doc, item, 'quantidadeColhidaVegetalIsolado', v.quantidadeColhidaVegetalIsolado);
+      this.el(doc, item, 'codigoUnidadeExploracaoIdVegetalIsolado', v.codigoUnidadeExploracaoIdVegetalIsolado);
+      this.el(doc, item, 'indicadorGeralDeRestricaoVegetalIsolado', v.indicadorGeralDeRestricaoVegetalIsolado);
+    });
+
+    // ===================== <vegetalConsorcio> =====================
     const vegetalConsorcio = this.el(doc, du, 'vegetalConsorcio');
     (data.declaracaoUso.vegetalConsorcio || []).forEach(v => {
       const item = this.el(doc, vegetalConsorcio, 'item');
-      this.el(doc, item, 'categoriaIdVegetalConsorcio', v.categoriaIdVegetalConsorcio);
-      this.el(doc, item, 'culturaIdVegetalConsorcio', v.culturaIdVegetalConsorcio);
+      
+      // Para vegetalConsorcio, categoriaIdVegetalConsorcio deve ser o ID da tabela categorias
+      // Busca a categoria PRODUTO_VEGETAL_CONSORCIO_OU_ROTACAO
+      const categoriaConsorcio = categorias.find(c => c.nomeCategoria === 'PRODUTO_VEGETAL_CONSORCIO_OU_ROTACAO');
+      const categoriaIdConsorcio = categoriaConsorcio?.id || '2'; // fallback para id=2
+      this.el(doc, item, 'categoriaIdVegetalConsorcio', categoriaIdConsorcio.toString());
+      
+      // Busca a cultura pelo ID e usa o codigoCultura
+      const cultura = culturas.find(c => c.id === parseInt(v.culturaIdVegetalConsorcio));
+      const culturaId = cultura?.codigoCultura || v.culturaIdVegetalConsorcio;
+      this.el(doc, item, 'culturaIdVegetalConsorcio', culturaId);
+      
       this.el(doc, item, 'formaExploracaoVegetalConsorcio', v.formaExploracaoVegetalConsorcio);
       this.el(doc, item, 'sequenciaProdutoVegetalConsorcio', v.sequenciaProdutoVegetalConsorcio);
       this.el(doc, item, 'areaPlantadaVegetalConsorcio', v.areaPlantadaVegetalConsorcio);
@@ -222,19 +264,35 @@ export class ExportXmlService {
   }
 
   /** Gera um XML contendo TODOS os lotes do município */
-  buildXmlMunicipio(lista: ImovelCompleto[]): string {
-    const { doc, imoveis } = this.createBaseDoc();
-    (lista || []).forEach(item => this.appendImovel(doc, imoveis, item));
-    const xml = new XMLSerializer().serializeToString(doc);
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + xml;
+  buildXmlMunicipio(lista: ImovelCompleto[]): Observable<string> {
+    return forkJoin({
+      culturas: this.culturaService.listarTodas(),
+      categorias: this.categoriaService.listarTodas()
+    }).pipe(
+      map(({ culturas, categorias }) => {
+        const { doc, imoveis } = this.createBaseDoc();
+        
+        (lista || []).forEach(item => this.appendImovel(doc, imoveis, item, culturas, categorias));
+        const xml = new XMLSerializer().serializeToString(doc);
+        return '<?xml version="1.0" encoding="UTF-8"?>\n' + xml;
+      })
+    );
   }
 
   /** Útil caso ainda queira exportar só um lote */
-  buildXmlLote(data: ImovelCompleto): string {
-    const { doc, imoveis } = this.createBaseDoc();
-    this.appendImovel(doc, imoveis, data);
-    const xml = new XMLSerializer().serializeToString(doc);
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + xml;
+  buildXmlLote(data: ImovelCompleto): Observable<string> {
+    return forkJoin({
+      culturas: this.culturaService.listarTodas(),
+      categorias: this.categoriaService.listarTodas()
+    }).pipe(
+      map(({ culturas, categorias }) => {
+        const { doc, imoveis } = this.createBaseDoc();
+        
+        this.appendImovel(doc, imoveis, data, culturas, categorias);
+        const xml = new XMLSerializer().serializeToString(doc);
+        return '<?xml version="1.0" encoding="UTF-8"?>\n' + xml;
+      })
+    );
   }
 
   download(xml: string, filename = 'exportacaoDP.xml') {
@@ -271,6 +329,12 @@ export interface ImovelCompleto {
   };
   declaracaoUso: {
     uf: string; municipio: string; codMunicipio: string;
+    vegetalIsolado: Array<{
+      categoriaIdVegetalIsolado: string; culturaIdVegetalIsolado: string; formaExploracaoVegetalIsolado: string;
+      sequenciaProdutoVegetalIsolado: string; areaPlantadaVegetalIsolado: string; areaColhidaVegetalIsolado: string;
+      quantidadeColhidaVegetalIsolado: string; codigoUnidadeExploracaoIdVegetalIsolado: string;
+      indicadorGeralDeRestricaoVegetalIsolado: string;
+    }>;
     vegetalConsorcio: Array<{
       categoriaIdVegetalConsorcio: string; culturaIdVegetalConsorcio: string; formaExploracaoVegetalConsorcio: string;
       sequenciaProdutoVegetalConsorcio: string; areaPlantadaVegetalConsorcio: string; areaColhidaVegetalConsorcio: string;

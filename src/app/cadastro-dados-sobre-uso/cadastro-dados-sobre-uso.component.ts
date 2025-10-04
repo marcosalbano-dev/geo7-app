@@ -223,20 +223,25 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
     return undefined;
   }
 
-  buildMeta(it: ItemDadosUsoDTO): { label: string } {
+  buildMeta(it: ItemDadosUsoDTO): { label: string; codigo?: number } {
     const cultura = this.culturas?.find(c => c.id === it.culturaId);
     const outroUso = this.areasComOutroUso?.find(a => a.id === it.areaComOutroUsoId);
     const restr = this.areasRestricoes?.find(r => r.id === it.areasRestricoesId);
     const catAnim = this.categoriasAnimal?.find(ca => ca.id === it.categoriaAnimalId);
 
-    const label =
+    const nome =
       this.nomeDe(cultura, 'nome', 'nomeCultura', 'descricao') ??
       this.nomeDe(outroUso, 'nome', 'denominacao', 'descricao') ??
       this.nomeDe(restr, 'nome', 'tipoAreaRestricao', 'descricao') ??
       this.nomeDe(catAnim, 'nome', 'denominaoCategoriaAnimal', 'descricao') ??
       'Item';
 
-    return { label };
+    const codigo = cultura?.codigoCultura ?? outroUso?.id ?? restr?.id ?? catAnim?.id;
+
+    // Formata o label com código do produto, similar ao print 1
+    const label = codigo ? `${nome} - ${codigo}` : nome;
+
+    return { label, codigo };
   }
 
   // ===== Helpers =====

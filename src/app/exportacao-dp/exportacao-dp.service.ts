@@ -1,9 +1,11 @@
 // src/app/exportacao-dp/exportacao-dp.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, forkJoin } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { environment } from '../../environments/environment';
+import { CategoriaService, Categoria } from '../services/categoria.service';
+import { CulturaService, Cultura } from '../services/cultura.service';
 
 /**
  * ===== Tipos alinhados com os DTOs do Java =====
@@ -12,8 +14,6 @@ import { environment } from '../../environments/environment';
 
 export interface MunicipioDTO {
   id: number; nome: string; uf: string;
-  // se tiver codIbge no back, acrescente aqui (opcional)
-  // codIbge?: number;
 }
 
 export interface LoteDTO {
@@ -315,13 +315,21 @@ export class ExportacaoDpService {
 
   private apiUrl = `${environment.apiUrl}/exportacao-dp`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private categoriaService: CategoriaService,
+    private culturaService: CulturaService
+  ) {}
 
   async exportarMunicipioXml(municipioId: number): Promise<void> {
-    const dto = await lastValueFrom(
-      this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`)
-    );
-    const xml = this.buildMunicipioXml(dto);
+    // Carrega os dados do município, categorias e culturas em paralelo
+    const { dto, categorias, culturas } = await lastValueFrom(forkJoin({
+      dto: this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`),
+      categorias: this.categoriaService.listarTodas(),
+      culturas: this.culturaService.listarTodas()
+    }));
+    
+    const xml = this.buildMunicipioXml(dto, categorias, culturas);
     const blob = new Blob([xml], { type: 'text/xml;charset=utf-8' });
     const nome = (dto?.municipio?.nome || `municipio-${municipioId}`).replace(/\s+/g, '_').toUpperCase();
     saveAs(blob, `${nome}.xml`);
@@ -331,7 +339,7 @@ export class ExportacaoDpService {
   // XML builders (geo7)
   // --------------------------
 
-  private buildMunicipioXml(dto: Geo7MunicipioExportDTO): string {
+  private buildMunicipioXml(dto: Geo7MunicipioExportDTO, categorias: Categoria[] = [], culturas: Cultura[] = []): string {
     const header = `<?xml version="1.0" encoding="UTF-8"?>`;
     const openRoot = `<exportacaoDP>`;
     const closeRoot = `</exportacaoDP>`;
@@ -339,14 +347,14 @@ export class ExportacaoDpService {
     const body =
       `<_declaracoes>` +
       `<imoveis>` +
-      (dto.lotes || []).map(l => this.buildLoteXml(dto.municipio, l)).join('') +
+      (dto.lotes || []).map(l => this.buildLoteXml(dto.municipio, l, categorias, culturas)).join('') +
       `</imoveis>` +
       `</_declaracoes>`;
 
     return [header, openRoot, body, closeRoot].join('');
   }
 
-  private buildLoteXml(municipio: MunicipioDTO, ag: Geo7LoteAgregado): string {
+  private buildLoteXml(municipio: MunicipioDTO, ag: Geo7LoteAgregado, categorias: Categoria[] = [], culturas: Cultura[] = []): string {
     const numero = this.s(ag.lote?.numero);
     const sncr = this.s(ag.lote?.sncr);
     const cpfLotes = this.s(ag.lote?.cpf);
@@ -360,7 +368,7 @@ export class ExportacaoDpService {
       `<lotes numeroLote="${this.x(numero)}">` +
         `<imovel numeroLote="${this.x(numero)}"${attrSncr}${attrCpf}${attrCnpj}>` +
           this.buildDeclaracaoEstrutura(ag) +
-          this.buildDeclaracaoUso(municipio, ag) +
+          this.buildDeclaracaoUso(municipio, ag, categorias, culturas) +
           this.buildDeclaracaoPessoa(ag) +
         `</imovel>` +
       `</lotes>`
@@ -451,7 +459,7 @@ export class ExportacaoDpService {
     );
   }
 
-  private buildDeclaracaoUso(municipio: MunicipioDTO, ag: Geo7LoteAgregado): string {
+  private buildDeclaracaoUso(municipio: MunicipioDTO, ag: Geo7LoteAgregado, categorias: Categoria[] = [], culturas: Cultura[] = []): string {
     const u = ag.dadosSobreUso || { items: [] as ItemDTO[] };
     const itens = u.items || [];
 
@@ -472,10 +480,20 @@ export class ExportacaoDpService {
     const n4 = (v: any) => this.nf(v);
     const s  = (v: any) => this.s(v);
 
+    // Busca os IDs das categorias
+    const categoriaIdVegetalConsorcio = this.getCategoriaId(categorias, 'PRODUTO_VEGETAL_CONSORCIO_OU_ROTACAO');
+    const categoriaIdVegetalIsolado = this.getCategoriaId(categorias, 'PRODUTO_VEGETAL_ISOLADO');
+    const categoriaIdAreasOutrosUsos = this.getCategoriaId(categorias, 'AREAS_COM_OUTRO_USO');
+    const categoriaIdGranjeiraAgricola = this.getCategoriaId(categorias, 'AREAS_DE_EXPLORACAO_ACRICOLA_OU_GRANJEIRA');
+    const categoriaIdAreasComRestricao = this.getCategoriaId(categorias, 'AREAS_COM_RESTRICAO');
+    const categoriaIdAreasComPastagem = this.getCategoriaId(categorias, 'AREAS_DE_PASTAGEM');
+    const categoriaIdInfoPecuaria = this.getCategoriaId(categorias, 'INFOMACOES_SOBRE_PECUARIA');
+    const categoriaIdAreasSemRestricaoSemUso = this.getCategoriaId(categorias, 'AREAS_SEM_RESTICAO_E_SEM_USO');
+
     const blocoConsorcio = vegetalConsorcio.map(it =>
       `<item>` +
-        this.tag('categoriaIdVegetalConsorcio', it.categoriaId ?? 0) +
-        this.tag('culturaIdVegetalConsorcio', it.culturaId ?? 0) +
+        this.tag('categoriaIdVegetalConsorcio', categoriaIdVegetalConsorcio) +
+        this.tag('culturaIdVegetalConsorcio', this.getCodigoCultura(culturas, it.culturaId)) +
         this.tag('formaExploracaoVegetalConsorcio', 6) +
         this.tag('sequenciaProdutoVegetalConsorcio', it.sequenciaProdutoVegetal ?? 0) +
         this.tag('areaPlantadaVegetalConsorcio', n4(it.areaPlantada)) +
@@ -488,8 +506,8 @@ export class ExportacaoDpService {
 
     const blocoRotacao = vegetalRotacao.map(it =>
       `<item>` +
-        this.tag('categoriaIdVegetalRotacao', it.categoriaId ?? 0) +
-        this.tag('culturaIdVegetalRotacao', it.culturaId ?? 0) +
+        this.tag('categoriaIdVegetalRotacao', categoriaIdVegetalConsorcio) +
+        this.tag('culturaIdVegetalRotacao', this.getCodigoCultura(culturas, it.culturaId)) +
         this.tag('formaExploracaoVegetalRotacao', 8) +
         this.tag('sequenciaProdutoVegetalRotacao', it.sequenciaProdutoVegetal ?? 0) +
         this.tag('areaPlantadaVegetalRotacao', n4(it.areaPlantada)) +
@@ -502,8 +520,8 @@ export class ExportacaoDpService {
 
     const blocoIsolado = vegetalIsolado.map(it =>
       `<item>` +
-        this.tag('categoriaIdVegetalIsolado', it.categoriaId ?? 0) +
-        this.tag('culturaIdVegetalIsolado', it.culturaId ?? 0) +
+        this.tag('categoriaIdVegetalIsolado', categoriaIdVegetalIsolado) +
+        this.tag('culturaIdVegetalIsolado', this.getCodigoCultura(culturas, it.culturaId)) +
         this.tag('areaPlantadaVegetalIsolado', n4(it.areaPlantada)) +
         this.tag('areaColhidaVegetalIsolado', n4(it.areaColhida)) +
         this.tag('quantidadeColhidaVegetalIsolado', s(it.quantidadeColhida ?? 0)) +
@@ -514,7 +532,7 @@ export class ExportacaoDpService {
 
     const blocoGranjeira = areasGranjeira.map(g =>
       `<item>` +
-        this.tag('categoriaIdGranjeiraAgricola', g.categoriaId ?? 0) +
+        this.tag('categoriaIdGranjeiraAgricola', categoriaIdGranjeiraAgricola) +
         this.tag('granjeiraAgricolaId', g.granjeiraAgricolaId ?? 0) +
         this.tag('areaExploradaGranjeiraAgricola', n4(g.areaExploradaGranjeiraAgricola)) +
         this.tag('indicadorRestricaoGranjeiraAgricola', s(g.indicadorGeralDeRestricao ?? 0)) +
@@ -523,7 +541,7 @@ export class ExportacaoDpService {
 
     const blocoOutrosUsos = outrosUsos.map(ou =>
       `<item>` +
-        this.tag('categoriaIdAreasOutrosUsos', ou.categoriaId ?? 0) +
+        this.tag('categoriaIdAreasOutrosUsos', categoriaIdAreasOutrosUsos) +
         this.tag('culturaIdAreaOutrosUsos', ou.culturaId ?? 0) +
         this.tag('areaUtilizadaOutrosUsos', n4(ou.areaUtilizada)) +
         this.tag('indicadorGeralDeRestricaoOutrosUsos', s(ou.indicadorGeralDeRestricao ?? 0)) +
@@ -533,14 +551,14 @@ export class ExportacaoDpService {
     // CORREÇÃO: Só incluir areaSemRestricao se houver itens válidos
     const blocoRestricoes = restricoes.length > 0 ? restricoes.map(ar =>
       `<item>` +
-        this.tag('categoriaIdAreaInaproveitavel', ar.categoriaId ?? 0) +
+        this.tag('categoriaIdAreaInaproveitavel', categoriaIdAreasComRestricao) +
         this.tag('areaInaproveitavelArea', n4(ar.areaUtilizadaRestricao)) +
       `</item>`
     ).join('') : '';
 
     const blocoPastagem = pastagens.map(p =>
       `<item>` +
-        this.tag('categoriaIdAreasComPastagem', p.categoriaId ?? 0) +
+        this.tag('categoriaIdAreasComPastagem', categoriaIdAreasComPastagem) +
         this.tag('tipoPastagem', this.normalizaPastagem(p.tipoPastagem)) +
         this.tag('areaPastagem', n4(p.areaPastagem)) +
         this.tag('indicadorGeralDeRestricaoPastagem', s(p.indicadorGeralDeRestricao ?? 0)) +
@@ -549,7 +567,7 @@ export class ExportacaoDpService {
 
     const blocoPecuaria = pecuaria.map(pc =>
       `<item>` +
-        this.tag('categoriaId', pc.categoriaId ?? 0) +
+        this.tag('categoriaId', categoriaIdInfoPecuaria) +
         this.tag('categoriaAnimalId', pc.categoriaAnimalId ?? 0) +
         this.tag('quantidadeAnimal', pc.quantidadeAnimal ?? 0) +
       `</item>`
@@ -558,14 +576,14 @@ export class ExportacaoDpService {
     // CORREÇÃO: Só incluir areaSemRestricaoSemUso se houver itens válidos
     const blocoSemUso = semUso.length > 0 ? semUso.map(sr =>
       `<item>` +
-        this.tag('categoriaIdAreasSemRestricaoSemUso', sr.categoriaId ?? 0) +
+        this.tag('categoriaIdAreasSemRestricaoSemUso', categoriaIdAreasSemRestricaoSemUso) +
         this.tag('areaAproveitavelNaoUtilizada', n4(sr.areaAproveitavelNaoUtilizada)) +
       `</item>`
     ).join('') : '';
 
     const uf = municipio?.uf || '';
     const mun = municipio?.nome || '';
-    const cod = 0; // se tiver codIbge no payload, set aqui
+    const cod = ag.lote?.municipioId || 0; // usa o municipioId do lote
 
     return (
       `<declaracaoUso uf="${this.x(uf)}" municipio="${this.x(mun)}">` +
@@ -743,6 +761,38 @@ export class ExportacaoDpService {
 
   private hasAlgumaFonte(e: EstruturaDTO): boolean {
     return !!(e?.isRioOuRiacho || e?.isAcude || e?.isOlhoDagua || e?.isLagoa || e?.isPoco);
+  }
+
+  /** Busca o ID da categoria pelo nome */
+  private getCategoriaId(categorias: Categoria[], nomeCategoria: string): number {
+    const categoria = categorias.find(c => c.nomeCategoria === nomeCategoria);
+    if (categoria) {
+      return categoria.id;
+    }
+    
+    // Fallbacks baseados na tabela categoria
+    if (nomeCategoria === 'PRODUTO_VEGETAL_ISOLADO') return 1;
+    if (nomeCategoria === 'PRODUTO_VEGETAL_CONSORCIO_OU_ROTACAO') return 2;
+    if (nomeCategoria === 'AREAS_DE_EXPLORACAO_ACRICOLA_OU_GRANJEIRA') return 3;
+    if (nomeCategoria === 'AREAS_COM_RESTRICAO') return 4;
+    if (nomeCategoria === 'AREAS_DE_PASTAGEM') return 5;
+    if (nomeCategoria === 'AREAS_COM_OUTRO_USO') return 6;
+    if (nomeCategoria === 'INFOMACOES_SOBRE_PECUARIA') return 7;
+    if (nomeCategoria === 'AREAS_SEM_RESTICAO_E_SEM_USO') return 8;
+    
+    return 0; // fallback padrão
+  }
+
+  /** Busca o código da cultura pelo ID */
+  private getCodigoCultura(culturas: Cultura[], culturaId: number | null | undefined): number {
+    if (!culturaId) return 0;
+    
+    const cultura = culturas.find(c => c.id === culturaId);
+    if (cultura && cultura.codigoCultura) {
+      return cultura.codigoCultura;
+    }
+    
+    return culturaId; // fallback para o ID original se não encontrar o código
   }
 
   /** Deriva flags de uso d’água a partir das strings de usoDagua* */
