@@ -97,14 +97,14 @@
 
         <!-- Linha 4: código receita / área urbana -->
         <div class="form-grid">
-          <div class="col-6 md-12">
+          <div class="col-4 md-12">
             <mat-form-field class="full-width">
               <mat-label>Código Imóvel Receita</mat-label>
               <input matInput formControlName="codImoReceita" placeholder="Ex: 000123" />
             </mat-form-field>
           </div>
 
-          <div class="col-3 md-6">
+          <div class="col-4 md-6">
             <mat-form-field class="full-width">
               <mat-label>Área Urbana (m²)</mat-label>
               <input matInput type="number" formControlName="areaUrbana" />
@@ -117,7 +117,7 @@
         <mat-card-actions>
           <button mat-flat-button color="primary" type="submit">
             <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
-            {{ atualizando ? 'Atualizar' : 'Salvar' }}
+            {{ atualizando ? 'Atualizar' : 'Salvar' }} Endereço do Imóvel e ir para Dados de Uso
           </button>
 
           <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">

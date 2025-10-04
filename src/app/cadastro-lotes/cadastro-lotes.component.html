@@ -59,6 +59,16 @@
 
           <!-- Segunda linha: Situação Jurídica, Área, Perímetro -->
           <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
+            <div fxFlex="470px">
+              <mat-form-field class="full-width">
+                <mat-label>Proprietário</mat-label>
+                <input type="text" formControlName="proprietario" placeholder="Nome do proprietário" matInput
+                  required />
+                <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
+                  Proprietário é obrigatório
+                </mat-error>
+              </mat-form-field>
+            </div>
             <div fxFlex="310px">
               <mat-form-field class="full-width">
                 <mat-label>Situação Jurídica</mat-label>
@@ -73,7 +83,7 @@
               </mat-form-field>
             </div>
 
-            <div fxFlex="310px">
+            <div fxFlex="150px">
               <mat-form-field class="full-width">
                 <mat-label>Área (m²)</mat-label>
                 <input type="number" formControlName="area" placeholder="Ex: 1000" matInput required />
@@ -96,17 +106,13 @@
 
           <!-- Terceira linha: Proprietário, CPF -->
           <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
-            <div fxFlex="310px">
+            <div fxFlex="470px">
               <mat-form-field class="full-width">
-                <mat-label>Proprietário</mat-label>
-                <input type="text" formControlName="proprietario" placeholder="Nome do proprietário" matInput required />
-                <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
-                  Proprietário é obrigatório
-                </mat-error>
+                <mat-label>Denominação do Imóvel</mat-label>
+                <input type="text" formControlName="denominacaoImovel" placeholder="Ex: Sítio São José" matInput />
               </mat-form-field>
             </div>
-
-            <div fxFlex="310px">
+            <div fxFlex="250px">
               <mat-form-field class="full-width">
                 <mat-label>CPF</mat-label>
                 <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput required />
@@ -118,47 +124,11 @@
                 </mat-error>
               </mat-form-field>
             </div>
-          </div>
-
-          <!-- Quarta linha: Denominação do Imóvel, SNCR -->
-          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
-            <div fxFlex="310px">
-              <mat-form-field class="full-width">
-                <mat-label>Denominação do Imóvel</mat-label>
-                <input type="text" formControlName="denominacaoImovel" placeholder="Ex: Sítio São José" matInput />
-              </mat-form-field>
-            </div>
-
-            <div fxFlex="310px">
+            <div fxFlex="210px">
               <mat-form-field class="full-width">
                 <mat-label>Código do Imóvel Rural (SNCR)</mat-label>
                 <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
               </mat-form-field>
-            </div>
-          </div>
-
-          <!-- Quinta linha: Data Término Período de Uso -->
-          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
-            <div fxFlex="310px">
-              <mat-form-field class="full-width">
-                <mat-label>Data Término Período de Uso</mat-label>
-                <input type="date" formControlName="dataTerminoPeriodoDeUso" matInput />
-              </mat-form-field>
-            </div>
-          </div>
-
-          <!-- Informações sobre o formulário -->
-          <div class="info-section">
-            <mat-divider></mat-divider>
-            <div class="info-content">
-              <h4>Formulário de Cadastro de Lote:</h4>
-              <ul>
-                <li><strong>Campos Obrigatórios:</strong> Controle de Campo, Município, Distrito, Situação Jurídica, Área, Proprietário e CPF</li>
-                <li><strong>Campos Opcionais:</strong> Perímetro, Data Término Período de Uso, Denominação do Imóvel e SNCR</li>
-                <li><strong>Validações:</strong> CPF com formato válido, Área maior que zero</li>
-                <li><strong>Próximo Passo:</strong> Após salvar, você será redirecionado para o Cadastro de Estrutura com os dados preenchidos</li>
-                <li><strong>Nota:</strong> Forma de Obtenção é preenchida no Cadastro de Estrutura</li>
-              </ul>
             </div>
           </div>
 
@@ -178,6 +148,11 @@
             <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
               <mat-icon fontIcon="backspace"></mat-icon>
               Limpar
+            </button>
+            <button *ngIf="formLotes.get('id')?.value" mat-flat-button color="warn" class="ml-5" type="button"
+              (click)="onDelete()">
+              <mat-icon fontIcon="delete"></mat-icon>
+              Excluir
             </button>
           </mat-card-actions>
         </mat-card-content>

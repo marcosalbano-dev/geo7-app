@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -46,7 +46,7 @@ interface estadoCivil {
   styleUrl: './cadastro-documento-pessoa.component.scss'
 })
 
-export class CadastroDocumentoPessoaComponent implements OnInit {
+export class CadastroDocumentoPessoaComponent implements OnInit, OnChanges {
 
   @Input() formDocumentoPessoa!: FormGroup;
   @Input() ufs: string[] = [];
@@ -59,12 +59,35 @@ export class CadastroDocumentoPessoaComponent implements OnInit {
   municipiosNaturalidade: { id:number; nome:string }[] = [];
 
   constructor(private municipioService: MunicipioService, private cdr: ChangeDetectorRef){}
+  
   ngOnInit(): void {
     const ufCtrl = this.formDocumentoPessoa.get('ufNaturalidade')!;
     ufCtrl.valueChanges.subscribe(uf => this.loadMunicipiosNaturalidade(uf));
     // dispara o carregamento inicial se já vier UF do backend
     const uf = ufCtrl.value;
     if (uf) this.loadMunicipiosNaturalidade(uf);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('[DocumentoPessoa] 🔄 ngOnChanges detectado:', changes);
+    
+    // Se o formDocumentoPessoa mudou, força detecção de mudanças
+    if (changes['formDocumentoPessoa'] && this.formDocumentoPessoa) {
+      console.log('[DocumentoPessoa] 🔍 Formulário de documento atualizado:', this.formDocumentoPessoa.value);
+      this.cdr.detectChanges();
+    }
+    
+    // Se o formFisica mudou, força detecção de mudanças
+    if (changes['formFisica'] && this.formFisica) {
+      console.log('[DocumentoPessoa] 🔍 Formulário físico atualizado:', this.formFisica.value);
+      this.cdr.detectChanges();
+    }
+    
+    // Se as UFs mudaram, força detecção de mudanças
+    if (changes['ufs'] && this.ufs) {
+      console.log('[DocumentoPessoa] 🔍 UFs atualizadas:', this.ufs);
+      this.cdr.detectChanges();
+    }
   }
 
   onUfChange(uf: string): void {

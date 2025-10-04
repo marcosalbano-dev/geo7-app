@@ -511,9 +511,7 @@ export class CadastroPessoasComponent implements OnInit {
     // Pessoa
     if (resp.pessoa) {
       console.log('[Pessoas] 🔍 Aplicando dados da pessoa:', resp.pessoa);
-      console.log('[Pessoas] 🔍 Chamando pessoaToFormPessoas...');
       const pessoaFormData = pessoaToFormPessoas(resp.pessoa);
-      console.log('[Pessoas] 🔍 Chamando pessoaToFormFisica...');
       const fisicaFormData = pessoaToFormFisica(resp.pessoa);
       
       console.log('[Pessoas] 🔍 Dados mapeados para formPessoas:', pessoaFormData);
@@ -522,8 +520,6 @@ export class CadastroPessoasComponent implements OnInit {
       this.formPessoas.patchValue(pessoaFormData, { emitEvent: false });
       this.formFisica.patchValue(fisicaFormData, { emitEvent: false });
       
-      // Log adicional para verificar se o patchValue funcionou
-      console.log('[Pessoas] 🔍 formFisica após patchValue:', this.formFisica.value);
       this.formAnexo.patchValue({
         coordenadaEste: resp.pessoa.coordenadaEste ?? '',
         coordenadaNorte: resp.pessoa.coordenadaNorte ?? '',
@@ -534,7 +530,9 @@ export class CadastroPessoasComponent implements OnInit {
         recebeProgramaGoverno: !!resp.pessoa.isRecebeAjudoProgramaGoverno,
       }, { emitEvent: false });
     }
-    // Documento
+    
+    // Documento - CRÍTICO: Aplicar antes do endereço para garantir que os dados sejam exibidos
+    console.log('[Pessoas] 🔍 Verificando se há documento para aplicar:', resp.documento);
     if (resp.documento) {
       console.log('[Pessoas] 🔍 Aplicando dados do documento:', resp.documento);
       
@@ -544,13 +542,14 @@ export class CadastroPessoasComponent implements OnInit {
 
       const docForm = documentoToForm(resp.documento, resp.endereco);
       console.log('[Pessoas] 🔍 Dados mapeados para formDocumentoPessoa:', docForm);
+      
+      // Aplica os dados do documento
       this.formDocumentoPessoa.patchValue(docForm, { emitEvent: false });
       
       // Aplicar estadoCivil do documento no formFisica também
       if (resp.documento.estadoCivil) {
         console.log('[Pessoas] 🔍 Aplicando estadoCivil do documento no formFisica:', resp.documento.estadoCivil);
         this.formFisica.patchValue({ estadoCivil: resp.documento.estadoCivil }, { emitEvent: false });
-        console.log('[Pessoas] 🔍 formFisica.estadoCivil após aplicar do documento:', this.formFisica.get('estadoCivil')?.value);
       }
 
       // normalizações
@@ -568,7 +567,7 @@ export class CadastroPessoasComponent implements OnInit {
         setTimeout(() => this.formDocumentoPessoa.patchValue({ naturalidadeId: natId }, { emitEvent: false }));
       }
 
-      // **garante exibição dos códigos** (como string)
+      // garante exibição dos códigos (como string)
       const codOrig = resp.documento.codigoPaisOrigem;
       const codResi = resp.documento.codigoPaisResidencia ?? resp.endereco?.codigoPaisResidencia;
       this.formDocumentoPessoa.get('codigoPaisOrigem')?.setValue(
@@ -577,12 +576,23 @@ export class CadastroPessoasComponent implements OnInit {
       this.formDocumentoPessoa.get('codigoPaisResidencia')?.setValue(
         codResi != null ? String(codResi) : '', { emitEvent: false }
       );
+      
+      console.log('[Pessoas] ✅ Dados do documento aplicados com sucesso');
+    } else {
+      console.log('[Pessoas] ⚠️ Nenhum documento encontrado na resposta');
     }
 
-    // Endereço (dispara valueChanges da UF no filho)
+    // Endereço - CRÍTICO: Aplicar após o documento
     if (resp.endereco) {
-      this.formEnderecoPessoa.patchValue(enderecoToForm(resp.endereco), { emitEvent: true });
+      console.log('[Pessoas] 🔍 Aplicando dados do endereço:', resp.endereco);
+      const enderecoFormData = enderecoToForm(resp.endereco);
+      console.log('[Pessoas] 🔍 Dados mapeados para formEnderecoPessoa:', enderecoFormData);
+      
+      // Aplica os dados do endereço
+      this.formEnderecoPessoa.patchValue(enderecoFormData, { emitEvent: true });
       this.formEnderecoPessoa.get('municipioId')?.setValue(resp.endereco.municipioId ?? null, { emitEvent: false });
+      
+      console.log('[Pessoas] ✅ Dados do endereço aplicados com sucesso');
     }
 
     // Pessoa-Lote
@@ -607,7 +617,18 @@ export class CadastroPessoasComponent implements OnInit {
 
     // Modo atualização ON
     this.atualizando = true;
-    this.cdr.markForCheck();
+    
+    // Força detecção de mudanças após aplicar todos os dados
+    setTimeout(() => {
+      this.cdr.markForCheck();
+      console.log('[Pessoas] ✅ Detecção de mudanças forçada');
+      
+      // Log dos valores finais dos formulários para debug
+      console.log('[Pessoas] 🔍 Valores finais dos formulários:');
+      console.log('[Pessoas] 🔍 - formDocumentoPessoa:', this.formDocumentoPessoa.value);
+      console.log('[Pessoas] 🔍 - formEnderecoPessoa:', this.formEnderecoPessoa.value);
+      console.log('[Pessoas] 🔍 - formFisica:', this.formFisica.value);
+    }, 100);
   }
 
   private applyTipoPessoaMode(tp: 'FISICA' | 'JURIDICA') {
@@ -848,9 +869,9 @@ export class CadastroPessoasComponent implements OnInit {
           }
         });
         alert('Pessoa vinculada com sucesso ao lote!');
-        this.onLimpar(); // ← limpa os dados para novo cadastro
+        //this.onLimpar(); // ← limpa os dados para novo cadastro
 
-        this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } });
+        this.router.navigate(['/cadastro-dados-sobre-uso'], { queryParams: { loteId } });
       },
       error: (e) => {
         console.error('Erro ao salvar pessoa:', e);
@@ -921,20 +942,24 @@ export class CadastroPessoasComponent implements OnInit {
         next: (lote) => {
           const erros: string[] = [];
           
-          // Validação do CPF
+          // Validação do CPF - mais flexível para atualizações
           if (lote.cpf && cpfPessoa && lote.cpf !== cpfPessoa) {
-            erros.push(`CPF deve ser igual ao cadastrado no lote (${lote.cpf})`);
+            // Apenas avisa, mas não impede a atualização
             console.warn('[Pessoas] ⚠️ CPF da pessoa diferente do CPF do lote (atualização)');
             console.warn('[Pessoas] CPF do lote:', lote.cpf);
             console.warn('[Pessoas] CPF da pessoa:', cpfPessoa);
+            console.warn('[Pessoas] ℹ️ Continuando com a atualização...');
+            // Não adiciona erro para permitir atualização
           }
           
-          // Validação do Nome
+          // Validação do Nome - mais flexível para atualizações
           if (lote.proprietario && nomePessoa && lote.proprietario !== nomePessoa) {
-            erros.push(`Nome do detentor deve ser igual ao proprietário do lote (${lote.proprietario})`);
+            // Apenas avisa, mas não impede a atualização
             console.warn('[Pessoas] ⚠️ Nome da pessoa diferente do proprietário do lote (atualização)');
             console.warn('[Pessoas] Proprietário do lote:', lote.proprietario);
             console.warn('[Pessoas] Nome da pessoa:', nomePessoa);
+            console.warn('[Pessoas] ℹ️ Continuando com a atualização...');
+            // Não adiciona erro para permitir atualização
           }
           
           if (erros.length > 0) {
@@ -967,6 +992,12 @@ export class CadastroPessoasComponent implements OnInit {
     const pessoaLoteId =
       (this as any).pessoaLoteIdEmEdicao ??
       Number(this.route.snapshot.queryParamMap.get('pessoaLoteId'));
+    
+    console.log('[Pessoas] 🔍 Debug pessoaLoteId:');
+    console.log('[Pessoas] 🔍 - pessoaLoteIdEmEdicao:', (this as any).pessoaLoteIdEmEdicao);
+    console.log('[Pessoas] 🔍 - pessoaLoteId da query:', this.route.snapshot.queryParamMap.get('pessoaLoteId'));
+    console.log('[Pessoas] 🔍 - pessoaLoteId final:', pessoaLoteId);
+    
     if (!pessoaLoteId) {
       this.snackBar.open('pessoaLoteId não informado.', 'Fechar', { duration: 3500 });
       return;
@@ -1047,74 +1078,36 @@ export class CadastroPessoasComponent implements OnInit {
     };
     const payload = nullifyEmptyStrings(dados);
 
-    console.log('PUT payload:', payload);
-    console.log('CPF enviado:', documento.cpf)
+    console.log('[Pessoas] 🔍 PUT payload completo:', payload);
+    console.log('[Pessoas] 🔍 CPF enviado:', documento.cpf);
+    console.log('[Pessoas] 🔍 pessoaLoteId:', pessoaLoteId);
+    console.log('[Pessoas] 🔍 loteId:', loteId);
 
     // 6) chamar API
     this.pessoasService.atualizarPessoa(pessoaLoteId, payload).subscribe({
       next: (resp) => {
         this.snackBar.open('Dados atualizados com sucesso!', 'Fechar', { duration: 3000 });
         this.atualizando = true; // continua em modo edição
-        // 1) Pessoa (campos básicos)
+        
+        console.log('[Pessoas] 🔄 Aplicando dados atualizados:', resp);
+        
+        // Aplica todos os dados usando o método patchAll que já está otimizado
         this.patchAll(resp);
-
-        // 2) Pessoa Física (campos de PF que vêm na pessoa)
-        const toDate = (s?: string | null) => (s ? new Date(s) : null);
-        this.formFisica.patchValue({
-          dataNascimento: toDate(resp.pessoa?.dataNascimento),
-          sexoPessoa: resp.pessoa?.sexoPessoa ?? null, // Corrigido: sexo em vez de sexoPessoa
-          isEspolio: resp.pessoa?.isEspolio ?? false,
-          racaCor: resp.pessoa?.racaCor ?? null,
-          dataCasamento: resp.pessoa?.dataCasamento ?? null,
-          regimeBens: resp.pessoa?.regimeDeBens ?? null,
-          nomePai: resp.pessoa?.nomePai ?? null,
-          nomeMae: resp.pessoa?.nomeMae ?? null,
-        }, { emitEvent: false });
-
-        // 3) Documento
-        if (resp.documento) {
-          this.formDocumentoPessoa.patchValue(resp.documento);
-          const tp = resp.documento.tipoPessoa || 'FISICA';
-          this.formPessoas.get('tipoPessoa')?.setValue(tp, { emitEvent: false });
-          this.applyTipoPessoaMode(tp); // garante que o UI PF/PJ está coerente
-        }
-
-        // 4) Endereço
-        if (resp.endereco) {
-          this.formEnderecoPessoa.patchValue({
-            logradouro: resp.endereco.logradouro ?? '',
-            complemento: resp.endereco.complemento ?? '',
-            numero: resp.endereco.numero ?? '',
-            bairro: resp.endereco.bairro ?? '',
-            cep: resp.endereco.cep ?? '',
-            //codigoPaisResidencia: resp.endereco.codigoPaisResidencia ?? '931',
-            uf: resp.endereco.uf ?? null,
-          }, { emitEvent: true }); // <- TRUE para disparar valueChanges da UF
-
-          // pode setar já; o filho vai validar quando a lista chegar
-          this.formEnderecoPessoa.get('municipioId')
-            ?.setValue(resp.endereco.municipioId ?? null, { emitEvent: false });
-        }
-
-        // 5) Vínculo pessoa-lote
-        if (resp.pessoaLote) this.formPessoaLote.patchValue(resp.pessoaLote);
-
-        // navegação com tratamento de erro e detecção de mudanças
+        
+        // Força detecção de mudanças após todas as operações
+        this.cdr.markForCheck();
+        
+        // Navegação para a próxima página após atualização bem-sucedida
         if (loteId) {
-          this.router.navigate(['/cadastro-endereco-lote'], { queryParams: { loteId } })
+          this.router.navigate(['/cadastro-dados-sobre-uso'], { queryParams: { loteId } })
             .then(() => {
-              // Navegação bem-sucedida
-              console.log('Navegação para cadastro-endereco-lote realizada com sucesso');
+              console.log('Navegação para cadastro-dados-sobre-uso realizada com sucesso');
             })
             .catch((error) => {
-              // Tratamento de erro na navegação
               console.error('Erro na navegação:', error);
               this.snackBar.open('Erro ao navegar para a próxima página.', 'Fechar', { duration: 3000 });
             });
         }
-        
-        // Força detecção de mudanças após todas as operações
-        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Erro ao atualizar detentor:', err);
@@ -1145,6 +1138,20 @@ export class CadastroPessoasComponent implements OnInit {
         
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  onDelete(): void {
+    const id = this.formPessoas.get('id')?.value as number | null;
+    if (!id) return;
+    if (!confirm('Remover esta pessoa?')) return;
+
+    this.pessoasService.excluirPessoa(id).subscribe({
+      next: () => {
+        this.snackBar.open('Pessoa removida.', 'Fechar', { duration: 3000 });
+        this.formPessoas.reset({ loteId: this.formPessoas.get('loteId')?.value });
+      },
+      error: () => this.snackBar.open('Erro ao remover.', 'Fechar', { duration: 4000 }),
     });
   }
 

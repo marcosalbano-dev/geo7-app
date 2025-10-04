@@ -1,12 +1,10 @@
 <div class="page-center">
-  <form class="mt-60" *ngIf="formPessoas" [formGroup]="formPessoas" (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
+  <form class="mt-60" *ngIf="formPessoas" [formGroup]="formPessoas"
+    (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
 
     <!-- Botão Voltar -->
     <div class="back-button-container mb-20">
-      <app-back-button 
-        text="Voltar"
-        [useHistory]="true"
-        color="primary">
+      <app-back-button text="Voltar" [useHistory]="true" color="primary">
       </app-back-button>
     </div>
 
@@ -44,7 +42,7 @@
               <mat-label>Tipo de Pessoa</mat-label>
               <mat-select formControlName="tipoPessoa" (selectionChange)="onTipoPessoaChange($event.value)">
                 @for (tipo of tiposPessoas; track tipo) {
-                  <mat-option [value]="tipo.value">{{ tipo.viewValue }}</mat-option>
+                <mat-option [value]="tipo.value">{{ tipo.viewValue }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -127,6 +125,7 @@
                   <mat-option value="PARDA">Parda</mat-option>
                   <mat-option value="AMARELA">Amarela</mat-option>
                   <mat-option value="INDIGENA">Indígena</mat-option>
+                  <mat-option value="NÃO DESEJA INFORMAR">Não deseja informar</mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -134,7 +133,7 @@
 
           <!-- Segunda linha -->
           <div class="form-grid">
-            <div class="col-3 md-6">
+            <!-- <div class="col-3 md-6">
               <mat-form-field class="full-width">
                 <mat-label>Escolaridade</mat-label>
                 <mat-select formControlName="escolaridade">
@@ -148,33 +147,29 @@
                   <mat-option value="POS_GRADUACAO">Pós-graduação</mat-option>
                 </mat-select>
               </mat-form-field>
-            </div>
+            </div> -->
 
-            <div class="col-3 md-6">
+            <!-- <div class="col-3 md-6">
               <mat-form-field class="full-width">
                 <mat-label>Profissão</mat-label>
                 <input matInput formControlName="profissao" placeholder="Ex: Agricultor" />
               </mat-form-field>
-            </div>
+            </div> -->
 
-            <div class="col-3 md-6">
+            <div class="col-4 md-6">
               <mat-form-field class="full-width">
                 <mat-label>Nome da Mãe</mat-label>
                 <input matInput formControlName="nomeMae" placeholder="Nome completo da mãe" />
               </mat-form-field>
             </div>
 
-            <div class="col-3 md-6">
+            <div class="col-4 md-6">
               <mat-form-field class="full-width">
                 <mat-label>Nome do Pai</mat-label>
                 <input matInput formControlName="nomePai" placeholder="Nome completo do pai" />
               </mat-form-field>
             </div>
-          </div>
-
-          <!-- Terceira linha - Informações complementares -->
-          <div class="form-grid">
-            <div class="col-3 md-6">
+            <div class="col-4 md-6">
               <mat-form-field class="full-width">
                 <mat-label>Data do Casamento</mat-label>
                 <input matInput [matDatepicker]="picker2" formControlName="dataCasamento">
@@ -182,6 +177,11 @@
                 <mat-datepicker #picker2></mat-datepicker>
               </mat-form-field>
             </div>
+          </div>
+
+          <!-- Terceira linha - Informações complementares -->
+          <div class="form-grid">
+           
 
             <div class="col-3 md-6">
               <!-- <mat-form-field class="full-width">
@@ -233,7 +233,8 @@
             <div class="col-3 md-6">
               <mat-form-field class="full-width">
                 <mat-label>Natureza Jurídica</mat-label>
-                <input matInput formControlName="naturezaJuridica" placeholder="Ex: 2062 - Sociedade Empresária Limitada" />
+                <input matInput formControlName="naturezaJuridica"
+                  placeholder="Ex: 2062 - Sociedade Empresária Limitada" />
               </mat-form-field>
             </div>
 
@@ -269,11 +270,8 @@
       </div>
       <div class="quadro-content">
         <!-- Documento da pessoa (componente) -->
-        <app-cadastro-documento-pessoa
-          *ngIf="formDocumentoPessoa"
-          [formDocumentoPessoa]="formDocumentoPessoa"
-          [formFisica]="formFisica"
-          [ufs]="ufs">
+        <app-cadastro-documento-pessoa *ngIf="formDocumentoPessoa" [formDocumentoPessoa]="formDocumentoPessoa"
+          [formFisica]="formFisica" [ufs]="ufs">
         </app-cadastro-documento-pessoa>
       </div>
     </div>
@@ -285,9 +283,7 @@
       </div>
       <div class="quadro-content">
         <!-- Endereço da pessoa (componente) -->
-        <app-cadastro-endereco-pessoa
-          *ngIf="formEnderecoPessoa"
-          [formEnderecoPessoa]="formEnderecoPessoa"
+        <app-cadastro-endereco-pessoa *ngIf="formEnderecoPessoa" [formEnderecoPessoa]="formEnderecoPessoa"
           [loteId]="formEnderecoPessoa.get('loteId')?.value">
         </app-cadastro-endereco-pessoa>
       </div>
@@ -299,9 +295,7 @@
         <h3>Quadro 5 - Vinculação com o Imóvel Rural</h3>
       </div>
       <div class="quadro-content">
-        <app-cadastro-pessoa-lote
-          [formPessoaLote]="formPessoaLote"
-          [loteId]="formPessoaLote.get('loteId')?.value">
+        <app-cadastro-pessoa-lote [formPessoaLote]="formPessoaLote" [loteId]="formPessoaLote.get('loteId')?.value">
         </app-cadastro-pessoa-lote>
       </div>
     </div>
@@ -312,9 +306,7 @@
         <h3>Quadro 6 - Informações Adicionais</h3>
       </div>
       <div class="quadro-content">
-        <app-cadastro-pessoas-anexo
-          [formAnexo]="formAnexo"
-          [loteId]="formAnexo.get('loteId')?.value">
+        <app-cadastro-pessoas-anexo [formAnexo]="formAnexo" [loteId]="formAnexo.get('loteId')?.value">
         </app-cadastro-pessoas-anexo>
 
         <!-- Campo de observações -->
@@ -322,10 +314,7 @@
           <div class="col-12">
             <mat-form-field class="full-width">
               <mat-label>Observações</mat-label>
-              <textarea 
-                matInput 
-                formControlName="observacoes" 
-                rows="3" 
+              <textarea matInput formControlName="observacoes" rows="3"
                 placeholder="Informações adicionais sobre a pessoa...">
               </textarea>
             </mat-form-field>
@@ -338,14 +327,19 @@
     <div class="form-actions">
       <button mat-flat-button color="primary" type="submit">
         <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
-        {{ atualizando ? 'Atualizar' : 'Salvar' }}
+        {{ atualizando ? 'Atualizar' : 'Salvar' }} Dados Pessoais e ir para Endereço do Imóvel
       </button>
 
       <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
         <mat-icon fontIcon="backspace"></mat-icon>
         Limpar
       </button>
+      
+      <button mat-flat-button color="warn" class="ml-5" type="button"
+        (click)="onDelete()">
+        <mat-icon fontIcon="delete"></mat-icon>
+        Excluir
+      </button>
     </div>
-
   </form>
 </div>

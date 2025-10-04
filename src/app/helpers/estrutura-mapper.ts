@@ -212,14 +212,14 @@ export function estruturaDTOToFormValue(
 
     // Situação Jurídica e Forma de Obtenção
     situacaoSelecionada: dto.situacaoSelecionada ?? null,
-    situacaoJuridicaId: dto.situacaoJuridicaId ?? null,
+    situacaoJuridicaId: dto.situacaoJuridicaId, // Preservar o valor original
     formaObtencaoSelecionada: dto.formaObtencaoSelecionada ?? null,
     formaObtencaoId: codigoForma,
     descricaoFormaDeObtencao: descricaoForma,
 
     // Forma de obtenção — campos dinâmicos
     dataPosse: dto.dataPosse ? new Date(dto.dataPosse) : null,
-    areaPosse: dto.areaMedida ? Number(dto.areaMedida) : null,
+    areaPosse: dto.areaMedida && dto.areaMedida !== null ? Number(dto.areaMedida) : null,
     livro: dto.livro ?? '',
     areaRegistrada: dto.areaRegistrada ?? '',
     nomeCartorio: dto.nomeCartorio ?? '',

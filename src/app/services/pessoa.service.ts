@@ -18,6 +18,10 @@ export class PessoasService {
     return this.http.post<PessoaRespostaDTO>(`${this.apiUrl}`, dados);
   }
 
+  excluirPessoa(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
   /** Atualização completa */
   atualizarPessoa(pessoaLoteId: number, dados: AtualizaDetentorRequestDTO) {
     return this.http.put<EditarDetentorResponseDTO>(`${this.apiUrl}/${pessoaLoteId}`, dados);

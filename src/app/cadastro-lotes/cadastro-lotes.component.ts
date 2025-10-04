@@ -369,6 +369,20 @@ export class CadastroLotesComponent implements OnInit {
     });
   }
 
+  onDelete(): void {
+    const id = this.formLotes.get('id')?.value as number | null;
+    if (!id) return;
+    if (!confirm('Remover este imóvel?')) return;
+
+    this.loteService.deletar(id).subscribe({
+      next: () => {
+        this.snackBar.open('Imóvel removido.', 'Fechar', { duration: 3000 });
+        this.formLotes.reset({ loteId: this.formLotes.get('loteId')?.value });
+      },
+      error: () => this.snackBar.open('Erro ao remover.', 'Fechar', { duration: 4000 }),
+    });
+  }
+
   limparFormulario(): void {
     this.formLotes.reset();
   }

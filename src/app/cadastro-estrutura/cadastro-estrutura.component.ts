@@ -497,9 +497,13 @@ export class CadastroEstruturaComponent implements OnInit {
           // Carrega dados adicionais
           this.carregarEnderecoLote(loteId);
           
-          // ✅ CORREÇÃO: Não chama carregarFormaObtencao pois os dados já vêm da estrutura principal
-          // Os dados de forma de obtenção (areaPosse, dataPosse, descricaoFormaDeObtencao) 
-          // já estão sendo carregados corretamente do DTO da estrutura
+          // ✅ CORREÇÃO: Chama carregarFormaObtencao se os dados não estão na estrutura
+          if (!estruturaDTO.descricaoFormaDeObtencao && !estruturaDTO.areaMedida && !estruturaDTO.dataPosse) {
+            console.log('[Estrutura] Dados de forma de obtenção não encontrados na estrutura, buscando separadamente...');
+            this.carregarFormaObtencao(loteId);
+          } else {
+            console.log('[Estrutura] Dados de forma de obtenção já presentes na estrutura');
+          }
 
           // mantém campos habilitados para edição
           console.log('[Estrutura] DTO aplicado no form:', this.formEstrutura.getRawValue());

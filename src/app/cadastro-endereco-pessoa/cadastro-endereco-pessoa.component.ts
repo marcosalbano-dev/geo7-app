@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -32,7 +32,7 @@ import { MunicipioService } from '../services/municipio.service';
   templateUrl: './cadastro-endereco-pessoa.component.html',
   styleUrl: './cadastro-endereco-pessoa.component.scss'
 })
-export class CadastroEnderecoPessoaComponent implements OnInit {
+export class CadastroEnderecoPessoaComponent implements OnInit, OnChanges {
 
   @Input() formEnderecoPessoa!: FormGroup; // Recebe do pai!
   ufs: string[] = [];
@@ -57,6 +57,16 @@ export class CadastroEnderecoPessoaComponent implements OnInit {
     // se o pai já preencheu uf, carrega agora
     const ufInicial = ufCtrl.value;
     if (ufInicial) this.loadMunicipios(ufInicial);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('[EnderecoPessoa] 🔄 ngOnChanges detectado:', changes);
+    
+    // Se o formEnderecoPessoa mudou, força detecção de mudanças
+    if (changes['formEnderecoPessoa'] && this.formEnderecoPessoa) {
+      console.log('[EnderecoPessoa] 🔍 Formulário de endereço atualizado:', this.formEnderecoPessoa.value);
+      this.cdr.detectChanges();
+    }
   }
 
   errorStateMatcher: ErrorStateMatcher = {

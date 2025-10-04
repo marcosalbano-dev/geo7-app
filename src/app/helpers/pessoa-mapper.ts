@@ -35,7 +35,7 @@ export function pessoaToFormFisica(p?: any) {
       sexoPessoa: p?.sexoPessoa?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo para corresponder aos options
       isEspolio: !!p?.isEspolio,
       racaCor: p?.racaCor?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo
-      estadoCivil: p?.estadoCivil?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo
+      estadoCivil: p?.estadoCivil?.toLowerCase() ?? '', // ✅ CORRIGIDO: converte para minúsculo para corresponder aos options
       dataCasamento: p?.dataCasamento ? new Date(p.dataCasamento) : null, // ✅ CORRIGIDO: converte String para Date
       regimeBens: p?.regimeDeBens?.toUpperCase() ?? '', // ✅ CORRIGIDO: converte para maiúsculo para corresponder aos options
       escolaridade: p?.escolaridade ?? '', // ✅ ADICIONADO
