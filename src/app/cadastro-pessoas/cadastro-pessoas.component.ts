@@ -25,6 +25,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { CadastroPessoaLoteComponent } from '../cadastro-pessoa-lote/cadastro-pessoa-lote.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoteService } from '../services/lote.service';
@@ -100,6 +101,8 @@ interface tipoDocumento {
     MatRadioModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatListModule,
+    MatChipsModule,
     BackButtonComponent
   ],
   templateUrl: './cadastro-pessoas.component.html',

@@ -47,17 +47,24 @@
         </div>
         
         <div *ngIf="!isLoadingPessoas && pessoasVinculadas.length > 0" class="pessoas-lista">
-          <div class="pessoa-item" *ngFor="let pessoaLote of pessoasVinculadas; trackBy: trackByPessoaLoteId">
-            <div class="pessoa-info">
-              <div class="pessoa-dados">
-                <h4>{{ getNomePessoa(pessoaLote) }}</h4>
-                <p><strong>CPF:</strong> {{ getCpfPessoa(pessoaLote) }}</p>
-                <p><strong>Condição:</strong> {{ pessoaLote.condicaoPessoaImovelRural || 'Não informada' }}</p>
-                <p><strong>Declarante:</strong> {{ pessoaLote.isDeclarante ? 'Sim' : 'Não' }}</p>
-                <p><strong>Reside no Imóvel:</strong> {{ pessoaLote.isResideNoImovel ? 'Sim' : 'Não' }}</p>
-                <p><strong>ID PessoaLote:</strong> {{ pessoaLote.id || 'N/A' }}</p>
+          <mat-list>
+            <mat-list-item *ngFor="let pessoaLote of pessoasVinculadas; trackBy: trackByPessoaLoteId" class="pessoa-list-item">
+              <div matListItemTitle class="pessoa-nome">{{ getNomePessoa(pessoaLote) }}</div>
+              <div matListItemLine class="pessoa-detalhes">
+                <span class="pessoa-cpf"><strong>CPF:</strong> {{ getCpfPessoa(pessoaLote) }}</span>
+                <span class="pessoa-condicao"><strong>Condição:</strong> {{ pessoaLote.condicaoPessoaImovelRural || 'Não informada' }}</span>
+                <span class="pessoa-flags">
+                  <mat-chip-set>
+                    <mat-chip [class]="pessoaLote.isDeclarante ? 'chip-declarante' : 'chip-nao-declarante'">
+                      {{ pessoaLote.isDeclarante ? 'Declarante' : 'Não Declarante' }}
+                    </mat-chip>
+                    <mat-chip [class]="pessoaLote.isResideNoImovel ? 'chip-reside' : 'chip-nao-reside'">
+                      {{ pessoaLote.isResideNoImovel ? 'Reside no Imóvel' : 'Não Reside' }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </span>
               </div>
-              <div class="pessoa-actions">
+              <div matListItemMeta class="pessoa-actions">
                 <button mat-icon-button color="primary" (click)="editarPessoa(pessoaLote)" 
                         [disabled]="modoAdicionarNova" matTooltip="Editar pessoa">
                   <mat-icon fontIcon="edit"></mat-icon>
@@ -67,8 +74,8 @@
                   <mat-icon fontIcon="delete"></mat-icon>
                 </button>
               </div>
-            </div>
-          </div>
+            </mat-list-item>
+          </mat-list>
         </div>
         
         <div *ngIf="!isLoadingPessoas && pessoasVinculadas.length === 0" class="no-pessoas">

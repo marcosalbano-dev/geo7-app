@@ -202,62 +202,93 @@
 
 /* ====== PESSOAS VINCULADAS ====== */
 .pessoas-lista {
-  .pessoa-item {
-    background: var(--color-background-light, #f8f9fa);
-    border: 1px solid var(--color-border-light, #e9ecef);
-    border-radius: var(--radius-sm, 4px);
-    margin-bottom: var(--spacing-md, 16px);
-    padding: var(--spacing-md, 16px);
-    transition: all var(--transition-fast, 0.2s);
+  .pessoa-list-item {
+    border-bottom: 1px solid var(--color-border-light, #e9ecef);
+    padding: var(--spacing-sm, 12px) 0;
+    transition: background-color var(--transition-fast, 0.2s);
     
     &:hover {
-      box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.1));
-      border-color: var(--color-primary-300, #90caf9);
+      background-color: var(--color-background-light, #f8f9fa);
     }
     
-    .pessoa-info {
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .pessoa-nome {
+      font-size: var(--font-size-lg, 18px);
+      font-weight: var(--font-weight-semibold, 600);
+      color: var(--color-primary-700, #1976d2);
+      margin-bottom: var(--spacing-xs, 4px);
+    }
+    
+    .pessoa-detalhes {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--spacing-md, 16px);
+      flex-direction: column;
+      gap: var(--spacing-xs, 4px);
+      margin-bottom: var(--spacing-sm, 8px);
       
-      .pessoa-dados {
-        flex: 1;
+      .pessoa-cpf,
+      .pessoa-condicao {
+        font-size: var(--font-size-sm, 14px);
+        color: var(--color-text-secondary, #666);
         
-        h4 {
-          margin: 0 0 var(--spacing-xs, 4px) 0;
-          color: var(--color-primary-700, #1976d2);
-          font-size: var(--font-size-lg, 18px);
-          font-weight: var(--font-weight-semibold, 600);
-        }
-        
-        p {
-          margin: var(--spacing-xs, 4px) 0;
-          font-size: var(--font-size-sm, 14px);
-          color: var(--color-text-secondary, #666);
-          line-height: var(--line-height-normal, 1.5);
-          
-          strong {
-            color: var(--color-text-primary, #333);
-            font-weight: var(--font-weight-medium, 500);
-          }
+        strong {
+          color: var(--color-text-primary, #333);
+          font-weight: var(--font-weight-medium, 500);
         }
       }
       
-      .pessoa-actions {
-        display: flex;
-        gap: var(--spacing-xs, 8px);
-        flex-shrink: 0;
+      .pessoa-flags {
+        margin-top: var(--spacing-xs, 4px);
         
-        button {
-          width: 40px;
-          height: 40px;
+        mat-chip-set {
+          display: flex;
+          gap: var(--spacing-xs, 8px);
+          flex-wrap: wrap;
+        }
+        
+        mat-chip {
+          font-size: var(--font-size-xs, 12px);
+          height: 24px;
+          min-height: 24px;
           
-          mat-icon {
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
+          &.chip-declarante {
+            background-color: var(--color-success-100, #c8e6c9);
+            color: var(--color-success-800, #2e7d32);
           }
+          
+          &.chip-nao-declarante {
+            background-color: var(--color-warn-100, #ffecb3);
+            color: var(--color-warn-800, #f57c00);
+          }
+          
+          &.chip-reside {
+            background-color: var(--color-primary-100, #e3f2fd);
+            color: var(--color-primary-800, #1565c0);
+          }
+          
+          &.chip-nao-reside {
+            background-color: var(--color-grey-100, #f5f5f5);
+            color: var(--color-grey-800, #424242);
+          }
+        }
+      }
+    }
+    
+    .pessoa-actions {
+      display: flex;
+      gap: var(--spacing-xs, 8px);
+      flex-shrink: 0;
+      
+      button {
+        width: 36px;
+        height: 36px;
+        
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
         }
       }
     }
