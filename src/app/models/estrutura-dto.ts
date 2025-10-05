@@ -34,6 +34,7 @@ export interface EstruturaDTO {
   localidade?: string;
   comunidade?: string;
   indicacaoLocalizacao?: string;
+  pontoDeReferencia?: string;
   codImoReceita?: string;
 
 
@@ -52,7 +53,6 @@ export interface EstruturaDTO {
   litigio?: string;
   entregouMemorialPlanilha?: boolean;
   destinacaoDoImovel?: string;
-  // pontoDeReferencia?: string;
   porcentagemDetencao?: number;
   obsLitigio?: string;
 

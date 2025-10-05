@@ -38,6 +38,8 @@ export class EstruturaService {
 
   // Atualizar estrutura
   atualizar(id: number, estrutura: EstruturaDTO): Observable<EstruturaDTO> {
+    console.log('[EstruturaService] 🔍 Payload enviado para atualização:', estrutura);
+    console.log('[EstruturaService] 🔍 - pontoDeReferencia no payload:', estrutura.pontoDeReferencia);
     return this.http.put<EstruturaDTO>(`${this.apiUrl}/${id}`,estrutura).pipe(
       catchError(this.handleError)
     );

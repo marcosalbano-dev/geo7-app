@@ -786,6 +786,8 @@ export class CadastroPessoasComponent implements OnInit {
         coordenadaNorte: this.formAnexo.get('coordenadaNorte')?.value,
         dataNascimento: this.formFisica.get('dataNascimento')?.value ?
           this.formFisica.get('dataNascimento')?.value.toISOString().slice(0, 10) : null,
+        dataCasamento: this.formFisica.get('dataCasamento')?.value ?
+          this.formFisica.get('dataCasamento')?.value.toISOString().slice(0, 10) : null,
         // Garantir que sexo seja enviado corretamente
         sexoPessoa: this.formFisica.get('sexoPessoa')?.value ?? null,
         atividadePrincipal: this.formAnexo.get('atividadePrincipal')?.value,

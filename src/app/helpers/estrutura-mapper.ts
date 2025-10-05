@@ -67,6 +67,12 @@ function getValueOrNull(field: any): any {
 export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
   const raw = form.getRawValue();
 
+  console.log('[EstruturaMapper] 🔍 Mapeando formulário para DTO:');
+  console.log('[EstruturaMapper] 🔍 - indicacaoLocalizacao no form:', raw.indicacaoLocalizacao);
+  console.log('[EstruturaMapper] 🔍 - pontoDeReferencia no form:', raw.pontoDeReferencia);
+  console.log('[EstruturaMapper] 🔍 - localidade no form:', raw.localidade);
+  console.log('[EstruturaMapper] 🔍 - comunidade no form:', raw.comunidade);
+
   return {
     // Identificadores principais
     id: safeNumber(raw.id)!,
@@ -102,7 +108,7 @@ export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
     // Campos de localização
     localidade: safeString(raw.localidade),
     comunidade: safeString(raw.comunidade),
-    indicacaoLocalizacao: safeString(raw.indicacaoLocalizacao),
+    pontoDeReferencia: safeString(raw.pontoDeReferencia), 
     codImoReceita: safeString(raw.codImoReceita),
 
     // Dados socioeconômicos
@@ -155,6 +161,104 @@ export function mapFormToEstruturaDTO(form: FormGroup): EstruturaDTO {
     dhc: raw.dhc ? new Date(raw.dhc) : undefined,
     dhm: raw.dhm ? new Date(raw.dhm) : undefined,
   };
+
+  const dto = {
+    // Identificadores principais
+    id: safeNumber(raw.id)!,
+    loteId: safeNumber(raw.loteId)!,
+
+    // Situação Jurídica e Forma de Obtenção
+    situacaoSelecionada: getValueOrNull(raw.situacaoSelecionada) ?? safeNumber(raw.situacaoSelecionada),
+    situacaoJuridicaId: getValueOrNull(raw.situacaoJuridicaId) ?? safeNumber(raw.situacaoJuridicaId),
+    formaObtencaoSelecionada: getValueOrNull(raw.formaObtencaoSelecionada) ?? safeNumber(raw.formaObtencaoSelecionada),
+    formaObtencaoId: getValueOrNull(raw.formaObtencaoId) ?? safeNumber(raw.formaObtencaoId),
+    descricaoFormaDeObtencao: raw.descricaoFormaDeObtencao || descricaoByCodigoForma(raw.formaObtencaoId) || '',
+    // Forma de obtenção — campos dinâmicos por situação
+    dataPosse: toISODateString(raw.dataPosse),
+    areaMedida: safeString(raw.areaPosse ?? raw.areaMedida), // << garante envio
+    livro: safeString(raw.livro),
+    areaRegistrada: safeString(raw.areaRegistrada),
+    nomeCartorio: safeString(raw.nomeCartorio),
+    municipioCartorio: safeString(raw.municipioCartorio),
+    dataRegistro: toISODateString(raw.dataRegistro),
+    oficio: safeString(raw.oficio),
+    matricula: safeString(raw.matricula),
+    numeroRegistro: safeString(raw.numeroRegistro),
+    numeroHerdeiros: safeNumber(raw.numeroHerdeiros), // se usar campo separado
+
+    // Dados principais do lote/estrutura
+    numero: safeString(raw.numero),
+    denominacaoImovel: safeString(raw.denominacaoImovel),
+    municipioId: safeNumber(raw.municipioId)!,
+    distritoId: safeNumber(raw.distritoId),
+    area: safeNumber(raw.area)!,
+    sncr: safeString(raw.sncr),
+
+    // Campos de localização
+    localidade: safeString(raw.localidade),
+    comunidade: safeString(raw.comunidade),
+    indicacaoLocalizacao: safeString(raw.indicacaoLocalizacao),
+    pontoDeReferencia: safeString(raw.pontoDeReferencia),
+    codImoReceita: safeString(raw.codImoReceita),
+
+    // Dados socioeconômicos
+    familiasResidentes: safeNumber(raw.familiasResidentes),
+    pessoasResidentes: safeNumber(raw.pessoasResidentes),
+    trabalhadoresComCarteira: safeNumber(raw.trabalhadoresComCarteira),
+    trabalhadoresSemCarteira: safeNumber(raw.trabalhadoresSemCarteira),
+    maoDeObraFamiliar: safeNumber(raw.maoDeObraFamiliar),
+
+    // Valores do imóvel
+    valorTotal: safeNumber(raw.valorTotal),
+    valorDasBenfeitorias: safeNumber(raw.valorDasBenfeitorias),
+    valorOutrasAtividades: safeNumber(raw.valorOutrasAtividades),
+    valorTerraNua: safeNumber(raw.valorTerraNua),
+    areaIrrigada: safeNumber(raw.areaIrrigada),
+
+    // Outros campos
+    litigio: getValueOrNull(raw.litigio),
+    entregouMemorialPlanilha: safeBoolean(raw.entregouMemorialPlanilha),
+    destinacaoDoImovel: getValueOrNull(raw.destinacaoDoImovel),
+    porcentagemDetencao: safeNumber(raw.porcentagemDetencao),
+    obsLitigio: safeString(raw.obsLitigio),
+
+    // Energia e água
+    isFonteAguaExterna: safeBoolean(raw.isFonteAguaExterna),
+    isPossuiElergiaEletrica: safeBoolean(raw.isPossuiElergiaEletrica),
+    isPossuiEnergiaAlternativa: safeBoolean(raw.isPossuiEnergiaAlternativa),
+    tipoEnergiaEletrica: getValueOrNull(raw.tipoEnergiaEletrica),
+
+    // Recursos hídricos
+    isIrrigacao: safeBoolean(raw.isIrrigacao),
+    isAcude: safeBoolean(raw.isAcude),
+    isAcudePerene: safeBoolean(raw.isAcudePerene),
+    usoDaguaAcude: getValueOrNull(raw.usoDaguaAcude),
+    isLagoa: safeBoolean(raw.isLagoa),
+    isLagoaPerene: safeBoolean(raw.isLagoaPerene),
+    usoDaguaLagoa: getValueOrNull(raw.usoDaguaLagoa),
+    isPoco: safeBoolean(raw.isPoco),
+    isPocoPerene: safeBoolean(raw.isPocoPerene),
+    usoDaguaPoco: getValueOrNull(raw.usoDaguaPoco),
+    isRioOuRiacho: safeBoolean(raw.isRioOuRiacho),
+    isRioOuRiachoPerene: safeBoolean(raw.isRioOuRiachoPerene),
+    usoDaguaRioOuRiacho: getValueOrNull(raw.usoDaguaRioOuRiacho),
+    isOlhoDagua: safeBoolean(raw.isOlhoDagua),
+    isOlhoDaguaPerene: safeBoolean(raw.isOlhoDaguaPerene),
+    usoDaguaOlhoDagua: getValueOrNull(raw.usoDaguaOlhoDagua),
+
+    isRedeDeAbastecimento: safeBoolean(raw.isRedeDeAbastecimento),
+    ativo: safeBoolean(raw.ativo),
+    dhc: raw.dhc ? new Date(raw.dhc) : undefined,
+    dhm: raw.dhm ? new Date(raw.dhm) : undefined,
+  };
+
+  console.log('[EstruturaMapper] 🔍 DTO final mapeado:');
+  console.log('[EstruturaMapper] 🔍 - indicacaoLocalizacao:', dto.indicacaoLocalizacao);
+  console.log('[EstruturaMapper] 🔍 - pontoDeReferencia:', (dto as any).pontoDeReferencia);
+  console.log('[EstruturaMapper] 🔍 - localidade:', dto.localidade);
+  console.log('[EstruturaMapper] 🔍 - comunidade:', dto.comunidade);
+
+  return dto;
 }
 
 // tenta achar o código na lista pelo texto retornado do back
@@ -219,7 +323,8 @@ export function estruturaDTOToFormValue(
 
     // Forma de obtenção — campos dinâmicos
     dataPosse: dto.dataPosse ? new Date(dto.dataPosse) : null,
-    areaPosse: dto.areaMedida && dto.areaMedida !== null ? Number(dto.areaMedida) : null,
+    areaPosse: dto.areaMedida && dto.areaMedida !== null && dto.areaMedida !== '' && dto.areaMedida !== '0' && dto.areaMedida !== '0.0000' ? Number(dto.areaMedida) : null,
+    areaMedida: dto.areaMedida && dto.areaMedida !== null && dto.areaMedida !== '' && dto.areaMedida !== '0' && dto.areaMedida !== '0.0000' ? dto.areaMedida : null,
     livro: dto.livro ?? '',
     areaRegistrada: dto.areaRegistrada ?? '',
     nomeCartorio: dto.nomeCartorio ?? '',
@@ -240,7 +345,7 @@ export function estruturaDTOToFormValue(
     // Campos de localização (ADICIONADOS)
     localidade: dto.localidade ?? '',
     comunidade: dto.comunidade ?? '',
-    indicacaoLocalizacao: dto.indicacaoLocalizacao ?? '',
+    pontoDeReferencia: dto.pontoDeReferencia ?? '', 
     codImoReceita: dto.codImoReceita ?? '',
 
     // Dados socioeconômicos
@@ -298,6 +403,12 @@ export function estruturaDTOToFormValue(
   console.log('[EstruturaMapper] 🔍 Valores mapeados para areaPosse e dataPosse:');
   console.log('[EstruturaMapper] 🔍 - areaPosse mapeado:', formValue.areaPosse);
   console.log('[EstruturaMapper] 🔍 - dataPosse mapeado:', formValue.dataPosse);
+  console.log('[EstruturaMapper] 🔍 - Verificação detalhada areaMedida:');
+  console.log('[EstruturaMapper] 🔍   - dto.areaMedida:', dto.areaMedida);
+  console.log('[EstruturaMapper] 🔍   - dto.areaMedida !== null:', dto.areaMedida !== null);
+  console.log('[EstruturaMapper] 🔍   - dto.areaMedida !== "":', dto.areaMedida !== '');
+  console.log('[EstruturaMapper] 🔍   - dto.areaMedida !== "0":', dto.areaMedida !== '0');
+  console.log('[EstruturaMapper] 🔍   - dto.areaMedida !== "0.0000":', dto.areaMedida !== '0.0000');
   
   return formValue;
 }

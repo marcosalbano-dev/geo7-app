@@ -198,6 +198,7 @@ export class CadastroEstruturaComponent implements OnInit {
       localidade: [''],
       comunidade: [''],
       indicacaoLocalizacao: [''],
+      pontoDeReferencia: [''],
       codImoReceita: [''],
 
       formaObtencaoId: [null],
@@ -302,7 +303,7 @@ export class CadastroEstruturaComponent implements OnInit {
         // Campos de localização ficam em branco para serem preenchidos
         localidade: '',
         comunidade: '',
-        indicacaoLocalizacao: '',
+        pontoDeReferencia: '',
       });
       
       console.log('[Estrutura] Formulário após aplicar params:', this.formEstrutura.getRawValue());
@@ -420,6 +421,10 @@ export class CadastroEstruturaComponent implements OnInit {
         console.log('[Estrutura] 🔍 - dataPosse:', estruturaDTO.dataPosse, 'tipo:', typeof estruturaDTO.dataPosse);
         console.log('[Estrutura] 🔍 - formaObtencaoId:', estruturaDTO.formaObtencaoId);
         console.log('[Estrutura] 🔍 - Todos os campos do DTO:', Object.keys(estruturaDTO));
+        console.log('[Estrutura] 🔍 - indicacaoLocalizacao no DTO:', estruturaDTO.indicacaoLocalizacao);
+        console.log('[Estrutura] 🔍 - pontoDeReferencia no DTO:', (estruturaDTO as any).pontoDeReferencia);
+        console.log('[Estrutura] 🔍 - localidade no DTO:', estruturaDTO.localidade);
+        console.log('[Estrutura] 🔍 - comunidade no DTO:', estruturaDTO.comunidade);
 
         this.loadDistritosByMunicipio(estruturaDTO.municipioId).then(() => {
           // habilita campos para preenchimento
@@ -494,16 +499,8 @@ export class CadastroEstruturaComponent implements OnInit {
             console.log('[Estrutura] Nenhum loteId encontrado, pulando carregamento de dados do lote');
           }
 
-          // Carrega dados adicionais
-          this.carregarEnderecoLote(loteId);
-          
-          // ✅ CORREÇÃO: Chama carregarFormaObtencao se os dados não estão na estrutura
-          if (!estruturaDTO.descricaoFormaDeObtencao && !estruturaDTO.areaMedida && !estruturaDTO.dataPosse) {
-            console.log('[Estrutura] Dados de forma de obtenção não encontrados na estrutura, buscando separadamente...');
-            this.carregarFormaObtencao(loteId);
-          } else {
-            console.log('[Estrutura] Dados de forma de obtenção já presentes na estrutura');
-          }
+          // ✅ CORREÇÃO: Dados já estão na estrutura, não precisa carregar separadamente
+          console.log('[Estrutura] Dados de endereço e forma de obtenção já estão na estrutura, pulando carregamento separado');
 
           // mantém campos habilitados para edição
           console.log('[Estrutura] DTO aplicado no form:', this.formEstrutura.getRawValue());
@@ -548,23 +545,53 @@ export class CadastroEstruturaComponent implements OnInit {
         console.log('[Estrutura] 🔍 - Descrição mapeada:', descricaoForma);
         console.log('[Estrutura] 🔍 - Código mapeado:', codigoForma);
         
-        // Aplica os dados da forma de obtenção no formulário
-        const formaObtencaoData = {
-          formaObtencaoId: codigoForma,
-          descricaoFormaDeObtencao: descricaoForma,
-          livro: formaObtencaoDTO.livro || '',
-          matricula: formaObtencaoDTO.matricula || '',
-          nomeCartorio: formaObtencaoDTO.nomeCartorio || '',
-          municipioCartorio: formaObtencaoDTO.municipioCartorio || '',
-          dataRegistro: formaObtencaoDTO.dataRegistro || null,
-          numeroRegistro: formaObtencaoDTO.numeroRegistro || '',
-          areaRegistrada: formaObtencaoDTO.areaRegistrada || null,
-          areaMedida: formaObtencaoDTO.areaMedida || null,
-          areaPosse: formaObtencaoDTO.areaMedida ? Number(formaObtencaoDTO.areaMedida) : null, // areaPosse usa o mesmo valor que areaMedida
-          dataPosse: formaObtencaoDTO.dataPosse ? new Date(formaObtencaoDTO.dataPosse) : null,
-          numeroHerdeiros: formaObtencaoDTO.numeroHerdeiros || null,
-          oficio: formaObtencaoDTO.oficio || '',
-        };
+        // Aplica os dados da forma de obtenção no formulário, mas só preenche campos vazios
+        const currentFormValue = this.formEstrutura.getRawValue();
+        const formaObtencaoData: any = {};
+        
+        // Só preenche se o campo estiver vazio na estrutura
+        if (!currentFormValue.formaObtencaoId && codigoForma) {
+          formaObtencaoData.formaObtencaoId = codigoForma;
+        }
+        if (!currentFormValue.descricaoFormaDeObtencao && descricaoForma) {
+          formaObtencaoData.descricaoFormaDeObtencao = descricaoForma;
+        }
+        if (!currentFormValue.livro && formaObtencaoDTO.livro) {
+          formaObtencaoData.livro = formaObtencaoDTO.livro;
+        }
+        if (!currentFormValue.matricula && formaObtencaoDTO.matricula) {
+          formaObtencaoData.matricula = formaObtencaoDTO.matricula;
+        }
+        if (!currentFormValue.nomeCartorio && formaObtencaoDTO.nomeCartorio) {
+          formaObtencaoData.nomeCartorio = formaObtencaoDTO.nomeCartorio;
+        }
+        if (!currentFormValue.municipioCartorio && formaObtencaoDTO.municipioCartorio) {
+          formaObtencaoData.municipioCartorio = formaObtencaoDTO.municipioCartorio;
+        }
+        if (!currentFormValue.dataRegistro && formaObtencaoDTO.dataRegistro) {
+          formaObtencaoData.dataRegistro = formaObtencaoDTO.dataRegistro;
+        }
+        if (!currentFormValue.numeroRegistro && formaObtencaoDTO.numeroRegistro) {
+          formaObtencaoData.numeroRegistro = formaObtencaoDTO.numeroRegistro;
+        }
+        if (!currentFormValue.areaRegistrada && formaObtencaoDTO.areaRegistrada) {
+          formaObtencaoData.areaRegistrada = formaObtencaoDTO.areaRegistrada;
+        }
+        if (!currentFormValue.areaMedida && formaObtencaoDTO.areaMedida) {
+          formaObtencaoData.areaMedida = formaObtencaoDTO.areaMedida;
+        }
+        if (!currentFormValue.areaPosse && formaObtencaoDTO.areaMedida) {
+          formaObtencaoData.areaPosse = Number(formaObtencaoDTO.areaMedida);
+        }
+        if (!currentFormValue.dataPosse && formaObtencaoDTO.dataPosse) {
+          formaObtencaoData.dataPosse = new Date(formaObtencaoDTO.dataPosse);
+        }
+        if (!currentFormValue.numeroHerdeiros && formaObtencaoDTO.numeroHerdeiros) {
+          formaObtencaoData.numeroHerdeiros = formaObtencaoDTO.numeroHerdeiros;
+        }
+        if (!currentFormValue.oficio && formaObtencaoDTO.oficio) {
+          formaObtencaoData.oficio = formaObtencaoDTO.oficio;
+        }
 
         // Se descricaoFormaDeObtencao está vazia, mas temos outros dados, alerta o usuário
         if (!formaObtencaoDTO.descricaoFormaDeObtencao && (formaObtencaoDTO.areaMedida || formaObtencaoDTO.dataPosse)) {
@@ -577,8 +604,13 @@ export class CadastroEstruturaComponent implements OnInit {
           console.warn('[Estrutura] 💡 Solução: Execute o SQL para corrigir o campo descricao_forma_d no banco');
         }
         
-        console.log('[Estrutura] Aplicando dados da forma de obtenção:', formaObtencaoData);
-        this.formEstrutura.patchValue(formaObtencaoData);
+        // Só aplica se houver dados para aplicar
+        if (Object.keys(formaObtencaoData).length > 0) {
+          console.log('[Estrutura] Aplicando dados da forma de obtenção:', formaObtencaoData);
+          this.formEstrutura.patchValue(formaObtencaoData);
+        } else {
+          console.log('[Estrutura] Nenhum dado adicional de forma de obtenção para aplicar');
+        }
         
         console.log('[Estrutura] Formulário após aplicar dados da forma de obtenção:', this.formEstrutura.getRawValue());
         console.log('[Estrutura] 🔍 Verificando campos específicos:');
@@ -629,16 +661,30 @@ export class CadastroEstruturaComponent implements OnInit {
       next: (enderecoDTO) => {
         console.log('[Estrutura] Endereço do lote carregado:', enderecoDTO);
         
-        // Aplica os dados do endereço no formulário
-        const enderecoData = {
-          localidade: enderecoDTO.localidade || '',
-          comunidade: enderecoDTO.comunidade || '',
-          indicacaoLocalizacao: enderecoDTO.pontoDeReferencia || '',
-          codImoReceita: enderecoDTO.codImoReceita || '',
-        };
+        // Aplica os dados do endereço no formulário, mas só preenche campos vazios
+        const currentFormValue = this.formEstrutura.getRawValue();
+        const enderecoData: any = {};
         
-        console.log('[Estrutura] Aplicando dados do endereço:', enderecoData);
-        this.formEstrutura.patchValue(enderecoData);
+        if (!currentFormValue.localidade && enderecoDTO.localidade) {
+          enderecoData.localidade = enderecoDTO.localidade;
+        }
+        if (!currentFormValue.comunidade && enderecoDTO.comunidade) {
+          enderecoData.comunidade = enderecoDTO.comunidade;
+        }
+        if (!currentFormValue.pontoDeReferencia && enderecoDTO.pontoDeReferencia) {
+          enderecoData.pontoDeReferencia = enderecoDTO.pontoDeReferencia;
+        }
+        if (!currentFormValue.codImoReceita && enderecoDTO.codImoReceita) {
+          enderecoData.codImoReceita = enderecoDTO.codImoReceita;
+        }
+        
+        // Só aplica se houver dados para aplicar
+        if (Object.keys(enderecoData).length > 0) {
+          console.log('[Estrutura] Aplicando dados do endereço:', enderecoData);
+          this.formEstrutura.patchValue(enderecoData);
+        } else {
+          console.log('[Estrutura] Nenhum dado adicional de endereço para aplicar');
+        }
         
         console.log('[Estrutura] Formulário após aplicar dados do endereço:', this.formEstrutura.getRawValue());
       },
@@ -741,6 +787,7 @@ export class CadastroEstruturaComponent implements OnInit {
     console.log('[Estrutura] 🔍 Campos de forma de obtenção no form:');
     console.log('[Estrutura] 🔍 - formaObtencaoId:', this.formEstrutura.get('formaObtencaoId')?.value);
     console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', this.formEstrutura.get('descricaoFormaDeObtencao')?.value);
+    console.log('[Estrutura] 🔍 - pontoDeReferencia no form:', this.formEstrutura.get('pontoDeReferencia')?.value);
 
     const dto = mapFormToEstruturaDTO(this.formEstrutura);
     
@@ -748,6 +795,11 @@ export class CadastroEstruturaComponent implements OnInit {
     console.log('[Estrutura] 🔍 Campos de forma de obtenção no DTO:');
     console.log('[Estrutura] 🔍 - formaObtencaoId:', dto.formaObtencaoId);
     console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', dto.descricaoFormaDeObtencao);
+    console.log('[Estrutura] 🔍 Campos de localização no DTO:');
+    console.log('[Estrutura] 🔍 - indicacaoLocalizacao:', dto.indicacaoLocalizacao);
+    console.log('[Estrutura] 🔍 - pontoDeReferencia:', (dto as any).pontoDeReferencia);
+    console.log('[Estrutura] 🔍 - localidade:', dto.localidade);
+    console.log('[Estrutura] 🔍 - comunidade:', dto.comunidade);
 
     this.estruturaService.atualizar(dto.id, dto).subscribe({
       next: () => {
