@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, signal, NgZone } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,6 +11,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { CondicaoPessoaImovel } from '../enums/enum-condicao-pessoa-imovel.enum';
 import { CadastroPessoasAnexoComponent } from '../cadastro-pessoas-anexo/cadastro-pessoas-anexo.component';
 import { CadastroDocumentoPessoaComponent } from '../cadastro-documento-pessoa/cadastro-documento-pessoa.component';
@@ -21,6 +23,8 @@ import { MunicipioService } from '../services/municipio.service';
 import { ErrorStateMatcher, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CadastroPessoaLoteComponent } from '../cadastro-pessoa-lote/cadastro-pessoa-lote.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoteService } from '../services/lote.service';
@@ -94,6 +98,8 @@ interface tipoDocumento {
     MatDatepickerModule,
     MatNativeDateModule,
     MatRadioModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
     BackButtonComponent
   ],
   templateUrl: './cadastro-pessoas.component.html',
@@ -229,6 +235,11 @@ export class CadastroPessoasComponent implements OnInit {
   numero: string = '';
   //programas: ProgramaGovernoDTO[] = [];
 
+  // Lista de pessoas vinculadas ao lote
+  pessoasVinculadas: any[] = [];
+  isLoadingPessoas = false;
+  modoAdicionarNova = false;
+
   tipoPessoaSelecionada = signal<string>('FISICA');
 
   formPessoas: FormGroup;
@@ -250,7 +261,8 @@ export class CadastroPessoasComponent implements OnInit {
     private snackBar: MatSnackBar,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private location: Location
+    private location: Location,
+    private ngZone: NgZone
   ) {
 
     this.formAnexo = this.fb.group({
@@ -268,7 +280,7 @@ export class CadastroPessoasComponent implements OnInit {
     this.formPessoas = this.fb.group({
       municipioId: [null, Validators.required],
       loteId: [null, Validators.required],
-      nome: [''],
+      nome: ['', Validators.required],
       endereco: [''],
       numero: [''],
       complemento: [''],
@@ -441,6 +453,9 @@ export class CadastroPessoasComponent implements OnInit {
 
       this.formPessoaLote.get('loteId')?.setValue(loteId);
       
+      // Carregar lista de pessoas vinculadas ao lote
+      this.carregarPessoasVinculadas(loteId);
+      
       // Carrega dados do lote (incluindo CPF para sincronização)
       this.loteService.obterPorId(loteId).subscribe({
         next: (lote) => {
@@ -462,14 +477,8 @@ export class CadastroPessoasComponent implements OnInit {
               if (err.status === 404) {
                 console.log('[Pessoas] Nenhuma pessoa encontrada para o lote', loteId, '- Modo SALVAR');
                 
-                // Verificar se já existe pessoa com o CPF do lote
-                if (lote.cpf) {
-                  console.log('[Pessoas] 🔍 Verificando se já existe pessoa com CPF:', lote.cpf);
-                  this.verificarPessoaExistentePorCPF(lote.cpf, loteId, lote.proprietario);
-                } else {
-                  // Não há CPF, prossegue com pré-preenchimento normal
-                  this.preencherDadosNovoDetentor(lote);
-                }
+                // Pré-preenche dados do lote (sem verificação de CPF existente)
+                this.preencherDadosNovoDetentor(lote);
               } else {
                 console.error('[Pessoas] Erro ao carregar edição por lote:', err);
               }
@@ -619,16 +628,33 @@ export class CadastroPessoasComponent implements OnInit {
     this.atualizando = true;
     
     // Força detecção de mudanças após aplicar todos os dados
-    setTimeout(() => {
-      this.cdr.markForCheck();
-      console.log('[Pessoas] ✅ Detecção de mudanças forçada');
-      
-      // Log dos valores finais dos formulários para debug
-      console.log('[Pessoas] 🔍 Valores finais dos formulários:');
-      console.log('[Pessoas] 🔍 - formDocumentoPessoa:', this.formDocumentoPessoa.value);
-      console.log('[Pessoas] 🔍 - formEnderecoPessoa:', this.formEnderecoPessoa.value);
-      console.log('[Pessoas] 🔍 - formFisica:', this.formFisica.value);
-    }, 100);
+    this.ngZone.run(() => {
+      setTimeout(() => {
+        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+        console.log('[Pessoas] ✅ Detecção de mudanças forçada no patchAll');
+        
+        // Log dos valores finais dos formulários para debug
+        console.log('[Pessoas] 🔍 Valores finais dos formulários:');
+        console.log('[Pessoas] 🔍 - formDocumentoPessoa:', this.formDocumentoPessoa.value);
+        console.log('[Pessoas] 🔍 - formEnderecoPessoa:', this.formEnderecoPessoa.value);
+        console.log('[Pessoas] 🔍 - formFisica:', this.formFisica.value);
+        
+        // Força uma segunda detecção de mudanças para garantir que a UI seja atualizada
+        setTimeout(() => {
+          this.cdr.detectChanges();
+          this.cdr.markForCheck();
+          console.log('[Pessoas] ✅ Segunda detecção de mudanças forçada no patchAll');
+          
+          // Terceira tentativa para garantir que a UI seja atualizada
+          setTimeout(() => {
+            this.cdr.detectChanges();
+            this.cdr.markForCheck();
+            console.log('[Pessoas] ✅ Terceira detecção de mudanças forçada no patchAll');
+          }, 50);
+        }, 50);
+      }, 100);
+    });
   }
 
   private applyTipoPessoaMode(tp: 'FISICA' | 'JURIDICA') {
@@ -686,61 +712,23 @@ export class CadastroPessoasComponent implements OnInit {
 
   onSalvar() {
     console.log('formPessoas:', this.formPessoas.value);
-    // (garanta que o valor está presente no formPessoaLote)
+    
+    // Validações básicas obrigatórias
     if (!this.formPessoaLote.get('loteId')?.value) {
-      alert('Lote não selecionado!');
+      this.snackBar.open('Lote não selecionado!', 'Fechar', { duration: 3000 });
       return;
     }
 
-    // Validação de sincronização do CPF e Nome
-    const loteId = this.formPessoaLote.get('loteId')?.value;
-    const cpfPessoa = this.formDocumentoPessoa.get('cpf')?.value;
-    const nomePessoa = this.formPessoas.get('nome')?.value;
-    
-    if (loteId && (cpfPessoa || nomePessoa)) {
-      // Verifica se os dados da pessoa são iguais aos dados do lote
-      this.loteService.obterPorId(loteId).subscribe({
-        next: (lote) => {
-          const erros: string[] = [];
-          
-          // Validação do CPF
-          if (lote.cpf && cpfPessoa && lote.cpf !== cpfPessoa) {
-            erros.push(`CPF deve ser igual ao cadastrado no lote (${lote.cpf})`);
-            console.warn('[Pessoas] ⚠️ CPF da pessoa diferente do CPF do lote');
-            console.warn('[Pessoas] CPF do lote:', lote.cpf);
-            console.warn('[Pessoas] CPF da pessoa:', cpfPessoa);
-          }
-          
-          // Validação do Nome
-          if (lote.proprietario && nomePessoa && lote.proprietario !== nomePessoa) {
-            erros.push(`Nome do detentor deve ser igual ao proprietário do lote (${lote.proprietario})`);
-            console.warn('[Pessoas] ⚠️ Nome da pessoa diferente do proprietário do lote');
-            console.warn('[Pessoas] Proprietário do lote:', lote.proprietario);
-            console.warn('[Pessoas] Nome da pessoa:', nomePessoa);
-          }
-          
-          if (erros.length > 0) {
-            this.snackBar.open(
-              erros.join('. '), 
-              'Fechar', 
-              { duration: 8000 }
-            );
-            return;
-          }
-          
-          // Dados estão sincronizados, prossegue com o salvamento
-          this.executarSalvamento();
-        },
-        error: (err) => {
-          console.error('[Pessoas] Erro ao validar dados do lote:', err);
-          // Prossegue mesmo com erro na validação
-          this.executarSalvamento();
-        }
-      });
-    } else {
-      // Não há loteId ou dados para validar, prossegue normalmente
-      this.executarSalvamento();
+    // Validar se o nome foi preenchido
+    const nome = this.formPessoas.get('nome')?.value;
+    if (!nome || nome.trim() === '') {
+      this.snackBar.open('Nome da pessoa é obrigatório!', 'Fechar', { duration: 3000 });
+      this.formPessoas.get('nome')?.markAsTouched();
+      return;
     }
+
+    // Prossegue com o salvamento
+    this.executarSalvamento();
   }
 
   private executarSalvamento() {
@@ -863,17 +851,30 @@ export class CadastroPessoasComponent implements OnInit {
 
         this.pessoaLoteService.salvar(pessoaLote).subscribe({
           next: (pessoaLote) => {
-            alert('Pessoa e vínculo salvos com sucesso!');
+            this.snackBar.open('Pessoa e vínculo salvos com sucesso!', 'Fechar', { duration: 3000 });
+            
+            // Se estava em modo adicionar nova, limpar formulários PRIMEIRO
+            if (this.modoAdicionarNova) {
+              this.limparTodosFormularios();
+              this.modoAdicionarNova = false;
+            }
+            
+            // Recarregar lista de pessoas vinculadas DEPOIS de limpar
+            console.log('[Pessoas] 🔄 Recarregando pessoas após salvamento, loteId:', loteId);
+            this.recarregarListaPessoas(loteId);
+            
+            this.cdr.markForCheck();
           },
           error: (err) => {
-            alert('Erro ao salvar vínculo!');
+            this.snackBar.open('Erro ao salvar vínculo!', 'Fechar', { duration: 3000 });
             console.error('Erro salvar PessoaLote:', err);
           }
         });
-        alert('Pessoa vinculada com sucesso ao lote!');
-        //this.onLimpar(); // ← limpa os dados para novo cadastro
-
-        this.router.navigate(['/cadastro-dados-sobre-uso'], { queryParams: { loteId } });
+        
+        // Navegar para próxima página apenas se não estiver em modo adicionar nova
+        if (!this.modoAdicionarNova) {
+          this.router.navigate(['/cadastro-dados-sobre-uso'], { queryParams: { loteId } });
+        }
       },
       error: (e) => {
         console.error('Erro ao salvar pessoa:', e);
@@ -934,58 +935,16 @@ export class CadastroPessoasComponent implements OnInit {
       return;
     }
 
-    // Validação de sincronização do CPF e Nome
-    const cpfPessoa = this.formDocumentoPessoa.get('cpf')?.value;
-    const nomePessoa = this.formPessoas.get('nome')?.value;
-    
-    if (loteId && (cpfPessoa || nomePessoa)) {
-      // Verifica se os dados da pessoa são iguais aos dados do lote
-      this.loteService.obterPorId(loteId).subscribe({
-        next: (lote) => {
-          const erros: string[] = [];
-          
-          // Validação do CPF - mais flexível para atualizações
-          if (lote.cpf && cpfPessoa && lote.cpf !== cpfPessoa) {
-            // Apenas avisa, mas não impede a atualização
-            console.warn('[Pessoas] ⚠️ CPF da pessoa diferente do CPF do lote (atualização)');
-            console.warn('[Pessoas] CPF do lote:', lote.cpf);
-            console.warn('[Pessoas] CPF da pessoa:', cpfPessoa);
-            console.warn('[Pessoas] ℹ️ Continuando com a atualização...');
-            // Não adiciona erro para permitir atualização
-          }
-          
-          // Validação do Nome - mais flexível para atualizações
-          if (lote.proprietario && nomePessoa && lote.proprietario !== nomePessoa) {
-            // Apenas avisa, mas não impede a atualização
-            console.warn('[Pessoas] ⚠️ Nome da pessoa diferente do proprietário do lote (atualização)');
-            console.warn('[Pessoas] Proprietário do lote:', lote.proprietario);
-            console.warn('[Pessoas] Nome da pessoa:', nomePessoa);
-            console.warn('[Pessoas] ℹ️ Continuando com a atualização...');
-            // Não adiciona erro para permitir atualização
-          }
-          
-          if (erros.length > 0) {
-            this.snackBar.open(
-              erros.join('. '), 
-              'Fechar', 
-              { duration: 8000 }
-            );
-            return;
-          }
-          
-          // Dados estão sincronizados, prossegue com a atualização
-          this.executarAtualizacao(toISO);
-        },
-        error: (err) => {
-          console.error('[Pessoas] Erro ao validar dados do lote (atualização):', err);
-          // Prossegue mesmo com erro na validação
-          this.executarAtualizacao(toISO);
-        }
-      });
-    } else {
-      // Não há loteId ou dados para validar, prossegue normalmente
-      this.executarAtualizacao(toISO);
+    // Validar se o nome foi preenchido
+    const nome = this.formPessoas.get('nome')?.value;
+    if (!nome || nome.trim() === '') {
+      this.snackBar.open('Nome da pessoa é obrigatório!', 'Fechar', { duration: 3000 });
+      this.formPessoas.get('nome')?.markAsTouched();
+      return;
     }
+
+    // Prossegue com a atualização
+    this.executarAtualizacao(toISO);
   }
 
   private executarAtualizacao(toISO: (v: any) => string | null) {
@@ -1096,20 +1055,18 @@ export class CadastroPessoasComponent implements OnInit {
         // Aplica todos os dados usando o método patchAll que já está otimizado
         this.patchAll(resp);
         
+        // Recarregar lista de pessoas vinculadas apenas se não estivermos editando
+        if (!this.atualizando) {
+          this.carregarPessoasVinculadas(loteId);
+        } else {
+          console.log('[Pessoas] ℹ️ Editando pessoa - não recarregando lista para evitar sobrescrita');
+        }
+        
         // Força detecção de mudanças após todas as operações
         this.cdr.markForCheck();
         
-        // Navegação para a próxima página após atualização bem-sucedida
-        if (loteId) {
-          this.router.navigate(['/cadastro-dados-sobre-uso'], { queryParams: { loteId } })
-            .then(() => {
-              console.log('Navegação para cadastro-dados-sobre-uso realizada com sucesso');
-            })
-            .catch((error) => {
-              console.error('Erro na navegação:', error);
-              this.snackBar.open('Erro ao navegar para a próxima página.', 'Fechar', { duration: 3000 });
-            });
-        }
+        // Não redirecionar automaticamente - manter na mesma página para edição
+        console.log('[Pessoas] ✅ Pessoa atualizada com sucesso - permanecendo na página de edição');
       },
       error: (err) => {
         console.error('Erro ao atualizar detentor:', err);
@@ -1168,6 +1125,30 @@ export class CadastroPessoasComponent implements OnInit {
 
     this.formPessoaLote.get('loteId')?.setValue(loteId); // ← mantém o lote selecionado
     this.tipoPessoaSelecionada.set('FISICA');
+  }
+
+  limparTodosFormularios(): void {
+    const loteId = this.formPessoaLote.get('loteId')?.value;
+
+    console.log('[Pessoas] 🧹 Limpando todos os formulários para nova pessoa');
+
+    // Limpar todos os formulários
+    this.formAnexo.reset();
+    this.formPessoas.reset({ tipoPessoa: 'FISICA' });
+    this.formFisica.reset();
+    this.formJuridica.reset();
+    this.formPessoaLote.reset();
+    this.formEnderecoPessoa.reset();
+    this.formDocumentoPessoa.reset();
+
+    // Restaurar valores essenciais
+    this.formPessoaLote.get('loteId')?.setValue(loteId);
+    this.tipoPessoaSelecionada.set('FISICA');
+    
+    // Aplicar modo de pessoa física
+    this.applyTipoPessoaMode('FISICA');
+
+    console.log('[Pessoas] ✅ Todos os formulários limpos');
   }
 
   onTipoPessoaChange(value: string) {
@@ -1284,21 +1265,23 @@ export class CadastroPessoasComponent implements OnInit {
       proprietario: lote.proprietario
     });
     
-    // Pré-preenche o CPF do lote no documento da pessoa
+    // Pré-preenche o CPF do lote no documento da pessoa (opcional - pode ser alterado)
     if (lote.cpf) {
       this.formDocumentoPessoa.patchValue({
         cpf: lote.cpf
       });
-      console.log('[Pessoas] ✅ CPF pré-preenchido:', lote.cpf);
+      console.log('[Pessoas] ✅ CPF pré-preenchido (pode ser alterado):', lote.cpf);
     }
 
-    // Pré-preenche o nome do detentor com o proprietário do lote
+    // Pré-preenche o nome do detentor com o proprietário do lote (opcional - pode ser alterado)
     if (lote.proprietario) {
       this.formPessoas.patchValue({
         nome: lote.proprietario
       });
-      console.log('[Pessoas] ✅ Nome do detentor pré-preenchido:', lote.proprietario);
+      console.log('[Pessoas] ✅ Nome do detentor pré-preenchido (pode ser alterado):', lote.proprietario);
     }
+    
+    console.log('[Pessoas] ℹ️ Dados pré-preenchidos como sugestão - podem ser alterados livremente');
   }
 
   onVoltarClick(): void {
@@ -1314,6 +1297,301 @@ export class CadastroPessoasComponent implements OnInit {
       // Volta para a página anterior
       this.location.back();
     }
+  }
+
+  // Métodos para gerenciar pessoas vinculadas
+  recarregarListaPessoas(loteId: number): void {
+    // Força recarregamento da lista (usado após salvar nova pessoa ou remover)
+    console.log('[Pessoas] 🔄 Forçando recarregamento da lista de pessoas');
+    this.carregarPessoasVinculadas(loteId);
+  }
+
+  carregarPessoasVinculadas(loteId: number): void {
+    // Validar se loteId é válido
+    if (!loteId || loteId === null) {
+      console.warn('[Pessoas] ⚠️ loteId inválido para carregar pessoas:', loteId);
+      this.pessoasVinculadas = [];
+      this.isLoadingPessoas = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.isLoadingPessoas = true;
+    console.log('[Pessoas] 🔄 Carregando pessoas para lote:', loteId);
+    
+    // Usar o endpoint obterTodos() e filtrar por loteId
+    this.pessoaLoteService.obterTodos().pipe(
+      finalize(() => {
+        // Garante que o spinner seja desativado em qualquer cenário
+        this.isLoadingPessoas = false;
+        this.cdr.markForCheck();
+        console.log('[Pessoas] ✅ Spinner desativado');
+      })
+    ).subscribe({
+      next: (todasPessoasLote) => {
+        // Filtrar pessoas vinculadas ao lote específico
+        const pessoasFiltradas = todasPessoasLote.filter(pessoaLote => pessoaLote.loteId === loteId) || [];
+        
+        console.log('[Pessoas] Pessoas filtradas para lote', loteId, ':', pessoasFiltradas.length);
+        console.log('[Pessoas] Estrutura dos dados:', pessoasFiltradas);
+        
+        // Debug: mostrar estrutura detalhada do primeiro item
+        if (pessoasFiltradas.length > 0) {
+          console.log('[Pessoas] 🔍 Debug - Primeira pessoa encontrada:');
+          console.log('[Pessoas] 🔍 - ID:', pessoasFiltradas[0].id);
+          console.log('[Pessoas] 🔍 - LoteId:', pessoasFiltradas[0].loteId);
+          console.log('[Pessoas] 🔍 - Estrutura completa:', JSON.stringify(pessoasFiltradas[0], null, 2));
+        }
+        
+        // Se não há pessoas vinculadas, apenas definir a lista vazia
+        if (pessoasFiltradas.length === 0) {
+          this.pessoasVinculadas = [];
+          console.log('[Pessoas] ℹ️ Nenhuma pessoa encontrada para o lote');
+          return;
+        }
+        
+        // Buscar dados completos de cada pessoa
+        this.buscarDadosCompletosPessoas(pessoasFiltradas);
+      },
+      error: (err) => {
+        console.error('[Pessoas] Erro ao carregar pessoas vinculadas:', err);
+        this.pessoasVinculadas = [];
+        // isLoadingPessoas será definido como false pelo finalize
+      }
+    });
+  }
+
+  private buscarDadosCompletosPessoas(pessoasLote: any[]): void {
+    // Buscar dados completos para cada pessoa usando o endpoint de edição
+    const requests = pessoasLote.map(pessoaLote => {
+      if (pessoaLote.id) {
+        return this.pessoaLoteService.getEditarDetentor(pessoaLote.id).pipe(
+          catchError((err: any) => {
+            console.warn('[Pessoas] Erro ao buscar dados completos da pessoa', pessoaLote.id, ':', err);
+            // Retornar dados básicos se não conseguir buscar completos
+            return of({
+              pessoaLote: pessoaLote,
+              pessoa: { nome: 'Nome não disponível', cpf: 'CPF não disponível' },
+              endereco: null,
+              documento: null
+            });
+          })
+        );
+      } else {
+        // Se não tem ID, retornar dados básicos
+        return of({
+          pessoaLote: pessoaLote,
+          pessoa: { nome: 'Nome não disponível', cpf: 'CPF não disponível' },
+          endereco: null,
+          documento: null
+        });
+      }
+    });
+
+    // Executar todas as requisições em paralelo
+    forkJoin(requests).pipe(
+      finalize(() => {
+        // Garante que o spinner seja desativado em qualquer cenário
+        this.isLoadingPessoas = false;
+        this.cdr.markForCheck();
+        console.log('[Pessoas] ✅ Spinner desativado (dados completos)');
+      })
+    ).subscribe({
+      next: (dadosCompletos: any[]) => {
+        // Mapear os dados para o formato esperado
+        this.pessoasVinculadas = dadosCompletos.map((dados: any) => ({
+          id: dados.pessoaLote.id,
+          loteId: dados.pessoaLote.loteId,
+          condicaoPessoaImovelRural: dados.pessoaLote.condicaoPessoaImovelRural,
+          isDeclarante: dados.pessoaLote.isDeclarante,
+          isResideNoImovel: dados.pessoaLote.isResideNoImovel,
+          pessoa: {
+            nome: dados.pessoa?.nome || 'Nome não informado',
+            cpf: dados.pessoa?.cpf || dados.documento?.cpf || 'CPF não informado'
+          }
+        }));
+        
+        console.log('[Pessoas] Pessoas com dados completos carregadas:', this.pessoasVinculadas);
+        // isLoadingPessoas será definido como false pelo finalize
+      },
+      error: (err: any) => {
+        console.error('[Pessoas] Erro ao buscar dados completos das pessoas:', err);
+        // Em caso de erro, usar dados básicos
+        this.pessoasVinculadas = pessoasLote.map(pessoaLote => ({
+          id: pessoaLote.id,
+          loteId: pessoaLote.loteId,
+          condicaoPessoaImovelRural: pessoaLote.condicaoPessoaImovelRural,
+          isDeclarante: pessoaLote.isDeclarante,
+          isResideNoImovel: pessoaLote.isResideNoImovel,
+          pessoa: {
+            nome: 'Nome não disponível',
+            cpf: 'CPF não disponível'
+          }
+        }));
+        // isLoadingPessoas será definido como false pelo finalize
+      }
+    });
+  }
+
+  adicionarNovaPessoa(): void {
+    this.modoAdicionarNova = true;
+    this.atualizando = false;
+    this.pessoaLoteIdEmEdicao = null;
+    
+    // Limpar TODOS os formulários para nova pessoa
+    this.limparTodosFormularios();
+    
+    console.log('[Pessoas] Modo adicionar nova pessoa ativado');
+    this.cdr.markForCheck();
+  }
+
+  editarPessoa(pessoaLote: any): void {
+    console.log('[Pessoas] 🔄 Iniciando edição da pessoa:', pessoaLote);
+    console.log('[Pessoas] 🔍 pessoaLote.id:', pessoaLote.id);
+    console.log('[Pessoas] 🔍 pessoaLote.loteId:', pessoaLote.loteId);
+    
+    // Limpar formulários primeiro para evitar conflitos
+    this.limparTodosFormularios();
+    
+    // Usar o endpoint de edição por pessoaLoteId se disponível, senão usar o por lote
+    if (pessoaLote.id) {
+      console.log('[Pessoas] 🔄 Buscando dados da pessoa por pessoaLoteId:', pessoaLote.id);
+      this.pessoaLoteService.getEditarDetentor(pessoaLote.id).subscribe({
+        next: (resp) => {
+          console.log('[Pessoas] ✅ Dados da pessoa carregados com sucesso:', resp);
+          
+          // Executar dentro do NgZone para garantir detecção de mudanças
+          this.ngZone.run(() => {
+            this.atualizando = true;
+            this.pessoaLoteIdEmEdicao = pessoaLote.id;
+            this.modoAdicionarNova = false;
+            
+            // Aplicar dados com delay para garantir que os formulários estejam limpos
+            setTimeout(() => {
+              this.patchAll(resp);
+              
+              // Forçar múltiplas detecções de mudanças
+              this.cdr.detectChanges();
+              this.cdr.markForCheck();
+              
+              // Aguardar e forçar novamente
+              setTimeout(() => {
+                this.cdr.detectChanges();
+                this.cdr.markForCheck();
+                console.log('[Pessoas] ✅ Dados aplicados e UI atualizada');
+              }, 100);
+              
+            }, 50);
+          });
+          
+          this.snackBar.open('Pessoa carregada para edição', 'Fechar', { duration: 3000 });
+          console.log('[Pessoas] ℹ️ Pessoa carregada para edição - mantendo dados específicos');
+        },
+        error: (err) => {
+          console.error('[Pessoas] ❌ Erro ao carregar pessoa para edição por pessoaLoteId:', err);
+          // Fallback: tentar buscar por lote
+          this.buscarPessoaPorLoteFallback(pessoaLote);
+        }
+      });
+    } else {
+      console.log('[Pessoas] ⚠️ pessoaLote.id não encontrado, usando fallback');
+      this.buscarPessoaPorLoteFallback(pessoaLote);
+    }
+  }
+
+  private buscarPessoaPorLoteFallback(pessoaLote: any): void {
+    this.pessoasService.buscarParaEdicaoPorLote(pessoaLote.loteId).subscribe({
+      next: (resp) => {
+        // Executar dentro do NgZone para garantir detecção de mudanças
+        this.ngZone.run(() => {
+          this.atualizando = true;
+          this.pessoaLoteIdEmEdicao = pessoaLote.id;
+          this.modoAdicionarNova = false;
+          
+          // Aplicar dados com delay para garantir que os formulários estejam limpos
+          setTimeout(() => {
+            this.patchAll(resp);
+            
+            // Forçar múltiplas detecções de mudanças
+            this.cdr.detectChanges();
+            this.cdr.markForCheck();
+            
+            // Aguardar e forçar novamente
+            setTimeout(() => {
+              this.cdr.detectChanges();
+              this.cdr.markForCheck();
+              console.log('[Pessoas] ✅ Dados aplicados e UI atualizada (fallback)');
+            }, 100);
+            
+          }, 50);
+        });
+        
+        this.snackBar.open('Pessoa carregada para edição', 'Fechar', { duration: 3000 });
+        console.log('[Pessoas] ℹ️ Pessoa carregada para edição (fallback) - mantendo dados específicos');
+      },
+      error: (err) => {
+        console.error('[Pessoas] Erro ao carregar pessoa para edição:', err);
+        this.snackBar.open('Erro ao carregar dados da pessoa', 'Fechar', { duration: 3000 });
+      }
+    });
+  }
+
+  removerPessoa(pessoaLote: any): void {
+    const nomePessoa = this.getNomePessoa(pessoaLote);
+    if (!confirm(`Tem certeza que deseja remover ${nomePessoa} do lote?`)) {
+      return;
+    }
+
+    this.pessoaLoteService.excluir(pessoaLote.id).subscribe({
+      next: () => {
+        this.snackBar.open('Pessoa removida do lote com sucesso!', 'Fechar', { duration: 3000 });
+        
+        // Recarregar lista de pessoas
+        const loteId = this.formPessoaLote.get('loteId')?.value;
+        if (loteId) {
+          this.recarregarListaPessoas(loteId);
+        }
+        
+        // Se estava editando esta pessoa, limpar formulários
+        if (this.pessoaLoteIdEmEdicao === pessoaLote.id) {
+          this.onLimpar();
+          this.atualizando = false;
+          this.pessoaLoteIdEmEdicao = null;
+        }
+        
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('[Pessoas] Erro ao remover pessoa:', err);
+        this.snackBar.open('Erro ao remover pessoa do lote', 'Fechar', { duration: 3000 });
+      }
+    });
+  }
+
+  cancelarAdicao(): void {
+    this.modoAdicionarNova = false;
+    this.limparTodosFormularios();
+    this.cdr.markForCheck();
+  }
+
+  trackByPessoaLoteId(index: number, pessoaLote: any): any {
+    return pessoaLote.id || index;
+  }
+
+  getNomePessoa(pessoaLote: any): string {
+    // Tenta diferentes caminhos para encontrar o nome
+    return pessoaLote.pessoa?.nome || 
+           pessoaLote.nome || 
+           pessoaLote.pessoaNome || 
+           'Nome não informado';
+  }
+
+  getCpfPessoa(pessoaLote: any): string {
+    // Tenta diferentes caminhos para encontrar o CPF
+    return pessoaLote.pessoa?.cpf || 
+           pessoaLote.cpf || 
+           pessoaLote.pessoaCpf || 
+           'Não informado';
   }
 }
 

@@ -21,13 +21,75 @@
         </div>
         <div class="col-9 md-6">
           <div class="info-summary">
-            <p><strong>Modo:</strong> {{ atualizando ? 'Edição' : 'Novo Cadastro' }}</p>
+            <p><strong>Modo:</strong> {{ atualizando ? 'Edição' : (modoAdicionarNova ? 'Adicionar Nova Pessoa' : 'Novo Cadastro') }}</p>
             <p *ngIf="atualizando"><strong>Status:</strong> ✅ Pessoa encontrada automaticamente</p>
-            <p *ngIf="!atualizando"><strong>Status:</strong> 📝 Novo cadastro</p>
+            <p *ngIf="!atualizando && !modoAdicionarNova"><strong>Status:</strong> 📝 Novo cadastro</p>
+            <p *ngIf="modoAdicionarNova"><strong>Status:</strong> ➕ Adicionando nova pessoa ao lote</p>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Lista de Pessoas Vinculadas -->
+    <div class="quadro quadro-destaque" *ngIf="pessoasVinculadas.length > 0 || isLoadingPessoas">
+      <div class="quadro-header">
+        <h3>Pessoas Vinculadas ao Lote</h3>
+        <button mat-flat-button color="primary" (click)="adicionarNovaPessoa()" 
+                [disabled]="isLoadingPessoas || modoAdicionarNova">
+          <mat-icon fontIcon="person_add"></mat-icon>
+          Adicionar Nova Pessoa
+        </button>
+      </div>
+      <div class="quadro-content">
+        <div *ngIf="isLoadingPessoas" class="loading-container">
+          <mat-spinner diameter="30"></mat-spinner>
+          <p>Carregando pessoas vinculadas...</p>
+        </div>
+        
+        <div *ngIf="!isLoadingPessoas && pessoasVinculadas.length > 0" class="pessoas-lista">
+          <div class="pessoa-item" *ngFor="let pessoaLote of pessoasVinculadas; trackBy: trackByPessoaLoteId">
+            <div class="pessoa-info">
+              <div class="pessoa-dados">
+                <h4>{{ getNomePessoa(pessoaLote) }}</h4>
+                <p><strong>CPF:</strong> {{ getCpfPessoa(pessoaLote) }}</p>
+                <p><strong>Condição:</strong> {{ pessoaLote.condicaoPessoaImovelRural || 'Não informada' }}</p>
+                <p><strong>Declarante:</strong> {{ pessoaLote.isDeclarante ? 'Sim' : 'Não' }}</p>
+                <p><strong>Reside no Imóvel:</strong> {{ pessoaLote.isResideNoImovel ? 'Sim' : 'Não' }}</p>
+                <p><strong>ID PessoaLote:</strong> {{ pessoaLote.id || 'N/A' }}</p>
+              </div>
+              <div class="pessoa-actions">
+                <button mat-icon-button color="primary" (click)="editarPessoa(pessoaLote)" 
+                        [disabled]="modoAdicionarNova" matTooltip="Editar pessoa">
+                  <mat-icon fontIcon="edit"></mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="removerPessoa(pessoaLote)" 
+                        [disabled]="modoAdicionarNova" matTooltip="Remover pessoa do lote">
+                  <mat-icon fontIcon="delete"></mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="!isLoadingPessoas && pessoasVinculadas.length === 0" class="no-pessoas">
+          <p>Nenhuma pessoa vinculada a este lote ainda.</p>
+          <button mat-flat-button color="primary" (click)="adicionarNovaPessoa()">
+            <mat-icon fontIcon="person_add"></mat-icon>
+            Adicionar Primeira Pessoa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulário de Cadastro/Edição -->
+    <div class="quadro" *ngIf="modoAdicionarNova || atualizando || pessoasVinculadas.length === 0">
+      <div class="quadro-header">
+        <h3>{{ modoAdicionarNova ? 'Adicionar Nova Pessoa' : (atualizando ? 'Editar Pessoa' : 'Cadastrar Pessoa') }}</h3>
+        <button *ngIf="modoAdicionarNova" mat-flat-button color="warn" (click)="cancelarAdicao()">
+          <mat-icon fontIcon="close"></mat-icon>
+          Cancelar
+        </button>
+      </div>
 
     <!-- QUADRO 1 - Identificação da Pessoa Física -->
     <div class="quadro">
@@ -53,9 +115,12 @@
         <div class="form-grid">
           <div class="col-6 md-6">
             <mat-form-field class="full-width">
-              <mat-label>Nome do Detentor</mat-label>
-              <input type="text" placeholder="Ex: José Silva Santos" matInput formControlName="nome" />
-              <mat-hint>💡 Deve ser igual ao proprietário cadastrado no lote</mat-hint>
+              <mat-label>Nome do Detentor *</mat-label>
+              <input type="text" placeholder="Ex: José Silva Santos" matInput formControlName="nome" required />
+              <mat-hint>💡 Nome da pessoa que será vinculada ao lote</mat-hint>
+              <mat-error *ngIf="formPessoas.get('nome')?.hasError('required') && formPessoas.get('nome')?.touched">
+                Nome é obrigatório
+              </mat-error>
             </mat-form-field>
           </div>
 
@@ -323,23 +388,24 @@
       </div>
     </div>
 
-    <!-- Botões de Ação -->
-    <div class="form-actions">
-      <button mat-flat-button color="primary" type="submit">
-        <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
-        {{ atualizando ? 'Atualizar' : 'Salvar' }} Dados Pessoais e ir para Dados de Uso
-      </button>
+      <!-- Botões de Ação -->
+      <div class="form-actions">
+        <button mat-flat-button color="primary" type="submit">
+          <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
+          {{ atualizando ? 'Atualizar' : (modoAdicionarNova ? 'Salvar Nova Pessoa' : 'Salvar') }} Dados Pessoais{{ modoAdicionarNova ? '' : ' e ir para Dados de Uso' }}
+        </button>
 
-      <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
-        <mat-icon fontIcon="backspace"></mat-icon>
-        Limpar
-      </button>
-      
-      <!-- <button mat-flat-button color="warn" class="ml-5" type="button"
-        (click)="onDelete()">
-        <mat-icon fontIcon="delete"></mat-icon>
-        Excluir
-      </button> -->
+        <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
+          <mat-icon fontIcon="backspace"></mat-icon>
+          Limpar
+        </button>
+        
+        <!-- <button mat-flat-button color="warn" class="ml-5" type="button"
+          (click)="onDelete()">
+          <mat-icon fontIcon="delete"></mat-icon>
+          Excluir
+        </button> -->
+      </div>
     </div>
   </form>
 </div>
