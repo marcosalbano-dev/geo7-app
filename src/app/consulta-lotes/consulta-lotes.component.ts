@@ -24,6 +24,7 @@ import { LoteService, LoteFiltroDTO } from '../services/lote.service';
 import { MunicipioService } from '../services/municipio.service';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { ExportacaoDpService } from '../exportacao-dp/exportacao-dp.service';
+import { LoteDeleteService } from '../services/lote-delete.service';
 
 // Importando os modelos
 import { LoteDTO } from '../models/lote-dto';
@@ -50,7 +51,8 @@ interface LoteTableData extends LoteDTO {
     MatProgressSpinnerModule,
     FormFieldComponent,
     CardComponent,
-    DataTableComponent
+    DataTableComponent,
+    ConfirmDialogComponent
   ],
   template: `
     <div class="consulta-lotes-container">
@@ -211,13 +213,13 @@ interface LoteTableData extends LoteDTO {
       </button>
 
       <!-- Endereço do Imóvel (roxo) -->
-      <button 
+      <!-- <button 
         mat-mini-fab 
         class="btn-endereco" 
         matTooltip="Endereço do Imóvel"
         (click)="preparaEditarEnderecoLote(row.id)">
         <mat-icon>place</mat-icon>
-      </button>
+      </button> -->
 
       <!-- Imóvel (cinza) -->
       <button 
@@ -432,7 +434,8 @@ export class ConsultaLotesComponent implements OnInit {
     private loteService: LoteService,
     private municipioService: MunicipioService,
     private situacaoJuridicaService: SituacaoJuridicaService,
-    private exportacaoDpService: ExportacaoDpService
+    private exportacaoDpService: ExportacaoDpService,
+    private loteDeleteService: LoteDeleteService
   ) {
     this.filtrosForm = this.createForm();
   }
@@ -498,24 +501,29 @@ export class ConsultaLotesComponent implements OnInit {
     this.loteService.obterTodos().subscribe({
       next: (lotes) => {
         console.log('🔍 Lotes retornados pela API:', lotes);
-        console.log('🔍 Primeiro lote completo:', lotes[0]);
-        console.log('🔍 Campos do primeiro lote:', Object.keys(lotes[0]));
-        console.log('🔍 Valores específicos:', {
-          id: lotes[0].id,
-          numero: lotes[0].numero,
-          proprietario: lotes[0].proprietario,
-          denominacaoImovel: lotes[0].denominacaoImovel,
-          area: lotes[0].area,
-          situacaoJuridicaId: lotes[0].situacaoJuridicaId,
-          municipioId: lotes[0].municipioId,
-          distritoId: lotes[0].distritoId,
-          cpf: lotes[0].cpf,
-          perimetro: lotes[0].perimetro,
-          dataTerminoPeriodoDeUso: lotes[0].dataTerminoPeriodoDeUso
-        });
+        
+        if (lotes && lotes.length > 0) {
+          console.log('🔍 Primeiro lote completo:', lotes[0]);
+          console.log('🔍 Campos do primeiro lote:', Object.keys(lotes[0]));
+          console.log('🔍 Valores específicos:', {
+            id: lotes[0].id,
+            numero: lotes[0].numero,
+            proprietario: lotes[0].proprietario,
+            denominacaoImovel: lotes[0].denominacaoImovel,
+            area: lotes[0].area,
+            situacaoJuridicaId: lotes[0].situacaoJuridicaId,
+            municipioId: lotes[0].municipioId,
+            distritoId: lotes[0].distritoId,
+            cpf: lotes[0].cpf,
+            perimetro: lotes[0].perimetro,
+            dataTerminoPeriodoDeUso: lotes[0].dataTerminoPeriodoDeUso
+          });
+        } else {
+          console.log('ℹ️ Nenhum lote encontrado na API');
+        }
         
         // Adicionar situação jurídica formatada e tratar campos nulos
-        this.listaLotes = lotes.map(lote => ({
+        this.listaLotes = (lotes || []).map(lote => ({
           ...lote,
           situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId),
           // Tratar campos nulos para exibição
@@ -527,9 +535,13 @@ export class ConsultaLotesComponent implements OnInit {
         }));
         
         console.log('🔍 Lotes processados para exibição:', this.listaLotes);
-        console.log('🔍 Primeiro lote processado:', this.listaLotes[0]);
+        if (this.listaLotes.length > 0) {
+          console.log('🔍 Primeiro lote processado:', this.listaLotes[0]);
+        } else {
+          console.log('ℹ️ Lista de lotes vazia após processamento');
+        }
         
-        this.total = lotes.length;
+        this.total = (lotes || []).length;
         this.isLoading = false;
       },
       error: (error) => {
@@ -545,10 +557,22 @@ export class ConsultaLotesComponent implements OnInit {
     this.loteService.obterPorId(loteId).subscribe({
       next: (lote) => {
         console.log('🔍 Lote específico retornado pela API:', lote);
-        console.log('🔍 Campos do lote:', Object.keys(lote));
-        console.log('🔍 Valores dos campos:', Object.values(lote));
+        if (lote) {
+          console.log('🔍 Campos do lote:', Object.keys(lote));
+          console.log('🔍 Valores dos campos:', Object.values(lote));
+        } else {
+          console.log('ℹ️ Lote não encontrado');
+        }
         
         // Adicionar situação jurídica formatada e tratar campos nulos
+        if (!lote) {
+          console.log('ℹ️ Lote não encontrado, inicializando com lista vazia');
+          this.listaLotes = [];
+          this.total = 0;
+          this.isLoading = false;
+          return;
+        }
+        
         const loteComSituacao = {
           ...lote,
           situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId),
@@ -602,7 +626,7 @@ export class ConsultaLotesComponent implements OnInit {
     this.loteService.filtrarLotes(filtros).subscribe({
       next: (lotes) => {
         // Adicionar situação jurídica formatada e tratar campos nulos
-        this.listaLotes = lotes.map(lote => ({
+        this.listaLotes = (lotes || []).map(lote => ({
           ...lote,
           situacaoJuridicaNome: this.situacaoNome(lote.situacaoJuridicaId),
           // Tratar campos nulos para exibição
@@ -612,7 +636,7 @@ export class ConsultaLotesComponent implements OnInit {
           perimetro: lote.perimetro || 0,
           dataTerminoPeriodoDeUso: lote.dataTerminoPeriodoDeUso || 'Não informado'
         }));
-        this.total = lotes.length;
+        this.total = (lotes || []).length;
         this.isLoading = false;
         this.snackBar.open('Busca realizada com sucesso!', 'Fechar', { duration: 3000 });
       },
@@ -686,7 +710,7 @@ export class ConsultaLotesComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Confirmar Exclusão',
-        message: `Tem certeza que deseja excluir o lote ${lote.numero}?`,
+        message: `Tem certeza que deseja excluir o lote ${lote.numero}? Esta ação irá deletar todos os dados relacionados ao lote (pessoas, estruturas, dados de uso, etc.) e não pode ser desfeita.`,
         type: 'warning',
         confirmText: 'Excluir',
         cancelText: 'Cancelar'
@@ -696,15 +720,15 @@ export class ConsultaLotesComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result && lote.id) {
         this.isLoading = true;
-      this.loteService.deletar(lote.id).subscribe({
-        next: () => {
+        this.loteDeleteService.deletarLoteCompleto(lote.id).subscribe({
+          next: () => {
             this.isLoading = false;
-            this.snackBar.open('Lote excluído com sucesso!', 'Fechar', { duration: 3000 });
+            this.snackBar.open(`Lote ${lote.numero} excluído com sucesso!`, 'Fechar', { duration: 3000 });
             this.loadLotes();
           },
           error: (error) => {
             console.error('Erro ao excluir lote:', error);
-            this.snackBar.open('Erro ao excluir lote', 'Fechar', { duration: 3000 });
+            this.snackBar.open('Erro ao excluir lote. Tente novamente.', 'Fechar', { duration: 3000 });
             this.isLoading = false;
           }
         });

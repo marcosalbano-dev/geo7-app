@@ -280,7 +280,7 @@ export class CadastroPessoasComponent implements OnInit {
       email: [''],
       tipoPessoa: [this.tipoPessoaSelecionada()],
       ramal: [''],
-      observacoes: [''] // Adicionado campo de observações
+      //observacoes: [''] // Adicionado campo de observações
     });
 
     this.formFisica = this.fb.group({

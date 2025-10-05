@@ -178,15 +178,21 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
   }
 
   private patchFromDto(dto: DadosSobreUsoDTO | null | undefined): void {
+    console.log(`🔄 [CadastroDadosSobreUso] patchFromDto chamado com:`, dto);
+    
     if (!dto) {
+      console.log(`ℹ️ [CadastroDadosSobreUso] DTO é null/undefined, criando DTO vazio`);
       this.dto = { ...this.makeEmptyDto(), loteId: this.loteId };
       this.originalItemIds.clear();
       this.recalculaTotais();
       this.cdr.markForCheck();
+      console.log(`📊 [CadastroDadosSobreUso] DTO vazio criado:`, this.dto);
       return;
     }
 
+    console.log(`📊 [CadastroDadosSobreUso] Processando DTO com ${dto.items?.length || 0} items`);
     const items = this.extractItemsFromApi(dto).map(i => this.normItem(i));
+    console.log(`📊 [CadastroDadosSobreUso] Items extraídos e normalizados:`, items);
 
     this.dto = {
       ...this.makeEmptyDto(),
@@ -202,16 +208,29 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
         .filter((id: any) => typeof id === 'number')
     );
 
+    console.log(`📊 [CadastroDadosSobreUso] DTO final montado:`, this.dto);
+    console.log(`📊 [CadastroDadosSobreUso] Original item IDs:`, Array.from(this.originalItemIds));
+
     this.recalculaTotais();
     this.atualizando = !!dto.id;
     this.cdr.markForCheck();
   }
 
   private carregarPorLote(id: number) {
-    console.log(this.dto)
+    console.log(`🔄 [CadastroDadosSobreUso] Carregando dados para loteId: ${id}`);
+    console.log(`📊 [CadastroDadosSobreUso] DTO atual:`, this.dto);
+    
     this.service.buscarPorLote(id).subscribe({
-      next: dto => this.patchFromDto(dto),
-      error: err => console.error('Erro ao buscar por lote:', err)
+      next: dto => {
+        console.log(`✅ [CadastroDadosSobreUso] Dados recebidos do serviço:`, dto);
+        this.patchFromDto(dto);
+        console.log(`📊 [CadastroDadosSobreUso] DTO após patch:`, this.dto);
+      },
+      error: err => {
+        console.error('❌ [CadastroDadosSobreUso] Erro ao buscar por lote:', err);
+        // Mesmo com erro, inicializar com DTO vazio
+        this.patchFromDto(null);
+      }
     });
   }
 
@@ -530,13 +549,21 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
       areaTotalRotacao: this.asNumber(this.formDadosSobreUso.value.areaTotalRotacao),
     };
 
+    console.log('💾 [CadastroDadosSobreUso] Salvando dados com payload:', payload);
+    console.log('💾 [CadastroDadosSobreUso] loteId sendo enviado:', this.loteId);
+    console.log('💾 [CadastroDadosSobreUso] payload.loteId:', payload.loteId);
+
     this.service.salvar(payload).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('✅ [CadastroDadosSobreUso] Dados salvos com sucesso!', response);
         this.snack.open('Dados de uso salvos!', 'Fechar', { duration: 2500 });
         this.atualizando = true;
         this.carregarPorLote(this.loteId);     // <- recarrega com os itens
       },
-      error: () => this.snack.open('Erro ao salvar.', 'Fechar', { duration: 3000 })
+      error: (error) => {
+        console.error('❌ [CadastroDadosSobreUso] Erro ao salvar:', error);
+        this.snack.open('Erro ao salvar.', 'Fechar', { duration: 3000 });
+      }
     });
   }
 
@@ -561,12 +588,21 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
       areaTotalRotacao: this.asNumber(this.formDadosSobreUso.value.areaTotalRotacao),
     };
 
+    console.log('🔄 [CadastroDadosSobreUso] Atualizando dados com payload:', payload);
+    console.log('🔄 [CadastroDadosSobreUso] loteId sendo enviado:', this.loteId);
+    console.log('🔄 [CadastroDadosSobreUso] payload.loteId:', payload.loteId);
+    console.log('🔄 [CadastroDadosSobreUso] ID do dados_sobre_uso:', this.dto!.id!);
+
     this.service.atualizar(this.dto!.id!, payload).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('✅ [CadastroDadosSobreUso] Dados atualizados com sucesso!', response);
         this.snack.open('Dados de uso atualizados!', 'Fechar', { duration: 2500 });
         this.carregarPorLote(this.loteId);     // <- recarrega com os itens
       },
-      error: () => this.snack.open('Erro ao atualizar.', 'Fechar', { duration: 3000 })
+      error: (error) => {
+        console.error('❌ [CadastroDadosSobreUso] Erro ao atualizar:', error);
+        this.snack.open('Erro ao atualizar.', 'Fechar', { duration: 3000 });
+      }
     });
   }
 
