@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActivatedRoute } from '@angular/router';
 
 // Importando os componentes reutilizáveis
@@ -53,7 +54,8 @@ interface LoteTableData extends LoteDTO {
     MatProgressSpinnerModule,
     MatTableModule,
     MatCardModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatCheckboxModule
   ],
   templateUrl: './consulta-lotes.component.html',
   styleUrls: ['./consulta-lotes.component.scss']
@@ -67,6 +69,11 @@ export class ConsultaLotesComponent implements OnInit {
   situacoes: SituacaoJuridica[] = [];
   municipioSelecionadoNome = '';
   
+  // Propriedades para seleção de lotes
+  lotesSelecionados = new Set<number>();
+  todosSelecionados = false;
+  municipioIdSelecionado: number | null = null;
+  
   loteColumns = [
     { key: 'numero', label: 'Código do Imóvel', sortable: true },
     { key: 'proprietario', label: 'Detentor', sortable: true },
@@ -77,6 +84,7 @@ export class ConsultaLotesComponent implements OnInit {
 
   // Colunas da tabela Material para o template HTML
   displayedColumns: string[] = [
+    'selecao',
     'numero',
     'proprietario', 
     'denominacaoImovel',
@@ -119,6 +127,11 @@ export class ConsultaLotesComponent implements OnInit {
       // Mesmo com erro, tenta carregar os lotes
       this.loadLotes();
     });
+    
+    // Monitora mudanças no filtro de município
+    this.filtrosForm.get('municipioId')?.valueChanges.subscribe(municipioId => {
+      this.municipioIdSelecionado = municipioId;
+    });
   }
 
   private createForm(): FormGroup {
@@ -158,6 +171,11 @@ export class ConsultaLotesComponent implements OnInit {
 
   private loadLotes(): void {
     this.isLoading = true;
+    
+    // Captura o município selecionado
+    const municipioId = this.filtrosForm.get('municipioId')?.value;
+    this.municipioIdSelecionado = municipioId;
+    
     this.loteService.obterTodos().subscribe({
       next: (lotes) => {
         console.log('🔍 Lotes retornados pela API:', lotes);
@@ -203,6 +221,9 @@ export class ConsultaLotesComponent implements OnInit {
         
         this.total = (lotes || []).length;
         this.isLoading = false;
+        
+        // Limpa a seleção quando os dados mudam
+        this.limparSelecao();
       },
       error: (error) => {
         console.error('Erro ao carregar lotes:', error);
@@ -210,6 +231,11 @@ export class ConsultaLotesComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private limparSelecao(): void {
+    this.lotesSelecionados.clear();
+    this.todosSelecionados = false;
   }
 
   private carregarLoteEspecifico(loteId: number): void {
@@ -336,6 +362,84 @@ export class ConsultaLotesComponent implements OnInit {
       .catch((error) => {
         this.isLoading = false;
         console.error('Erro ao exportar XML:', error);
+        this.snackBar.open('Erro ao exportar XML', 'Fechar', { duration: 3000 });
+      });
+  }
+
+  // --------------------------
+  // Métodos para seleção de lotes
+  // --------------------------
+
+  onSelecionarTodos(): void {
+    if (this.todosSelecionados) {
+      this.lotesSelecionados.clear();
+      this.todosSelecionados = false;
+    } else {
+      this.listaLotes.forEach(lote => {
+        if (lote.id) {
+          this.lotesSelecionados.add(lote.id);
+        }
+      });
+      this.todosSelecionados = true;
+    }
+  }
+
+  onSelecionarLote(loteId: number | undefined): void {
+    if (!loteId) return;
+
+    if (this.lotesSelecionados.has(loteId)) {
+      this.lotesSelecionados.delete(loteId);
+    } else {
+      this.lotesSelecionados.add(loteId);
+    }
+
+    // Atualiza o estado do checkbox "Selecionar Todos"
+    this.todosSelecionados = this.lotesSelecionados.size === this.listaLotes.length;
+  }
+
+  isLoteSelecionado(loteId: number | undefined): boolean {
+    return loteId ? this.lotesSelecionados.has(loteId) : false;
+  }
+
+  getQuantidadeLotesSelecionados(): number {
+    return this.lotesSelecionados.size;
+  }
+
+  getCodigosImoveisSelecionados(): string {
+    if (this.lotesSelecionados.size === 0) {
+      return 'Nenhum lote selecionado';
+    }
+    
+    const codigos = this.listaLotes
+      .filter(lote => lote.id && this.lotesSelecionados.has(lote.id))
+      .map(lote => lote.numero)
+      .join(', ');
+    
+    return codigos;
+  }
+
+  onExportarLotesSelecionados(): void {
+    if (this.lotesSelecionados.size === 0) {
+      this.snackBar.open('Selecione pelo menos um lote para exportar', 'Fechar', { duration: 3000 });
+      return;
+    }
+
+    if (!this.municipioIdSelecionado) {
+      this.snackBar.open('Selecione um município para exportar', 'Fechar', { duration: 3000 });
+      return;
+    }
+
+    this.isLoading = true;
+    const loteIds = Array.from(this.lotesSelecionados);
+    
+    this.exportacaoDpService.exportarLotesXml(this.municipioIdSelecionado, loteIds)
+      .then(() => {
+        this.isLoading = false;
+        this.snackBar.open(`XML exportado com sucesso para ${loteIds.length} lote(s)!`, 'Fechar', { duration: 3000 });
+      })
+      .catch((error) => {
+        this.isLoading = false;
+        console.error('Erro ao exportar XML dos lotes selecionados:', error);
         this.snackBar.open('Erro ao exportar XML', 'Fechar', { duration: 3000 });
       });
   }

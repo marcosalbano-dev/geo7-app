@@ -74,6 +74,7 @@
 }
 
 /* Larguras das colunas - Desktop normal */
+.col-selecao { width: 60px; }
 .col-numero { width: 120px; }
 .col-proprietario { width: 200px; }
 .col-denominacao { width: 200px; }
@@ -130,6 +131,7 @@
   }
 
   /* Larguras fixas para mobile */
+  .col-selecao { width: 80px !important; min-width: 80px !important; }
   .col-numero { width: 200px !important; min-width: 200px !important; }
   .col-proprietario { width: 300px !important; min-width: 300px !important; }
   .col-denominacao { width: 300px !important; min-width: 300px !important; }
@@ -186,6 +188,108 @@
 
   .acoes-container {
     gap: 3px !important;
+  }
+}
+
+/* =========================================== */
+/* ESTILOS PARA EXPORTAÇÃO */
+/* =========================================== */
+
+/* Card de exportação */
+.exportacao-card {
+  margin-bottom: 20px;
+  border: 2px solid #e3f2fd;
+  background: #f8f9ff;
+}
+
+.exportacao-card mat-card-header {
+  background: #e3f2fd;
+  margin: -16px -16px 16px -16px;
+  padding: 16px;
+  border-radius: 4px 4px 0 0;
+}
+
+.exportacao-card mat-card-title {
+  color: #1976d2;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.exportacao-card mat-card-subtitle {
+  color: #666;
+  font-size: 14px;
+  margin: 4px 0 0 0;
+}
+
+/* Botões de exportação */
+.exportacao-buttons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.exportacao-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.exportacao-buttons button[color="primary"] {
+  background: #1976d2;
+  color: white;
+}
+
+.exportacao-buttons button[color="primary"]:hover:not(:disabled) {
+  background: #1565c0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+}
+
+.exportacao-buttons button[color="accent"] {
+  background: #ff4081;
+  color: white;
+}
+
+.exportacao-buttons button[color="accent"]:hover:not(:disabled) {
+  background: #f50057;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 64, 129, 0.3);
+}
+
+.exportacao-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Loading spinner */
+.exportacao-buttons mat-spinner {
+  margin-left: 16px;
+}
+
+/* Responsividade para botões de exportação */
+@media (max-width: 768px) {
+  .exportacao-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .exportacao-buttons button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .exportacao-buttons mat-spinner {
+    margin-left: 0;
+    margin-top: 16px;
+    align-self: center;
   }
 }
 

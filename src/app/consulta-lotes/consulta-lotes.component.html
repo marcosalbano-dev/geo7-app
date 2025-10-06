@@ -82,16 +82,55 @@
       <div class="title">
         <span>{{ municipioSelecionadoNome }}</span>
         <span class="code" *ngIf="filtrosForm.get('municipioId')?.value">[ {{ filtrosForm.get('municipioId')?.value }} ]</span>
-        <div class="d-flex align-items-center justify-content-between px-3 py-2 border bg-light">
+        <!-- <div class="d-flex align-items-center justify-content-between px-3 py-2 border bg-light">
           <button class="btn btn-sm btn-outline-primary"
             (click)="onExportarMunicipio(filtrosForm.get('municipioId')?.value)"
             [disabled]="!filtrosForm.get('municipioId')?.value || !listaLotes.length">
             <i class="fa fa-download me-1"></i> Exportar XML
           </button>
-        </div>
+        </div> -->
       </div>
       <div class="total">TOTAL : {{ total }}</div>
     </div>
+
+    <!-- BOTÕES DE EXPORTAÇÃO -->
+    <mat-card *ngIf="listaLotes.length > 0" appearance="outlined" class="exportacao-card">
+      <mat-card-header>
+        <mat-card-title>Exportação XML</mat-card-title>
+        <mat-card-subtitle>
+          {{ getCodigosImoveisSelecionados() }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="exportacao-buttons">
+          <!-- Exportar Município Inteiro -->
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="onExportarMunicipio(municipioIdSelecionado!)"
+            [disabled]="!municipioIdSelecionado || isLoading"
+            matTooltip="Exportar todos os lotes do município selecionado">
+            <mat-icon>download</mat-icon>
+            Exportar Município Inteiro
+          </button>
+
+          <!-- Exportar Lotes Selecionados -->
+          <button 
+            mat-raised-button 
+            color="accent" 
+            (click)="onExportarLotesSelecionados()"
+            [disabled]="getQuantidadeLotesSelecionados() === 0 || !municipioIdSelecionado || isLoading"
+            matTooltip="Exportar apenas os lotes selecionados">
+            <mat-icon>file_download</mat-icon>
+            Exportar Lotes Selecionados ({{ getQuantidadeLotesSelecionados() }})
+          </button>
+
+          <!-- Loading Spinner -->
+          <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- TABELA -->
     <mat-card *ngIf="listaLotes.length > 0" appearance="outlined">
@@ -100,6 +139,14 @@
           <table class="custom-table">
             <thead>
               <tr>
+                <th class="col-selecao">
+                  <mat-checkbox 
+                    [checked]="todosSelecionados"
+                    [indeterminate]="lotesSelecionados.size > 0 && lotesSelecionados.size < listaLotes.length"
+                    (change)="onSelecionarTodos()"
+                    matTooltip="Selecionar todos">
+                  </mat-checkbox>
+                </th>
                 <th class="col-numero">Código do Imóvel</th>
                 <th class="col-proprietario">Detentor</th>
                 <th class="col-denominacao">Denominação do Imóvel</th>
@@ -110,6 +157,12 @@
             </thead>
             <tbody>
               <tr *ngFor="let lote of listaLotes">
+                <td class="col-selecao">
+                  <mat-checkbox 
+                    [checked]="isLoteSelecionado(lote.id)"
+                    (change)="onSelecionarLote(lote.id)">
+                  </mat-checkbox>
+                </td>
                 <td class="col-numero linkish" (click)="lote.id && preparaEditarLote(lote.id)">{{ lote.numero }}</td>
                 <td class="col-proprietario">{{ lote.proprietario }}</td>
                 <td class="col-denominacao">{{ lote.denominacaoImovel }}</td>

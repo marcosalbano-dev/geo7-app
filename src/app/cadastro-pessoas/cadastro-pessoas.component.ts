@@ -39,6 +39,10 @@ import { ChangeDetectorRef } from '@angular/core';
 import { enderecoToForm, pessoaToFormFisica, pessoaToFormPessoas } from '../helpers/pessoa-mapper';
 import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
 import { Location } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { ConjugePessoaService } from '../services/conjuge-pessoa.service';
+import { ConjugePessoaDTO } from '../models/conjuge-pessoa.dto';
+import { CadastroConjugeComponent, ConjugeDialogData } from '../cadastro-conjuge/cadastro-conjuge.component';
 
 interface distrito {
   value: string;
@@ -101,7 +105,6 @@ interface tipoDocumento {
     MatRadioModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatListModule,
     MatChipsModule,
     BackButtonComponent
   ],
@@ -265,7 +268,9 @@ export class CadastroPessoasComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private location: Location,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private dialog: MatDialog,
+    private conjugeService: ConjugePessoaService
   ) {
 
     this.formAnexo = this.fb.group({
@@ -1595,6 +1600,126 @@ export class CadastroPessoasComponent implements OnInit {
            pessoaLote.cpf || 
            pessoaLote.pessoaCpf || 
            'Não informado';
+  }
+
+  gerenciarConjuge(pessoaLote: any): void {
+    console.log('[Pessoas] 🔄 Gerenciando cônjuge para pessoa:', pessoaLote);
+    
+    // Primeiro, precisamos obter o ID da pessoa
+    // Vamos buscar os dados completos da pessoa para obter o pessoaId
+    this.buscarDadosPessoaParaConjuge(pessoaLote);
+  }
+
+  private buscarDadosPessoaParaConjuge(pessoaLote: any): void {
+    console.log('[Pessoas] 🔍 Buscando dados da pessoa para cônjuge...');
+    
+    // Tenta buscar dados completos da pessoa
+    if (pessoaLote.id) {
+      this.pessoaLoteService.getEditarDetentor(pessoaLote.id).subscribe({
+        next: (dadosCompletos) => {
+          console.log('[Pessoas] ✅ Dados completos obtidos:', dadosCompletos);
+          this.abrirDialogConjuge(dadosCompletos.pessoa?.id, pessoaLote);
+        },
+        error: (err) => {
+          console.error('[Pessoas] ❌ Erro ao buscar dados completos:', err);
+          // Fallback: tentar buscar por lote
+          this.buscarPessoaPorLoteParaConjuge(pessoaLote);
+        }
+      });
+    } else {
+      // Se não tem ID, tentar buscar por lote
+      this.buscarPessoaPorLoteParaConjuge(pessoaLote);
+    }
+  }
+
+  private buscarPessoaPorLoteParaConjuge(pessoaLote: any): void {
+    console.log('[Pessoas] 🔍 Buscando pessoa por lote para cônjuge...');
+    
+    this.pessoasService.buscarParaEdicaoPorLote(pessoaLote.loteId).subscribe({
+      next: (dadosCompletos) => {
+        console.log('[Pessoas] ✅ Dados obtidos por lote:', dadosCompletos);
+        this.abrirDialogConjuge(dadosCompletos.pessoa?.id, pessoaLote);
+      },
+      error: (err) => {
+        console.error('[Pessoas] ❌ Erro ao buscar pessoa por lote:', err);
+        this.snackBar.open('Erro ao carregar dados da pessoa para cônjuge', 'Fechar', { duration: 3000 });
+      }
+    });
+  }
+
+  private abrirDialogConjuge(pessoaId: number | undefined, pessoaLote: any): void {
+    if (!pessoaId) {
+      this.snackBar.open('ID da pessoa não encontrado', 'Fechar', { duration: 3000 });
+      return;
+    }
+
+    console.log('[Pessoas] 🔄 Abrindo dialog de cônjuge para pessoaId:', pessoaId);
+    
+    // Primeiro, verifica se já existe cônjuge para esta pessoa
+    this.conjugeService.buscarPorPessoa(pessoaId).subscribe({
+      next: (conjuges) => {
+        console.log('[Pessoas] 🔍 Cônjuges encontrados:', conjuges);
+        
+        // Trata o caso onde a API retorna null em vez de array vazio
+        const conjugesArray = conjuges || [];
+        const conjugeExistente = conjugesArray.length > 0 ? conjugesArray[0] : undefined;
+        const isEditMode = !!conjugeExistente;
+        
+        const dialogData: ConjugeDialogData = {
+          pessoaId: pessoaId,
+          pessoaNome: this.getNomePessoa(pessoaLote),
+          conjuge: conjugeExistente,
+          isEditMode: isEditMode
+        };
+
+        const dialogRef = this.dialog.open(CadastroConjugeComponent, {
+          width: '900px',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          data: dialogData,
+          disableClose: true
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            console.log('[Pessoas] ✅ Cônjuge salvo/atualizado:', result);
+            this.snackBar.open(
+              isEditMode ? 'Cônjuge atualizado com sucesso!' : 'Cônjuge cadastrado com sucesso!',
+              'Fechar',
+              { duration: 3000 }
+            );
+          }
+        });
+      },
+      error: (err) => {
+        console.error('[Pessoas] ❌ Erro ao buscar cônjuges:', err);
+        // Mesmo com erro, abre o dialog para cadastrar novo cônjuge
+        this.abrirDialogConjugeNovo(pessoaId, pessoaLote);
+      }
+    });
+  }
+
+  private abrirDialogConjugeNovo(pessoaId: number, pessoaLote: any): void {
+    const dialogData: ConjugeDialogData = {
+      pessoaId: pessoaId,
+      pessoaNome: this.getNomePessoa(pessoaLote),
+      isEditMode: false
+    };
+
+    const dialogRef = this.dialog.open(CadastroConjugeComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: dialogData,
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('[Pessoas] ✅ Novo cônjuge cadastrado:', result);
+        this.snackBar.open('Cônjuge cadastrado com sucesso!', 'Fechar', { duration: 3000 });
+      }
+    });
   }
 }
 

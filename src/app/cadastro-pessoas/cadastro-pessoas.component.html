@@ -65,11 +65,15 @@
                 </span>
               </div>
               <div matListItemMeta class="pessoa-actions">
-                <button mat-icon-button color="primary" (click)="editarPessoa(pessoaLote)" 
+                <button mat-icon-button color="primary" type="button" (click)="editarPessoa(pessoaLote)" 
                         [disabled]="modoAdicionarNova" matTooltip="Editar pessoa">
                   <mat-icon fontIcon="edit"></mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="removerPessoa(pessoaLote)" 
+                <button mat-icon-button color="accent" type="button" (click)="gerenciarConjuge(pessoaLote)" 
+                        [disabled]="modoAdicionarNova" matTooltip="Gerenciar cônjuge">
+                  <mat-icon fontIcon="favorite"></mat-icon>
+                </button>
+                <button mat-icon-button color="warn" type="button" (click)="removerPessoa(pessoaLote)" 
                         [disabled]="modoAdicionarNova" matTooltip="Remover pessoa do lote">
                   <mat-icon fontIcon="delete"></mat-icon>
                 </button>

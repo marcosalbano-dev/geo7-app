@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import { environment } from '../../environments/environment';
 import { CategoriaService, Categoria } from '../services/categoria.service';
 import { CulturaService, Cultura } from '../services/cultura.service';
+import { ConjugePessoaService } from '../services/conjuge-pessoa.service';
 
 /**
  * ===== Tipos alinhados com os DTOs do Java =====
@@ -235,6 +236,49 @@ export interface PessoaLoteDTO {
   isContratoPrazoIndeterminado?: boolean | null;
 }
 
+export interface ConjugePessoaDTO {
+  id?: number;
+  nome: string;
+  telefone?: string;
+  email?: string;
+  nomePai?: string;
+  nomeMae?: string;
+  dataNascimento?: string; // yyyy-MM-dd format
+  sexoPessoa?: string;
+  
+  // Endereço
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cep?: string;
+  
+  // Códigos de país
+  codigoPaisResidencia?: string;
+  codigoPaisOrigem?: string;
+  
+  // Documentação
+  tipoDocumentoIdentificacao?: string;
+  descricaoOutroDocumentoIdentificacao?: string;
+  numeroDocumentoIdentificacao?: string;
+  orgaoEmissor?: string;
+  ufOrgaoEmissor?: string;
+  tipoNacionalidade?: string;
+  cpf: string;
+  racaCor?: string;
+  conjugeOk?: boolean;
+  validadeRne?: string; // yyyy-MM-dd format
+  
+  // Relacionamentos
+  pessoaId: number;
+  municipioResidenciaId?: number;
+  municipioNaturalidadeId?: number;
+  
+  // Derivados (calculados no backend)
+  uf?: string;
+  ufNaturalidade?: string;
+}
+
 export interface ItemDTO {
   id: number;
   loteId: number;
@@ -293,6 +337,7 @@ export interface Geo7PessoaAgregada {
   pessoaLote: PessoaLoteDTO;
   endereco?: EnderecoPessoaDTO;
   documento?: DocumentoPessoaDTO;
+  conjuge?: ConjugePessoaDTO;
 }
 
 export interface Geo7LoteAgregado {
@@ -318,7 +363,8 @@ export class ExportacaoDpService {
   constructor(
     private http: HttpClient,
     private categoriaService: CategoriaService,
-    private culturaService: CulturaService
+    private culturaService: CulturaService,
+    private conjugeService: ConjugePessoaService
   ) {}
 
   async exportarMunicipioXml(municipioId: number): Promise<void> {
@@ -329,10 +375,109 @@ export class ExportacaoDpService {
       culturas: this.culturaService.listarTodas()
     }));
     
+    // Carrega os dados do cônjuge para todas as pessoas
+    await this.carregarDadosConjuge(dto);
+    
     const xml = this.buildMunicipioXml(dto, categorias, culturas);
     const blob = new Blob([xml], { type: 'text/xml;charset=utf-8' });
     const nome = (dto?.municipio?.nome || `municipio-${municipioId}`).replace(/\s+/g, '_').toUpperCase();
     saveAs(blob, `${nome}.xml`);
+  }
+
+  async exportarLotesXml(municipioId: number, loteIds: number[]): Promise<void> {
+    if (!loteIds || loteIds.length === 0) {
+      throw new Error('Nenhum lote selecionado para exportação');
+    }
+
+    // Carrega os dados do município, categorias e culturas em paralelo
+    const { dto, categorias, culturas } = await lastValueFrom(forkJoin({
+      dto: this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`),
+      categorias: this.categoriaService.listarTodas(),
+      culturas: this.culturaService.listarTodas()
+    }));
+    
+    // Filtra apenas os lotes selecionados
+    const dtoFiltrado = this.filtrarLotesSelecionados(dto, loteIds);
+    
+    // Carrega os dados do cônjuge para todas as pessoas dos lotes selecionados
+    await this.carregarDadosConjuge(dtoFiltrado);
+    
+    const xml = this.buildMunicipioXml(dtoFiltrado, categorias, culturas);
+    const blob = new Blob([xml], { type: 'text/xml;charset=utf-8' });
+    const nome = (dto?.municipio?.nome || `municipio-${municipioId}`).replace(/\s+/g, '_').toUpperCase();
+    saveAs(blob, `${nome}_LOTES_SELECIONADOS_${loteIds.length}.xml`);
+  }
+
+  // --------------------------
+  // Filtragem de lotes selecionados
+  // --------------------------
+
+  private filtrarLotesSelecionados(dto: Geo7MunicipioExportDTO, loteIds: number[]): Geo7MunicipioExportDTO {
+    const lotesFiltrados = dto.lotes?.filter(lote => 
+      lote.lote?.id && loteIds.includes(lote.lote.id)
+    ) || [];
+
+    return {
+      ...dto,
+      lotes: lotesFiltrados
+    };
+  }
+
+  // --------------------------
+  // Carregamento de dados do cônjuge
+  // --------------------------
+
+  private async carregarDadosConjuge(dto: Geo7MunicipioExportDTO): Promise<void> {
+    if (!dto.lotes) return;
+
+    // Coleta todos os IDs de pessoas únicos
+    const pessoaIds = new Set<number>();
+    dto.lotes.forEach(lote => {
+      if (lote.pessoas) {
+        lote.pessoas.forEach(pessoa => {
+          if (pessoa.pessoa?.id) {
+            pessoaIds.add(pessoa.pessoa.id);
+          }
+        });
+      }
+    });
+
+    // Busca dados do cônjuge para todas as pessoas em paralelo
+    const conjugeRequests = Array.from(pessoaIds).map(pessoaId => 
+      this.conjugeService.buscarPorPessoa(pessoaId)
+    );
+
+    if (conjugeRequests.length === 0) return;
+
+    try {
+      const conjugeResults = await lastValueFrom(forkJoin(conjugeRequests));
+      
+      // Cria um mapa de pessoaId -> cônjuge
+      const conjugeMap = new Map<number, ConjugePessoaDTO>();
+      Array.from(pessoaIds).forEach((pessoaId, index) => {
+        const conjuges = conjugeResults[index];
+        if (conjuges && conjuges.length > 0) {
+          conjugeMap.set(pessoaId, conjuges[0]); // Pega o primeiro cônjuge
+        }
+      });
+
+      // Atribui os dados do cônjuge às pessoas
+      dto.lotes.forEach(lote => {
+        if (lote.pessoas) {
+          lote.pessoas.forEach(pessoa => {
+            if (pessoa.pessoa?.id) {
+              const conjuge = conjugeMap.get(pessoa.pessoa.id);
+              if (conjuge) {
+                pessoa.conjuge = conjuge;
+              }
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao carregar dados do cônjuge:', error);
+      // Continua a exportação mesmo se houver erro ao carregar cônjuges
+    }
   }
 
   // --------------------------
@@ -610,6 +755,7 @@ export class ExportacaoDpService {
       const pl = px.pessoaLote;
       const end = px.endereco;
       const doc = px.documento;
+      const conjuge = px.conjuge;
 
       const sn = (v: any) => this.sn(v);
       const n4 = (v: any) => this.nf(v);
@@ -633,11 +779,11 @@ export class ExportacaoDpService {
           this.tag('sexoPessoa', p?.sexoPessoa) +
           this.tag('estadoCivil', doc?.estadoCivil || 0) +
 
-          this.tag('nomeConjuge', '') +
-          this.tag('cpfConjuge', '') +
-          this.tag('rgConjuge', 0) +
-          this.tag('orgaoEmissorConjuge', '') +
-          this.tag('ufOrgaoEmissorConjuge', '') +
+          this.tag('nomeConjuge', conjuge?.nome || '') +
+          this.tag('cpfConjuge', conjuge?.cpf || '') +
+          this.tag('rgConjuge', conjuge?.numeroDocumentoIdentificacao || 0) +
+          this.tag('orgaoEmissorConjuge', conjuge?.orgaoEmissor || '') +
+          this.tag('ufOrgaoEmissorConjuge', conjuge?.ufOrgaoEmissor || '') +
 
           this.tag('tipoDocumentoIdentificacao', doc?.tipoDocumentoIdentificacao || 0) +
           this.tag('numeroDocumentoIdentificacao', doc?.numeroDocumentoIdentificacao) +
