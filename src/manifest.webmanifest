@@ -1,0 +1,14 @@
+{
+  "name": "Geo7",
+  "short_name": "Geo7",
+  "scope": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#263238",
+  "icons": [
+    { "src": "assets/brand/mark-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/brand/mark-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+

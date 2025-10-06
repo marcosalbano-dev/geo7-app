@@ -1,0 +1,24 @@
+/* --- utilitárias globais para layout --- */
+.page-center { max-width: 1100px; margin: 0 auto; }
+
+.form-grid { display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+.col-12 { grid-column: span 12; }
+.col-9  { grid-column: span 9;  }
+.col-8  { grid-column: span 8;  }
+.col-6  { grid-column: span 6;  }
+.col-4  { grid-column: span 4;  }
+.col-3  { grid-column: span 3;  }
+.form-grid mat-form-field { width: 100%; }
+
+@media (max-width: 959px) { /* tablet */
+  .form-grid { grid-template-columns: repeat(6, 1fr); }
+  .md-6 { grid-column: span 6; }
+}
+
+@media (max-width: 599px) { /* celular */
+  .form-grid { grid-template-columns: 1fr; }
+  .col-12, .col-9, .col-8, .col-6, .col-4, .col-3, .md-6 { grid-column: 1 / -1; }
+}
+
+/* só estética */
+.content { padding: 16px; }

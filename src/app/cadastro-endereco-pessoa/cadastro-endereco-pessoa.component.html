@@ -1,0 +1,99 @@
+<div [formGroup]="formEnderecoPessoa">
+  <!-- <div fxLayout="row" fxLayoutGap="16px">
+    
+  </div> -->
+  <div fxLayout="row" fxLayoutGap="16px">
+    <div fxFlex="530px">
+      <mat-form-field class="full-width">
+        <mat-label>Endereço de Correspondência</mat-label>
+        <input
+          type="text"
+          placeholder="Ex: Avenida..."
+          matInput
+          formControlName="logradouro"
+        />
+      </mat-form-field>
+    </div>
+    <div fxFlex="120px">
+        <mat-form-field class="full-width">
+          <mat-label>Número</mat-label>
+          <input
+            type="text"
+            placeholder="Ex: 231"
+            matInput
+            formControlName="numero"
+          />
+        </mat-form-field>
+      </div>
+      <div fxFlex="380px">
+        <mat-form-field class="full-width">
+          <mat-label>Complemento</mat-label>
+          <input
+            type="text"
+            placeholder="Ex: Altos"
+            formControlName="complemento"
+            matInput
+          />
+        </mat-form-field>
+      </div>
+  </div>
+  
+  <div fxLayout="row" fxLayoutGap="16px">
+
+
+    <div fxFlex="350px">
+      <mat-form-field class="full-width">
+        <mat-label>Bairro</mat-label>
+        <input
+          type="text"
+          placeholder="Ex: Bairro"
+          matInput
+          formControlName="bairro"
+        />
+      </mat-form-field>
+    </div>
+    <div fxFlex="190px">
+      <mat-form-field class="full-width">
+        <mat-label>CEP</mat-label>
+        <input
+          type="text"
+          placeholder="Ex: 231"
+          matInput
+          formControlName="cep"
+        />
+      </mat-form-field>
+    </div>
+    <div fxFlex="215px">
+        <mat-form-field mat-form-field class="full-width">
+          <mat-label>Estado (UF)</mat-label
+          ><mat-select
+            formControlName="uf"
+          >
+            <mat-option *ngFor="let uf of ufs" [value]="uf">{{ uf }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div fxFlex="260px">
+        <mat-form-field class="full-width">
+          <mat-label>Município de Residência</mat-label>
+          <mat-select
+            formControlName="municipioId"
+          >
+            <mat-option
+              *ngFor="let municipio of municipios"
+              [value]="municipio.id"
+            >
+              {{ municipio.nome }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+  </div>
+
+  <div fxLayout="row" fxLayoutGap="16px">
+
+
+
+
+  </div>
+</div>

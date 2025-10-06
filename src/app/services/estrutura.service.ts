@@ -20,6 +20,10 @@ export class EstruturaService {
     return this.http.post<EstruturaDTO>(`${environment.apiUrl}/estrutura`, estrutura);
   }
 
+  buscarPorLoteId(loteId: number) {
+    return this.http.get<EstruturaDTO>(`${this.apiUrl}/por-lote/${loteId}`);
+  }
+
   // Obter todas as estruturas da API
   obterTodas(): Observable<EstruturaDTO[]> {
     return this.http.get<EstruturaDTO[]>(this.apiUrl);
@@ -33,17 +37,16 @@ export class EstruturaService {
   }
 
   // Atualizar estrutura
-  atualizar(id: number, estrutura: Estrutura): Observable<Estrutura> {
-    return this.http.put<Estrutura>(`${this.apiUrl}/${id}`, estrutura).pipe(
+  atualizar(id: number, estrutura: EstruturaDTO): Observable<EstruturaDTO> {
+    console.log('[EstruturaService] 🔍 Payload enviado para atualização:', estrutura);
+    console.log('[EstruturaService] 🔍 - pontoDeReferencia no payload:', estrutura.pontoDeReferencia);
+    return this.http.put<EstruturaDTO>(`${this.apiUrl}/${id}`,estrutura).pipe(
       catchError(this.handleError)
     );
   }
 
-  // Excluir estrutura
-  excluir(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      catchError(this.handleError)
-    );
+  delete(id: number) {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   // Tratamento de erros

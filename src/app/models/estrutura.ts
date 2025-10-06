@@ -49,6 +49,8 @@ export class Estrutura {
     isOlhoDaguaPerene: boolean = false;
     usoDaguaOlhoDagua: string = '';
     isRedeDeAbastecimento: boolean = false;
+    municipioId: number = 0;
+    area: number = 0;
 
     static newEstrutura(): Estrutura {
         return new Estrutura();

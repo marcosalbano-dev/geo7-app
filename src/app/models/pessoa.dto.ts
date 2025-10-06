@@ -16,12 +16,12 @@ export interface PessoaDTO {
   
     // Físico
     cpf?: string;
-    sexo?: string;
-    nascimento?: string; // "YYYY-MM-DD"
-    espolio?: string;
+    sexoPessoa?: string;
+    dataNascimento?: string; // "YYYY-MM-DD"
+    isEspolio?: string;
     raca?: string;
     estadoCivil?: string;
-    casamento?: string; // "YYYY-MM-DD"
+    dataCasamento?: string; // "YYYY-MM-DD"
     regimeBens?: string;
     tipoDocumento?: string;
     numeroDocumento?: string;
@@ -48,12 +48,15 @@ export interface PessoaDTO {
   
     // Vinculação com imóvel rural
     condicao?: string;
-    detencao?: string;
+    percentDetencao?: string;
     declarante?: string;
     reside?: string;
     atividade?: string;
     qtdAreaCedida?: string;
     terminoContrato?: string; // "YYYY-MM-DD"
     tipoContrato?: string;
+
+    programasDoGovernoIds: number;
+    programasSelecionados: number;
   }
   

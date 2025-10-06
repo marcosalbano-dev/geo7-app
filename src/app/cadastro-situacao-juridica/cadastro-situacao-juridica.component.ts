@@ -15,17 +15,11 @@ import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { SituacaoJuridicaDTO } from '../models/situacao-juridica.dto';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-
-
-interface Situacao {
-  value: string;
-  viewValue: string;
-}
-
-interface Obtencao {
-  value: string;
-  viewValue: string;
-}
+import { MunicipioService } from '../services/municipio.service';
+import { DistritoService } from '../services/distrito.service';
+import { Distrito } from '../models/distrito';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { Municipio } from '../models/municipio';
 
 @Component({
   selector: 'app-cadastro-situacao-juridica',
@@ -54,13 +48,24 @@ export class CadastroSituacaoJuridicaComponent implements OnInit, OnChanges {
 
   formSituacaoJuridica!: FormGroup;
 
+  errorStateMatcher: ErrorStateMatcher = {
+    isErrorState: (control) => !!(control && control.invalid && control.touched),
+  };
+
+  isLoadingMunicipio = false;
+  isLoadingDistrito = false;
+  municipios: Municipio[] = [];
+  filteredDistritos: Distrito[] = [];
+
   @Input() loteId: number | null = null;
-  @Input() situacoes: { value: string, viewValue: string }[] = [];
-  @Input() obtencoes: { value: string, viewValue: string }[] = [];
+  @Input() situacoes: { value: number, viewValue: string }[] = [];
+  @Input() obtencoes: { value: number, viewValue: string }[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private situacaoService: SituacaoJuridicaService
+    private situacaoService: SituacaoJuridicaService,
+    private municipioService: MunicipioService,
+    private distritoService: DistritoService,
   ) { }
 
   @Input() formGroup!: FormGroup;
@@ -69,8 +74,8 @@ export class CadastroSituacaoJuridicaComponent implements OnInit, OnChanges {
 
     if (!this.formGroup) return;
 
-    this.formGroup.get('situacaoSelecionada')?.valueChanges.subscribe(value => {
-      if (value === 'Indefinido') {
+    this.formGroup.get('situacaoJuridicaId')?.valueChanges.subscribe(value => {
+      if (value === 99) {
         this.formGroup.patchValue({
           formaObtencaoSelecionada: '',
           dataPosse: '',
@@ -88,25 +93,44 @@ export class CadastroSituacaoJuridicaComponent implements OnInit, OnChanges {
     });
   }
 
+  loadDistritosByMunicipio(municipioId: number): Promise<void> {
+    this.isLoadingDistrito = true;
+    return new Promise((resolve, reject) => {
+      this.distritoService.getDistritosByMunicipio(municipioId).subscribe({
+        next: distritos => {
+          this.filteredDistritos = distritos;
+          this.isLoadingDistrito = false;
+          resolve();
+        },
+        error: err => {
+          console.error('Erro ao carregar distritos:', err);
+          this.filteredDistritos = [];
+          this.isLoadingDistrito = false;
+          reject();
+        }
+      });
+    });
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['loteId'] && changes['loteId'].currentValue && this.formGroup) {
       this.formGroup.get('loteId')?.setValue(this.loteId);
     }
   }
 
-  get situacaoSelecionada(): string {
-    return this.formGroup.get('situacaoSelecionada')?.value;
+  get situacaoSelecionada(): number {
+    return this.formGroup.get('situacaoJuridicaId')?.value;
   }
 
   isSimplesOuJustoTitulo(): boolean {
-    const val = this.formGroup.get('situacaoSelecionada')?.value;
-    return val === 'PossePorSimplesOcupacao' || val === 'PosseJustoTitulo';
+    const val = this.formGroup.get('situacaoJuridicaId')?.value;
+    return val === 1 || val === 2;
   }
 
   isRegistrada(): boolean {
-    return this.formGroup.get('situacaoSelecionada')?.value === 'Dominio';
+    return this.formGroup.get('situacaoJuridicaId')?.value === 3;
   }
-
+  
   private formatDate(date: Date | null): string | null {
     if (!date) return null;
     const day = String(date.getDate()).padStart(2, '0');

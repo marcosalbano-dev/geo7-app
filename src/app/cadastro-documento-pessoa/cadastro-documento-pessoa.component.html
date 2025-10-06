@@ -1,0 +1,203 @@
+<div [formGroup]="formDocumentoPessoa">
+
+  <!-- Linha 1: Tipo doc / Nº doc / Órgão / UF emissor -->
+  <div class="form-grid">
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Tipo de Documento</mat-label>
+        <mat-select formControlName="tipoDocumentoIdentificacao">
+          @for (td of tiposDocumentos; track td) {
+            <mat-option [value]="td.value">{{ td.viewValue }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Número do Documento</mat-label>
+        <input matInput formControlName="numeroDocumentoIdentificacao" />
+      </mat-form-field>
+    </div>
+
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Órgão Emissor</mat-label>
+        <input matInput formControlName="orgaoEmissor" />
+      </mat-form-field>
+    </div>
+
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>UF Órgão Emissor</mat-label>
+        <input matInput formControlName="ufOrgaoEmissor" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Linha 2: CPF / UF naturalidade / Município naturalidade / Nacionalidade -->
+  <div class="form-grid">
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>CPF</mat-label>
+        <input matInput formControlName="cpf" />
+        <mat-hint>💡 Deve ser igual ao CPF cadastrado no lote</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>UF Naturalidade</mat-label>
+        <mat-select formControlName="ufNaturalidade">
+          <mat-option *ngFor="let uf of ufs" [value]="uf">{{ uf }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Município de Naturalidade</mat-label>
+        <mat-select formControlName="naturalidadeId">
+          <mat-option *ngFor="let m of municipiosNaturalidade" [value]="m.id">{{ m.nome }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="col-3 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Nacionalidade</mat-label>
+        <mat-select formControlName="tipoNacionalidade">
+          @for (n of nacionalidades; track n) {
+            <mat-option [value]="n.value">{{ n.viewValue }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Linha 3: Estado civil / País residência / País origem -->
+  <div class="form-grid">
+    <div class="col-4 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Estado Civil</mat-label>
+        <mat-select formControlName="estadoCivil">
+          @for (ec of estadosCivis; track ec) {
+            <mat-option [value]="ec.value">{{ ec.viewValue }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="col-4 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Código País de Residência</mat-label>
+        <input matInput formControlName="codigoPaisResidencia" />
+      </mat-form-field>
+    </div>
+
+    <div class="col-4 md-12">
+      <mat-form-field class="full-width">
+        <mat-label>Código País de Origem</mat-label>
+        <input matInput formControlName="codigoPaisOrigem" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- BLOCO PF -->
+  <div *ngIf="formDocumentoPessoa.get('tipoPessoa')?.value === 'FISICA'">
+    <div class="form-grid">
+      <div class="col-3 md-12" [formGroup]="formFisica" style="margin-top: 8px;">
+        <mat-label>É espólio?</mat-label>
+        <mat-button-toggle-group formControlName="isEspolio" name="isEspolio" aria-label="Espólio?">
+          <mat-button-toggle [value]="true">Sim</mat-button-toggle>
+          <mat-button-toggle [value]="false">Não</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO PJ -->
+  <div *ngIf="formDocumentoPessoa.get('tipoPessoa')?.value === 'JURIDICA'">
+
+    <!-- Linha PJ 1 -->
+    <div class="form-grid">
+      <div class="col-3 md-12">
+        <mat-form-field class="full-width">
+          <mat-label>CNPJ - CGC</mat-label>
+          <input matInput formControlName="cnpj" />
+        </mat-form-field>
+      </div>
+
+      <div class="col-3 md-12">
+        <mat-form-field class="full-width">
+          <mat-label>Natureza Jurídica</mat-label>
+          <input matInput formControlName="naturezaJuridica" />
+        </mat-form-field>
+      </div>
+
+      <div class="col-3 md-12">
+        <mat-form-field class="full-width">
+          <mat-label>Tipo de Poder</mat-label>
+          <mat-select formControlName="tipoDePoder">
+            @for (tp of tiposPoderes; track tp) {
+              <mat-option [value]="tp.value">{{ tp.viewValue }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-3 md-12">
+        <mat-form-field class="full-width">
+          <mat-label>Tipo de Governo</mat-label>
+          <mat-select formControlName="tipoDeGoverno">
+            @for (tg of tiposGovernos; track tg) {
+              <mat-option [value]="tg.value">{{ tg.viewValue }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Linha PJ 2 -->
+    <div class="form-grid">
+      <div class="col-2 md-6">
+        <mat-form-field class="full-width">
+          <mat-label>UF País Sede</mat-label>
+          <mat-select formControlName="ufPaisSede">
+            <mat-option *ngFor="let uf of ufs" [value]="uf">{{ uf }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col-2 md-6">
+        <mat-form-field class="full-width">
+          <mat-label>Código País Sede</mat-label>
+          <input matInput formControlName="codigoPaisSede" />
+        </mat-form-field>
+      </div>
+
+      <div class="col-2 md-6">
+        <mat-form-field class="full-width">
+          <mat-label>% Capital Nacional</mat-label>
+          <input matInput type="number" formControlName="percentCapitalNacional" />
+        </mat-form-field>
+      </div>
+
+      <div class="col-3 md-6">
+        <mat-form-field class="full-width">
+          <mat-label>% Capital Estrangeiro</mat-label>
+          <input matInput type="number" formControlName="percentCapitalEstrangeiro" />
+        </mat-form-field>
+      </div>
+
+      <div class="col-3 md-12">
+        <mat-form-field class="full-width">
+          <mat-label>Registro Junta Comercial</mat-label>
+          <input matInput formControlName="registroJuntaComercial" />
+        </mat-form-field>
+      </div>
+    </div>
+
+  </div>
+
+</div>

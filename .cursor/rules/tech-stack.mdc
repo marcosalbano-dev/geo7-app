@@ -1,0 +1,187 @@
+---
+alwaysApply: false
+---
+# Stack Tecnológica - Geo7 App
+
+## Framework Principal
+- **Angular**: v19.2.0 (versão mais recente)
+- **TypeScript**: v5.7.2
+- **Node.js**: Compatível com Angular 19
+
+## Dependências Principais
+
+### Angular Core
+- `@angular/core`: ^19.2.0
+- `@angular/common`: ^19.2.0
+- `@angular/forms`: ^19.2.0
+- `@angular/router`: ^19.2.0
+- `@angular/platform-browser`: ^19.2.0
+- `@angular/platform-browser-dynamic`: ^19.2.0
+
+### UI Framework
+- `@angular/material`: ^19.2.16 (Material Design)
+- `@angular/cdk`: ^19.2.16 (Component Dev Kit)
+- `@angular/flex-layout`: ^15.0.0-beta.42 (Layout flexível)
+
+### Utilitários
+- `rxjs`: ~7.8.0 (Programação reativa)
+- `file-saver`: ^2.0.5 (Download de arquivos)
+- `uuid`: ^11.0.3 (Geração de IDs únicos)
+- `ngx-mat-select-search`: ^8.0.2 (Busca em selects do Material)
+
+## Melhores Práticas para Angular 19
+
+### 1. Standalone Components
+```typescript
+// ✅ Use standalone components
+@Component({
+  selector: 'app-example',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule],
+  template: `...`
+})
+export class ExampleComponent {}
+```
+
+### 2. Signal-based Reactivity
+```typescript
+// ✅ Prefira signals para estado reativo
+import { signal, computed } from '@angular/core';
+
+export class ExampleComponent {
+  count = signal(0);
+  doubleCount = computed(() => this.count() * 2);
+}
+```
+
+### 3. Control Flow Syntax
+```html
+<!-- ✅ Use nova sintaxe de control flow -->
+@if (condition) {
+  <div>Content</div>
+} @else {
+  <div>Alternative</div>
+}
+
+@for (item of items; track item.id) {
+  <div>{{ item.name }}</div>
+}
+```
+
+### 4. Material Design Guidelines
+```typescript
+// ✅ Use componentes Material consistentemente
+import { MatButtonModule, MatCardModule, MatFormFieldModule } from '@angular/material';
+
+// ✅ Configure tema personalizado
+// styles.scss
+@use '@angular/material' as mat;
+@include mat.core();
+```
+
+### 5. TypeScript Best Practices
+```typescript
+// ✅ Use interfaces para modelos
+interface Pessoa {
+  id: string;
+  nome: string;
+  email: string;
+}
+
+// ✅ Use enums para constantes
+enum TipoDocumento {
+  CPF = 'CPF',
+  CNPJ = 'CNPJ'
+}
+```
+
+### 6. RxJS Patterns
+```typescript
+// ✅ Use operadores RxJS adequadamente
+import { map, filter, switchMap, catchError } from 'rxjs/operators';
+
+this.http.get<Pessoa[]>('/api/pessoas')
+  .pipe(
+    map(pessoas => pessoas.filter(p => p.ativo)),
+    catchError(error => {
+      console.error('Erro ao carregar pessoas:', error);
+      return of([]);
+    })
+  )
+  .subscribe(pessoas => this.pessoas = pessoas);
+```
+
+## Estrutura de Projeto
+
+### Organização de Componentes
+```
+src/app/
+├── components/          # Componentes reutilizáveis
+├── pages/              # Páginas/rotas
+├── services/           # Serviços Angular
+├── models/             # Interfaces e tipos
+├── enums/              # Enumerações
+├── helpers/            # Funções utilitárias
+└── shared/             # Componentes compartilhados
+```
+
+### Convenções de Nomenclatura
+- **Componentes**: kebab-case (ex: `cadastro-pessoas`)
+- **Serviços**: camelCase com sufixo Service (ex: `PessoaService`)
+- **Interfaces**: PascalCase (ex: `Pessoa`, `Endereco`)
+- **Enums**: PascalCase (ex: `TipoDocumento`)
+
+## Considerações de Performance
+
+### 1. Lazy Loading
+```typescript
+// ✅ Use lazy loading para rotas
+const routes: Routes = [
+  {
+    path: 'cadastro',
+    loadComponent: () => import('./cadastro/cadastro.component')
+  }
+];
+```
+
+### 2. OnPush Change Detection
+```typescript
+// ✅ Use OnPush para componentes que não mudam frequentemente
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ExampleComponent {}
+```
+
+### 3. TrackBy Functions
+```html
+<!-- ✅ Use trackBy para listas grandes -->
+@for (item of items; track trackByFn) {
+  <div>{{ item.name }}</div>
+}
+```
+
+## Notas Importantes
+
+1. **Angular 19** é a versão mais recente com suporte a signals nativos
+2. **Material Design** deve seguir as diretrizes do Google Material Design 3
+3. **TypeScript 5.7** suporta recursos mais recentes como const assertions
+4. **RxJS 7.8** é compatível com Angular 19 e oferece melhor performance
+5. **Flex Layout** está em beta - considere migrar para CSS Grid/Flexbox nativo
+
+## Comandos Úteis
+
+```bash
+# Desenvolvimento
+npm start                    # ng serve
+npm run build               # ng build
+npm run watch               # ng build --watch
+
+# Testes
+npm test                    # ng test
+
+# Geração de código
+ng generate component nome  # Novo componente
+ng generate service nome    # Novo serviço
+ng generate module nome     # Novo módulo
+```

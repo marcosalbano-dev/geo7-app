@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { PessoaLoteDTO } from '../models/pessoa-lote.dto'; // Se usar DTO
+import { EditarDetentorResponseDTO } from '../models/editar-detentor-response-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,10 @@ export class PessoaLoteService {
   private apiUrl = `${environment.apiUrl}/pessoa-lote`;
 
   constructor(private http: HttpClient) { }
+
+  getEditarDetentor(pessoaLoteId: number): Observable<EditarDetentorResponseDTO> {
+    return this.http.get<EditarDetentorResponseDTO>(`${this.apiUrl}/editar/${pessoaLoteId}`);
+  }
 
   // Salvar PessoaLote na API
   salvar(pessoaLote: PessoaLoteDTO): Observable<PessoaLoteDTO> {

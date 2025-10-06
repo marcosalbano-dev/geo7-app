@@ -1,1 +1,138 @@
-<p>cadastro-endereco-lote works!</p>
+<!-- endereco-lote.component.html (novo, sem fxLayout) -->
+<div class="page">
+  <form *ngIf="formEnderecoLote"
+        [formGroup]="formEnderecoLote"
+        (ngSubmit)="atualizando ? onAtualizar() : onSalvar()">
+
+          <!-- Botão Voltar -->
+      <div class="back-button-container mb-20">
+        <app-back-button 
+          text="Voltar" 
+          (backClick)="onVoltarClick()"
+          [useHistory]="false">
+        </app-back-button>
+      </div>
+
+    <mat-card appearance="outlined" class="card">
+      <mat-card-header>
+        <mat-card-title>Endereço do Lote</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content class="mt-20">
+
+        <!-- Linha 1: Lote, Município, Distrito -->
+        <div class="form-grid">
+            <div class="col-4 md-6">
+              <mat-form-field class="full-width">
+                <mat-label>Número do Lote</mat-label>
+                <input matInput formControlName="numero" readonly />
+              </mat-form-field>
+            <!-- <mat-form-field class="full-width">
+              <mat-label>Lote</mat-label>
+              <mat-select formControlName="loteId" (selectionChange)="onLoteChange($event.value)">
+                <mat-option *ngFor="let lote of lotesFiltrados.length > 0 ? lotesFiltrados : lotes" [value]="lote.id">
+                  {{ lote.numero }} - {{ getMunicipioNomeByLote(lote) }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field> -->
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Município</mat-label>
+              <mat-select formControlName="municipioId" (selectionChange)="onMunicipioChange($event.value)">
+                <mat-option *ngFor="let municipio of municipios" [value]="municipio.id">
+                  {{ municipio.nome }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Distrito</mat-label>
+              <mat-select formControlName="distritoId" [disabled]="!formEnderecoLote.get('municipioId')?.value">
+                <mat-option *ngFor="let distrito of distritos" [value]="distrito.id">
+                  {{ distrito.nomeDistrito }}
+                </mat-option>
+              </mat-select>
+              <mat-spinner *ngIf="isLoadingDistrito" diameter="20" class="spinner"></mat-spinner>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Linha 2: Número do Lote (readonly, preenchido automaticamente) -->
+        <div class="form-grid">
+          <!-- <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Número do Lote</mat-label>
+              <input matInput formControlName="numero" readonly />
+            </mat-form-field>
+          </div> -->
+        </div>
+
+        <!-- Linha 3: ponto de referência / comunidade / localidade -->
+        <div class="form-grid">
+          <div class="col-4 md-12">
+            <mat-form-field class="full-width">
+              <mat-label>Ponto de Referência</mat-label>
+              <input matInput formControlName="pontoDeReferencia" placeholder="Ex: Próx. à escola" />
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Comunidade</mat-label>
+              <input matInput formControlName="comunidade" placeholder="Ex: Comunidade X" />
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Localidade</mat-label>
+              <input matInput formControlName="localidade" placeholder="Ex: Localidade Y" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Linha 4: código receita / área urbana -->
+        <div class="form-grid">
+          <div class="col-4 md-12">
+            <mat-form-field class="full-width">
+              <mat-label>Código Imóvel Receita</mat-label>
+              <input matInput formControlName="codImoReceita" placeholder="Ex: 000123" />
+            </mat-form-field>
+          </div>
+
+          <div class="col-4 md-6">
+            <mat-form-field class="full-width">
+              <mat-label>Área Urbana (m²)</mat-label>
+              <input matInput type="number" formControlName="areaUrbana" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+          <button mat-flat-button color="primary" type="submit">
+            <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
+            {{ atualizando ? 'Atualizar' : 'Salvar' }} Endereço do Imóvel e ir para Dados de Uso
+          </button>
+
+          <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">
+            <mat-icon fontIcon="backspace"></mat-icon>
+            Limpar
+          </button>
+
+          <button *ngIf="formEnderecoLote.get('id')?.value"
+                  mat-flat-button color="warn" class="ml-5" type="button" (click)="onDelete()">
+            <mat-icon fontIcon="delete"></mat-icon>
+            Excluir
+          </button>
+        </mat-card-actions>
+
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

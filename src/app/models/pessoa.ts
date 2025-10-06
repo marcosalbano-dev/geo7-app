@@ -16,12 +16,12 @@ export class Pessoa {
   
     // Físico
     cpf?: string;
-    sexo?: string;
-    nascimento?: Date | string;
+    sexoPessoa?: string;
+    dataNascimento?: Date | string;
     espolio?: string;
     raca?: string;
     estadoCivil?: string;
-    casamento?: Date | string;
+    dataCasamento?: Date | string;
     regimeBens?: string;
     tipoDocumento?: string;
     numeroDocumento?: string;
@@ -48,7 +48,7 @@ export class Pessoa {
   
     // Vinculação com imóvel rural
     condicao?: string;
-    detencao?: string;
+    percentDetencao?: string;
     declarante?: string;
     reside?: string;
     atividade?: string;

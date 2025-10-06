@@ -1,6 +1,6 @@
 import { Municipio } from './municipio';
 import { SituacaoJuridica } from './situacao-juridica';
-import { FormaObtencao } from '../cadastro-forma-obtencao/forma-obtencao';
+import { FormaObtencao } from './forma-obtencao';
 
 export class Lote {
   id?: number; // Não definido ao criar nova instância, será atribuído pelo backend
@@ -18,6 +18,7 @@ export class Lote {
   situacaoJuridica: SituacaoJuridica;
   dataTerminoPeriodoDeUso: string;
   distritoId: number;
+  municipioId: number;
 
   constructor(init?: Partial<Lote>) {
       this.id = init?.id ?? 0;
@@ -35,6 +36,7 @@ export class Lote {
       this.situacaoJuridica = init?.situacaoJuridica ?? {} as SituacaoJuridica;
       this.dataTerminoPeriodoDeUso = init?.dataTerminoPeriodoDeUso ?? '';
       this.distritoId = init?.distritoId ?? 0;
+      this.municipioId = init?.municipioId ?? 0;
   }
 
   static newLote(): Lote {

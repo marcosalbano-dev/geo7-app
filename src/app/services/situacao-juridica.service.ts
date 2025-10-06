@@ -33,6 +33,10 @@ export class SituacaoJuridicaService {
     );
   }
 
+  getAll(): Observable<SituacaoJuridica[]> {
+    return this.http.get<SituacaoJuridica[]>(this.apiUrl);
+  }
+
   // Atualizar situacao-juridica
   atualizar(id: number, situacaoJuridica: SituacaoJuridica): Observable<SituacaoJuridica> {
     return this.http.put<SituacaoJuridica>(`${this.apiUrl}/${id}`, situacaoJuridica).pipe(
