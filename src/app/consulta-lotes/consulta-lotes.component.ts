@@ -11,13 +11,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
+import { MatCardModule } from '@angular/material/card';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
 
 // Importando os componentes reutilizáveis
 import { FormFieldComponent } from '../shared/components/form-field/form-field.component';
 import { CardComponent } from '../shared/components/card/card.component';
 import { DataTableComponent } from '../shared/components/data-table/data-table.component';
-import { ConfirmDialogComponent } from '../shared/components/confirm-dialog/confirm-dialog.component';
 
 // Importando os serviços
 import { LoteService, LoteFiltroDTO } from '../services/lote.service';
@@ -49,364 +51,12 @@ interface LoteTableData extends LoteDTO {
     MatInputModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
-    FormFieldComponent,
-    CardComponent,
-    DataTableComponent,
-    ConfirmDialogComponent
+    MatTableModule,
+    MatCardModule,
+    MatPaginatorModule
   ],
-  template: `
-    <div class="consulta-lotes-container">
-      <!-- Loading Indicator -->
-      <div *ngIf="isLoading" class="loading-indicator">
-        <mat-spinner diameter="40"></mat-spinner>
-        <span class="loading-text">Processando...</span>
-      </div>
-
-      <!-- Filtros de Busca -->
-      <app-card 
-        title="Filtros de Busca"
-        subtitle="Configure os filtros para encontrar lotes"
-        [showActions]="false">
-        
-        <form [formGroup]="filtrosForm" class="form-grid">
-          <div class="col-3">
-            <app-form-field
-              type="text"
-              label="Controle de Campo"
-              placeholder="Ex: 00001"
-              formControlName="numero">
-            </app-form-field>
-          </div>
-          
-          <div class="col-3">
-            <app-form-field
-              type="text"
-              label="Proprietário"
-              placeholder="Ex: José..."
-              formControlName="proprietario">
-            </app-form-field>
-          </div>
-          
-          <div class="col-3">
-            <mat-form-field class="full-width">
-              <mat-label>Município</mat-label>
-              <mat-select formControlName="municipioId">
-                <mat-option *ngFor="let municipio of municipios" [value]="municipio.id">
-                  {{ municipio.nome }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-          
-          <div class="col-3">
-            <mat-form-field class="full-width">
-              <mat-label>Situação Jurídica</mat-label>
-              <mat-select formControlName="situacaoJuridicaId">
-                <mat-option *ngFor="let situacao of situacoes; trackBy: trackBySituacao" [value]="situacao.id">
-                  {{ situacao.nome }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-          
-          <div class="col-12 actions">
-            <button 
-              mat-raised-button 
-              color="primary"
-              (click)="pesquisar()"
-              [disabled]="isLoading">
-              <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
-              <mat-icon *ngIf="!isLoading">search</mat-icon>
-              {{ isLoading ? 'Pesquisando...' : 'Pesquisar' }}
-            </button>
-            
-            <span class="spacer"></span>
-            
-            <button 
-              mat-stroked-button
-              (click)="abrirBuscaAvancada()"
-              [disabled]="isLoading">
-              <mat-icon>manage_search</mat-icon>
-              Busca Avançada
-            </button>
-            
-            <button 
-              mat-raised-button 
-              color="primary"
-              (click)="novoImovel()"
-              [disabled]="isLoading">
-              <mat-icon>add</mat-icon>
-              Novo Imóvel
-            </button>
-          </div>
-        </form>
-      </app-card>
-
-      <!-- Header Resultado -->
-      <div *ngIf="listaLotes.length > 0" class="result-header">
-        <div class="title">
-          <span>{{ municipioSelecionadoNome || 'Todos os municípios' }}</span>
-          <span class="code" *ngIf="filtrosForm.get('municipioId')?.value">[ {{ filtrosForm.get('municipioId')?.value }} ]</span>
-        </div>
-        <div class="header-actions">
-          <button 
-            mat-stroked-button
-            color="primary"
-            (click)="onExportarMunicipio(filtrosForm.get('municipioId')?.value)"
-            [disabled]="!filtrosForm.get('municipioId')?.value || !listaLotes.length || isLoading">
-            <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
-            <mat-icon *ngIf="!isLoading">download</mat-icon>
-            {{ isLoading ? 'Exportando...' : 'Exportar XML' }}
-          </button>
-          <div class="total">TOTAL: {{ total }}</div>
-        </div>
-      </div>
-
-      <!-- Resultados da Busca -->
-      <app-card 
-        *ngIf="listaLotes.length > 0"
-        title="Resultados da Busca"
-        subtitle="Lotes encontrados"
-        [showActions]="false">
-        
-        <app-data-table
-          [data]="listaLotes"
-          [columns]="loteColumns"
-          [showActions]="true"
-          [showEditButton]="false"
-          [showDeleteButton]="false"
-          [showPaginator]="true"
-          [totalItems]="total"
-          [pageSize]="10"
-          [actionsTemplate]="actionsTemplate">
-        </app-data-table>
-      </app-card>
-    </div>
-
-    <!-- Template para ações customizadas -->
-    <ng-template #actionsTemplate let-row let-index="index">
-      <!-- Estrutura (laranja) -->
-      <button 
-        mat-mini-fab 
-        class="btn-estrutura" 
-        matTooltip="Estrutura"
-        (click)="preparaEditarEstrutura(row.id)">
-        <mat-icon>settings</mat-icon>
-      </button>
-
-      <!-- Uso (verde) -->
-      <button 
-        mat-mini-fab 
-        class="btn-uso" 
-        matTooltip="Dados de Uso da Terra"
-        (click)="preparaEditarDadosUso(row.id)">
-        <mat-icon>eco</mat-icon>
-      </button>
-
-      <!-- Dados Pessoais (azul) -->
-      <button 
-        mat-mini-fab 
-        class="btn-pessoas" 
-        matTooltip="Dados Pessoais"
-        (click)="preparaEditarDadosPessoais(row.id)">
-        <mat-icon>person</mat-icon>
-      </button>
-
-      <!-- Endereço do Imóvel (roxo) -->
-      <!-- <button 
-        mat-mini-fab 
-        class="btn-endereco" 
-        matTooltip="Endereço do Imóvel"
-        (click)="preparaEditarEnderecoLote(row.id)">
-        <mat-icon>place</mat-icon>
-      </button> -->
-
-      <!-- Imóvel (cinza) -->
-      <button 
-        mat-mini-fab 
-        class="btn-imovel" 
-        matTooltip="Editar Imóvel" 
-        (click)="preparaEditarLote(row.id)">
-        <mat-icon>home</mat-icon>
-      </button>
-
-      <!-- Excluir (vermelho) -->
-      <button 
-        mat-mini-fab 
-        class="btn-excluir" 
-        matTooltip="Excluir" 
-        (click)="confirmarDelecao(row)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </ng-template>
-  `,
-  styles: [`
-    .consulta-lotes-container {
-      padding: var(--spacing-sm);
-      max-width: 100%;
-      overflow-x: auto;
-      position: relative;
-    }
-    
-    .loading-indicator {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255, 255, 255, 0.95);
-      padding: var(--spacing-md);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--spacing-sm);
-      z-index: 1000;
-      min-width: 200px;
-    }
-    
-    .loading-text {
-      color: var(--color-text-primary);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-medium);
-    }
-    
-    .button-spinner {
-      margin-right: var(--spacing-xs);
-    }
-    
-    .button-spinner ::ng-deep circle {
-      stroke: currentColor;
-    }
-    
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--spacing-sm);
-      padding: var(--spacing-sm);
-      background-color: var(--color-background-light);
-      border-radius: var(--radius-sm);
-      font-size: var(--font-size-sm);
-    }
-    
-    .result-header .title {
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-primary-600);
-    }
-    
-    .result-header .code {
-      color: var(--color-text-secondary);
-      font-size: var(--font-size-xs);
-    }
-    
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-sm);
-    }
-    
-    .result-header .total {
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-primary-600);
-      font-size: var(--font-size-sm);
-    }
-    
-    /* Botões de ação */
-    .btn-estrutura {
-      background-color: #ff9800 !important;
-      color: white !important;
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-    }
-    
-    .btn-uso {
-      background-color: #4caf50 !important;
-      color: white !important;
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-    }
-    
-    .btn-pessoas {
-      background-color: #2196f3 !important;
-      color: white !important;
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-    }
-    
-    .btn-endereco {
-      background-color: #9c27b0 !important;
-      color: white !important;
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-    }
-    
-    .btn-imovel {
-      background-color: #607d8b !important;
-      color: white !important;
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-    }
-    
-    .btn-excluir {
-      background-color: #f44336 !important;
-      color: white !important;
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-    }
-    
-    .spacer {
-      flex: 1 1 auto;
-    }
-    
-    /* Responsividade */
-    @media (max-width: 1200px) {
-      .consulta-lotes-container {
-        padding: var(--spacing-xs);
-      }
-      
-      .form-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: var(--spacing-sm) !important;
-      }
-      
-      .col-3 {
-        grid-column: span 6 !important;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr !important;
-      }
-      
-      .col-3 {
-        grid-column: span 12 !important;
-      }
-      
-      .result-header {
-        flex-direction: column;
-        gap: var(--spacing-xs);
-        text-align: center;
-      }
-      
-      .header-actions {
-        flex-direction: column;
-        gap: var(--spacing-xs);
-      }
-      
-      .actions {
-        flex-direction: column;
-        gap: var(--spacing-xs);
-      }
-    }
-  `]
+  templateUrl: './consulta-lotes.component.html',
+  styleUrls: ['./consulta-lotes.component.scss']
 })
 export class ConsultaLotesComponent implements OnInit {
   filtrosForm: FormGroup;
@@ -423,6 +73,16 @@ export class ConsultaLotesComponent implements OnInit {
     { key: 'denominacaoImovel', label: 'Denominação do Imóvel', sortable: true },
     { key: 'area', label: 'Área', sortable: true },
     { key: 'situacaoJuridicaNome', label: 'Situação Jurídica', sortable: true }
+  ];
+
+  // Colunas da tabela Material para o template HTML
+  displayedColumns: string[] = [
+    'numero',
+    'proprietario', 
+    'denominacaoImovel',
+    'area',
+    'situacao',
+    'acoes'
   ];
 
   constructor(
@@ -657,6 +317,10 @@ export class ConsultaLotesComponent implements OnInit {
     this.router.navigate(['/cadastro-lotes']);
   }
 
+  voltar(): void {
+    window.history.back();
+  }
+
   onExportarMunicipio(municipioId: number): void {
     if (!municipioId) {
       this.snackBar.open('Selecione um município para exportar', 'Fechar', { duration: 3000 });
@@ -676,28 +340,36 @@ export class ConsultaLotesComponent implements OnInit {
       });
   }
 
-  preparaEditarEstrutura(loteId: number): void {
-    this.router.navigate(['/cadastro-estrutura'], { 
-      queryParams: { loteId: loteId } 
-    });
+  preparaEditarEstrutura(loteId: number | undefined): void {
+    if (loteId) {
+      this.router.navigate(['/cadastro-estrutura'], { 
+        queryParams: { loteId: loteId } 
+      });
+    }
   }
 
-  preparaEditarLote(loteId: number): void {
-    this.router.navigate(['/cadastro-lotes'], { 
-      queryParams: { id: loteId, mode: 'edit' } 
-    });
+  preparaEditarLote(loteId: number | undefined): void {
+    if (loteId) {
+      this.router.navigate(['/cadastro-lotes'], { 
+        queryParams: { id: loteId, mode: 'edit' } 
+      });
+    }
   }
 
-  preparaEditarDadosPessoais(loteId: number): void {
-    this.router.navigate(['/cadastro-pessoas'], { 
-      queryParams: { loteId: loteId } 
-    });
+  preparaEditarDadosPessoais(loteId: number | undefined): void {
+    if (loteId) {
+      this.router.navigate(['/cadastro-pessoas'], { 
+        queryParams: { loteId: loteId } 
+      });
+    }
   }
 
-  preparaEditarDadosUso(loteId: number): void {
-    this.router.navigate(['/cadastro-dados-sobre-uso'], { 
-      queryParams: { loteId: loteId } 
-    });
+  preparaEditarDadosUso(loteId: number | undefined): void {
+    if (loteId) {
+      this.router.navigate(['/cadastro-dados-sobre-uso'], { 
+        queryParams: { loteId: loteId } 
+      });
+    }
   }
 
   preparaEditarEnderecoLote(loteId: number): void {
@@ -707,33 +379,23 @@ export class ConsultaLotesComponent implements OnInit {
   }
 
   confirmarDelecao(lote: LoteDTO): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Confirmar Exclusão',
-        message: `Tem certeza que deseja excluir o lote ${lote.numero}? Esta ação irá deletar todos os dados relacionados ao lote (pessoas, estruturas, dados de uso, etc.) e não pode ser desfeita.`,
-        type: 'warning',
-        confirmText: 'Excluir',
-        cancelText: 'Cancelar'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && lote.id) {
-        this.isLoading = true;
-        this.loteDeleteService.deletarLoteCompleto(lote.id).subscribe({
-          next: () => {
-            this.isLoading = false;
-            this.snackBar.open(`Lote ${lote.numero} excluído com sucesso!`, 'Fechar', { duration: 3000 });
-            this.loadLotes();
-          },
-          error: (error) => {
-            console.error('Erro ao excluir lote:', error);
-            this.snackBar.open('Erro ao excluir lote. Tente novamente.', 'Fechar', { duration: 3000 });
-            this.isLoading = false;
-          }
-        });
-      }
-    });
+    const confirmMessage = `Tem certeza que deseja excluir o lote ${lote.numero}? Esta ação irá deletar todos os dados relacionados ao lote (pessoas, estruturas, dados de uso, etc.) e não pode ser desfeita.`;
+    
+    if (confirm(confirmMessage) && lote.id) {
+      this.isLoading = true;
+      this.loteDeleteService.deletarLoteCompleto(lote.id).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.snackBar.open(`Lote ${lote.numero} excluído com sucesso!`, 'Fechar', { duration: 3000 });
+          this.loadLotes();
+        },
+        error: (error) => {
+          console.error('Erro ao excluir lote:', error);
+          this.snackBar.open('Erro ao excluir lote. Tente novamente.', 'Fechar', { duration: 3000 });
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
   situacaoNome(situacaoJuridicaId: number | null | undefined): string {

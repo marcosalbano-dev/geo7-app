@@ -42,6 +42,12 @@ interface cultura {
 export class CadastroUsoComponent {
 
   produtoVegetalSelecionado: string = '';
+  numeroLote: string = '';
+
+  /** Modo edição é derivado do form (se tem id, atualiza) */
+  get isAtualizando(): boolean {
+    return false; // Este componente não tem lógica de edição implementada ainda
+  }
 
   culturas: cultura[] = [
     {value: 'abacate', viewValue: 'Abacate - 19'},

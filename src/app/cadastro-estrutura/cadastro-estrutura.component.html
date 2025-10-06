@@ -11,6 +11,21 @@
     <!-- Cabeçalho -->
     <div class="form-header">
       <h2>Informações de Estrutura</h2>
+      <div class="form-grid">
+        <div class="col-3 md-6">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Número do Lote</mat-label>
+            <input matInput [value]="numeroLote" disabled />
+          </mat-form-field>
+        </div>
+        <div class="col-9 md-6">
+          <div class="info-summary">
+            <p><strong>Modo:</strong> {{ isAtualizando ? 'Edição' : 'Novo Cadastro' }}</p>
+            <p *ngIf="isAtualizando"><strong>Status:</strong> ✅ Estrutura encontrada automaticamente</p>
+            <p *ngIf="!isAtualizando"><strong>Status:</strong> 📝 Novo cadastro</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- QUADRO 5 - Identificação e Localização do Imóvel Rural -->

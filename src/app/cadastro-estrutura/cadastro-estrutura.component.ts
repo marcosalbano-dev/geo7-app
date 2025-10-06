@@ -181,6 +181,22 @@ export class CadastroEstruturaComponent implements OnInit {
     return !!this.formEstrutura?.get('id')?.value;
   }
 
+  /** Número do lote para exibição */
+  numeroLote: string = '';
+
+  /** Carrega o número do lote para exibição */
+  private carregarNumeroLote(loteId: number): void {
+    this.loteService.obterPorId(loteId).subscribe({
+      next: (lote) => {
+        this.numeroLote = lote.numero || `Lote ${loteId}`;
+      },
+      error: (err) => {
+        console.warn('[Estrutura] Erro ao carregar número do lote:', err);
+        this.numeroLote = `Lote ${loteId}`;
+      }
+    });
+  }
+
   ngOnInit(): void {
     // form base
     this.formEstrutura = this.fb.group({
@@ -281,6 +297,7 @@ export class CadastroEstruturaComponent implements OnInit {
       if (Number.isFinite(loteId) && loteId > 0) {
         // mantém sincronizado no form (útil em navegações em cadeia)
         this.formEstrutura.patchValue({ loteId });
+        this.carregarNumeroLote(loteId);
         this.carregarEstruturaPorLoteId(loteId);
       } else {
         console.warn('[Estrutura] loteId não encontrado na URL/estado de navegação.');

@@ -8,10 +8,30 @@
         </app-back-button>
       </div>
 
+      <!-- Cabeçalho -->
+      <div class="form-header">
+        <h2>Cadastro de Lote</h2>
+        <div class="form-grid">
+          <div class="col-3 md-6">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Número do Lote</mat-label>
+              <input matInput [value]="numeroLote" disabled />
+            </mat-form-field>
+          </div>
+          <div class="col-9 md-6">
+            <div class="info-summary">
+              <p><strong>Modo:</strong> {{ isAtualizando ? 'Edição' : 'Novo Cadastro' }}</p>
+              <p *ngIf="isAtualizando"><strong>Status:</strong> ✅ Lote encontrado automaticamente</p>
+              <p *ngIf="!isAtualizando"><strong>Status:</strong> 📝 Novo cadastro</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <mat-card appearance="outlined">
         <mat-card-header>
-          <mat-card-title>Cadastro de Lote</mat-card-title>
-          <mat-card-subtitle>Informações completas do lote</mat-card-subtitle>
+          <mat-card-title>Informações do Lote</mat-card-title>
+          <mat-card-subtitle>Dados completos do lote</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content class="mt-20">

@@ -79,6 +79,25 @@ export class CadastroLotesComponent implements OnInit {
   isLoadingMunicipio = false;
 
   atualizando = false;
+  numeroLote: string = '';
+
+  /** Modo edição é derivado do form (se tem id, atualiza) */
+  get isAtualizando(): boolean {
+    return !!this.formLotes?.get('id')?.value;
+  }
+
+  /** Carrega o número do lote para exibição */
+  private carregarNumeroLote(loteId: number): void {
+    this.loteService.obterPorId(loteId).subscribe({
+      next: (lote) => {
+        this.numeroLote = lote.numero || `Lote ${loteId}`;
+      },
+      error: (err) => {
+        console.warn('[Lotes] Erro ao carregar número do lote:', err);
+        this.numeroLote = `Lote ${loteId}`;
+      }
+    });
+  }
 
   situacoes = [
     { value: 1, viewValue: 'Posse Por Simples Ocupação' },
@@ -140,6 +159,7 @@ export class CadastroLotesComponent implements OnInit {
       if (idParaCarregar) {
         this.atualizando = true;
         console.log('🔄 Modo de edição ativado para ID:', idParaCarregar);
+        this.carregarNumeroLote(+idParaCarregar);
         // Aguardar municípios carregarem antes de carregar o lote
         this.loadMunicipiosCe().then(() => {
           this.carregarLotePorId(+idParaCarregar);

@@ -23,6 +23,7 @@ import { CategoriaAnimal, CategoriaAnimalService } from '../services/categoria-a
 import { forkJoin, of } from 'rxjs';
 import { Location } from '@angular/common';
 import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
+import { LoteService } from '../services/lote.service';
 
 type ItemExt = ItemDadosUsoDTO & { meta?: { label: string } };
 type ItemView = ItemExt & { _k: number };
@@ -70,7 +71,22 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
   atualizando = false;
   dto!: DadosSobreUsoDTO;
   dadosSobreUsoId!: number | null;
+  numeroLote: string = '';
 
+  /** Carrega o número do lote para exibição */
+  private carregarNumeroLote(loteId: number): void {
+    this.loteService.obterPorId(loteId).subscribe({
+      next: (lote) => {
+        this.numeroLote = lote.numero || `Lote ${loteId}`;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.warn('[DadosSobreUso] Erro ao carregar número do lote:', err);
+        this.numeroLote = `Lote ${loteId}`;
+        this.cdr.markForCheck();
+      }
+    });
+  }
 
   // visão agrupada (somente exibição)
   grupos: { code: ItemDadosUsoDTO['grupo']; title: string }[] = [
@@ -98,7 +114,8 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
     private areaComOutroUsoService: AreaComOutroUsoService,
     private areasRestricoesService: AreasRestricoesService,
     private categoriaAnimalService: CategoriaAnimalService,
-    private location: Location
+    private location: Location,
+    private loteService: LoteService
   ) { }
 
   private makeEmptyDto(): DadosSobreUsoDTO {
@@ -147,6 +164,7 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
       if (Number.isFinite(id) && id > 0) {
         this.loteId = id;
         this.dto.loteId = id; // << garante o lote no dto base
+        this.carregarNumeroLote(this.loteId);
         this.carregarPorLote(this.loteId);
       } else {
         console.warn('loteId não encontrado na URL.');
