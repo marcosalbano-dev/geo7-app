@@ -176,9 +176,11 @@ export class CadastroEstruturaComponent implements OnInit {
     private location: Location
   ) { }
 
-  /** Modo edição é derivado do form (se tem id, atualiza) */
+  /** Modo edição é derivado do form (se tem id ou loteId, atualiza) */
   get isAtualizando(): boolean {
-    return !!this.formEstrutura?.get('id')?.value;
+    const hasId = !!this.formEstrutura?.get('id')?.value;
+    const hasLoteId = !!this.formEstrutura?.get('loteId')?.value;
+    return hasId || hasLoteId;
   }
 
   /** Número do lote para exibição */
@@ -432,6 +434,7 @@ export class CadastroEstruturaComponent implements OnInit {
         }
 
         console.log('[Estrutura] DTO recebido do serviço:', estruturaDTO);
+        console.log('[Estrutura] 🔍 ID da estrutura:', estruturaDTO.id);
         console.log('[Estrutura] 🔍 Dados de forma de obtenção na estrutura:');
         console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', estruturaDTO.descricaoFormaDeObtencao);
         console.log('[Estrutura] 🔍 - areaMedida:', estruturaDTO.areaMedida, 'tipo:', typeof estruturaDTO.areaMedida);
@@ -444,6 +447,10 @@ export class CadastroEstruturaComponent implements OnInit {
         console.log('[Estrutura] 🔍 - comunidade no DTO:', estruturaDTO.comunidade);
 
         this.loadDistritosByMunicipio(estruturaDTO.municipioId).then(() => {
+          console.log('[Estrutura] Distritos carregados com sucesso');
+        }).catch((error) => {
+          console.warn('[Estrutura] Erro ao carregar distritos, continuando sem eles:', error);
+        }).finally(() => {
           // habilita campos para preenchimento
           this.formEstrutura.get('municipioId')?.enable();
           this.formEstrutura.get('distritoId')?.enable();
@@ -457,6 +464,8 @@ export class CadastroEstruturaComponent implements OnInit {
           this.formEstrutura.patchValue(formValue);
 
           console.log('[Estrutura] Formulário após aplicar dados da estrutura:', this.formEstrutura.getRawValue());
+          console.log('[Estrutura] 🔍 ID no formulário após aplicar dados:', this.formEstrutura.get('id')?.value);
+          console.log('[Estrutura] 🔍 isAtualizando após aplicar dados:', this.isAtualizando);
 
           // Se o loteId está presente, carrega os dados do lote APENAS para campos que não estão na estrutura
           console.log('[Estrutura] Verificando loteId:', estruturaDTO.loteId);
@@ -521,7 +530,7 @@ export class CadastroEstruturaComponent implements OnInit {
 
           // mantém campos habilitados para edição
           console.log('[Estrutura] DTO aplicado no form:', this.formEstrutura.getRawValue());
-        });
+        }); // Fecha o bloco finally
       },
       error: (err) => {
         if (err?.status === 404) {

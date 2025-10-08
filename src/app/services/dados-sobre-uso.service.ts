@@ -1,34 +1,56 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, of, throwError, map } from 'rxjs';
 import { DadosSobreUsoDTO } from '../models/dados-sobre-uso.dto';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class DadosSobreUsoService {
   private apiUrl = `${environment.apiUrl}/dados-sobre-uso`;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
+
+  private getHeaders(): HttpHeaders {
+    const authHeaders = this.authService.getAuthHeaders();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...authHeaders
+    });
+  }
 
   buscarPorId(id: number): Observable<DadosSobreUsoDTO> {
-    return this.http.get<DadosSobreUsoDTO>(`${this.apiUrl}/${id}`);
+    return this.http.get<DadosSobreUsoDTO>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    });
   }
 
   salvar(dto: DadosSobreUsoDTO): Observable<DadosSobreUsoDTO> {
-    return this.http.post<DadosSobreUsoDTO>(this.apiUrl, dto);
+    return this.http.post<DadosSobreUsoDTO>(this.apiUrl, dto, {
+      headers: this.getHeaders()
+    });
   }
 
   atualizar(id: number, dto: DadosSobreUsoDTO): Observable<DadosSobreUsoDTO> {
-    return this.http.put<DadosSobreUsoDTO>(`${this.apiUrl}/${id}`, dto);
+    return this.http.put<DadosSobreUsoDTO>(`${this.apiUrl}/${id}`, dto, {
+      headers: this.getHeaders()
+    });
   }
 
   deletar(id: number) {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    });
   }
 
   buscarPorLote(loteId: number) {
     console.log(`🔍 Buscando dados sobre uso para loteId: ${loteId}`);
-    return this.http.get<DadosSobreUsoDTO>(`${this.apiUrl}/por-lote/${loteId}`)
+    return this.http.get<DadosSobreUsoDTO>(`${this.apiUrl}/por-lote/${loteId}`, {
+      headers: this.getHeaders()
+    })
     .pipe(
       catchError((err: HttpErrorResponse) => {
         console.warn(`⚠️ Endpoint /por-lote/${loteId} falhou com status ${err.status}`);
@@ -47,7 +69,9 @@ export class DadosSobreUsoService {
 
   private buscarTodosEFiltrar(loteId: number) {
     console.log(`🔄 Tentando buscar todos os dados sobre uso e filtrar por loteId: ${loteId}`);
-    return this.http.get<DadosSobreUsoDTO[]>(`${this.apiUrl}`)
+    return this.http.get<DadosSobreUsoDTO[]>(`${this.apiUrl}`, {
+      headers: this.getHeaders()
+    })
     .pipe(
       map((dados: DadosSobreUsoDTO[]) => {
         console.log(`📊 Dados recebidos do backend (${dados?.length || 0} registros):`, dados);

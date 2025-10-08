@@ -1,0 +1,136 @@
+<div class="cadastro-container">
+  <div class="cadastro-card">
+    <div class="cadastro-header">
+      <mat-icon class="header-icon">person_add</mat-icon>
+      <h2>Cadastro de Usuário</h2>
+      <p>Preencha os dados para criar um novo usuário no sistema</p>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()" class="cadastro-form">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome Completo</mat-label>
+          <input matInput 
+                 formControlName="name" 
+                 placeholder="Digite o nome completo"
+                 [class.mat-input-invalid]="isFieldInvalid('name')">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('name')">
+            {{ getErrorMessage('name') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput 
+                 type="email" 
+                 formControlName="email" 
+                 placeholder="Digite o email"
+                 [class.mat-input-invalid]="isFieldInvalid('email')">
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('email')">
+            {{ getErrorMessage('email') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Perfil</mat-label>
+          <mat-select formControlName="role" [class.mat-input-invalid]="isFieldInvalid('role')">
+            <mat-option *ngFor="let role of roles" [value]="role.value">
+              {{ role.label }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>admin_panel_settings</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('role')">
+            {{ getErrorMessage('role') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Senha</mat-label>
+          <input matInput 
+                 [type]="hidePassword ? 'password' : 'text'" 
+                 formControlName="password" 
+                 placeholder="Digite a senha"
+                 [class.mat-input-invalid]="isFieldInvalid('password')">
+          <button mat-icon-button matSuffix 
+                  type="button"
+                  (click)="hidePassword = !hidePassword" 
+                  [attr.aria-label]="'Hide password'" 
+                  [attr.aria-pressed]="hidePassword">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="isFieldInvalid('password')">
+            {{ getErrorMessage('password') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmar Senha</mat-label>
+          <input matInput 
+                 [type]="hideConfirmPassword ? 'password' : 'text'" 
+                 formControlName="confirmPassword" 
+                 placeholder="Confirme a senha"
+                 [class.mat-input-invalid]="isFieldInvalid('confirmPassword')">
+          <button mat-icon-button matSuffix 
+                  type="button"
+                  (click)="hideConfirmPassword = !hideConfirmPassword" 
+                  [attr.aria-label]="'Hide password'" 
+                  [attr.aria-pressed]="hideConfirmPassword">
+            <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="isFieldInvalid('confirmPassword')">
+            {{ getErrorMessage('confirmPassword') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-raised-button 
+                type="button" 
+                color="accent" 
+                (click)="voltarParaConsulta()"
+                [disabled]="isLoading">
+          <mat-icon>arrow_back</mat-icon>
+          Voltar
+        </button>
+        
+        <button mat-raised-button 
+                type="submit" 
+                color="primary"
+                [disabled]="cadastroForm.invalid || isLoading">
+          <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!isLoading">person_add</mat-icon>
+          {{ isLoading ? 'Cadastrando...' : 'Cadastrar Usuário' }}
+        </button>
+      </div>
+    </form>
+
+    <div class="cadastro-info">
+      <mat-divider></mat-divider>
+      <div class="info-content">
+        <mat-icon>info</mat-icon>
+        <div>
+          <h4>Informações importantes:</h4>
+          <ul>
+            <li>A senha deve ter pelo menos 6 caracteres</li>
+            <li>O email será usado para fazer login no sistema</li>
+            <li>Usuários com perfil "Administrador" têm acesso total ao sistema</li>
+            <li>Usuários com perfil "Usuário" têm acesso limitado</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

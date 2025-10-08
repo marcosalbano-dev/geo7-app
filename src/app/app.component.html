@@ -1,4 +1,4 @@
-<mat-sidenav-container class="main-container page">
+<mat-sidenav-container class="main-container page" *ngIf="showFullLayout; else landingLayout">
   <!-- Drawer / menu lateral -->
   <mat-sidenav #drawer class="sidenav" [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="!(isHandset$ | async)">
 
@@ -26,6 +26,10 @@
       <a mat-list-item routerLink="/consulta-lotes" (click)="closeIfHandset(drawer)">
         <mat-icon>search</mat-icon><span class="ml-5">Consulta</span>
       </a>
+      <span class="spacer"></span>
+      <a mat-list-item routerLink="/cadastro-usuario" (click)="closeIfHandset(drawer)" *ngIf="isAdmin()">
+        <mat-icon>person_add</mat-icon><span class="ml-5">Cadastrar Usuário</span>
+      </a>
     </mat-nav-list>
   </mat-sidenav>
 
@@ -38,6 +42,37 @@
         </button>
         <img src="assets/brand/logo-horizontal-256w.png" alt="Geo7" class="brand">
         <span class="spacer"></span>
+        
+        <!-- Botão de logout -->
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+          <mat-icon>account_circle</mat-icon>
+          <span class="user-name hide-on-small">{{ getShortUserName() }}</span>
+        </button>
+        
+        <mat-menu #userMenu="matMenu">
+          <div class="user-info">
+            <div class="user-name-full">{{ getCurrentUser()?.name || 'Usuário' }}</div>
+            <div class="user-role">{{ getCurrentUser()?.role || 'USER' }}</div>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item>
+            <mat-icon>person</mat-icon>
+            <span>Perfil</span>
+          </button>
+          <button mat-menu-item>
+            <mat-icon>settings</mat-icon>
+            <span>Configurações</span>
+          </button>
+          <button mat-menu-item routerLink="/cadastro-usuario" *ngIf="isAdmin()">
+            <mat-icon>person_add</mat-icon>
+            <span>Cadastrar Usuário</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
       </mat-toolbar-row>
 
       <!-- Linha 2: links (somente em telas grandes) -->
@@ -59,3 +94,10 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+<!-- Layout simples para landingpage e login -->
+<ng-template #landingLayout>
+  <div class="landing-layout">
+    <router-outlet></router-outlet>
+  </div>
+</ng-template>

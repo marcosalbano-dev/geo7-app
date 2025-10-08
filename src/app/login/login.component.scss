@@ -1,0 +1,236 @@
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// Header com logo separado
+.login-header {
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+.login-logo {
+  max-width: 180px;
+  height: auto;
+  filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+// Card principal do formulário
+.login-form-card {
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: white;
+}
+
+.form-header {
+  text-align: center;
+  padding: 2rem 2rem 1rem;
+  background: white;
+  margin: 0;
+}
+
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.login-subtitle {
+  font-size: 1rem;
+  margin: 0;
+  color: #666;
+  font-weight: 400;
+}
+
+.login-content {
+  padding: 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.login-button {
+  height: 48px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  
+  .button-spinner {
+    margin-right: 8px;
+  }
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.login-divider {
+  margin: 2rem 0 1.5rem;
+}
+
+.back-button {
+  height: 44px;
+  font-size: 1rem;
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+// Card separado para credenciais de demonstração
+.demo-card {
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.demo-content {
+  padding: 1.5rem;
+  margin: 0;
+}
+
+.demo-credentials {
+  text-align: center;
+  
+  h4 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .credential-item {
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: #6c757d;
+    padding: 0.5rem;
+    background: rgba(108, 117, 125, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+    
+    strong {
+      color: #495057;
+      font-weight: 600;
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem;
+  }
+  
+  .login-card {
+    gap: 1rem;
+  }
+  
+  .form-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+  
+  .login-content {
+    padding: 1.5rem;
+  }
+  
+  .demo-content {
+    padding: 1rem;
+  }
+  
+  .login-title {
+    font-size: 1.5rem;
+  }
+  
+  .login-logo {
+    max-width: 150px;
+    filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  }
+  
+  .demo-credentials {
+    h4 {
+      font-size: 0.8rem;
+    }
+    
+    .credential-item {
+      font-size: 0.8rem;
+      padding: 0.4rem;
+    }
+  }
+}
+
+// Animações
+.login-header {
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.login-form-card {
+  animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+.demo-card {
+  animation: slideUp 0.6s ease-out 0.4s both;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Estados de loading
+.login-button:disabled {
+  opacity: 0.7;
+}
+
+// Estilos para snackbar
+::ng-deep .success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+::ng-deep .error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}

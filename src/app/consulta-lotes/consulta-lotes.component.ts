@@ -455,7 +455,7 @@ export class ConsultaLotesComponent implements OnInit {
   preparaEditarLote(loteId: number | undefined): void {
     if (loteId) {
       this.router.navigate(['/cadastro-lotes'], { 
-        queryParams: { id: loteId, mode: 'edit' } 
+        queryParams: { loteId: loteId, mode: 'edit' } 
       });
     }
   }

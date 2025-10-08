@@ -1,12 +1,13 @@
 // src/app/exportacao-dp/exportacao-dp.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom, forkJoin } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { environment } from '../../environments/environment';
 import { CategoriaService, Categoria } from '../services/categoria.service';
 import { CulturaService, Cultura } from '../services/cultura.service';
 import { ConjugePessoaService } from '../services/conjuge-pessoa.service';
+import { AuthService } from '../services/auth.service';
 
 /**
  * ===== Tipos alinhados com os DTOs do Java =====
@@ -364,13 +365,24 @@ export class ExportacaoDpService {
     private http: HttpClient,
     private categoriaService: CategoriaService,
     private culturaService: CulturaService,
-    private conjugeService: ConjugePessoaService
+    private conjugeService: ConjugePessoaService,
+    private authService: AuthService
   ) {}
+
+  private getHeaders(): HttpHeaders {
+    const authHeaders = this.authService.getAuthHeaders();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...authHeaders
+    });
+  }
 
   async exportarMunicipioXml(municipioId: number): Promise<void> {
     // Carrega os dados do município, categorias e culturas em paralelo
     const { dto, categorias, culturas } = await lastValueFrom(forkJoin({
-      dto: this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`),
+      dto: this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`, {
+        headers: this.getHeaders()
+      }),
       categorias: this.categoriaService.listarTodas(),
       culturas: this.culturaService.listarTodas()
     }));
@@ -391,7 +403,9 @@ export class ExportacaoDpService {
 
     // Carrega os dados do município, categorias e culturas em paralelo
     const { dto, categorias, culturas } = await lastValueFrom(forkJoin({
-      dto: this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`),
+      dto: this.http.get<Geo7MunicipioExportDTO>(`${this.apiUrl}/municipio/${municipioId}`, {
+        headers: this.getHeaders()
+      }),
       categorias: this.categoriaService.listarTodas(),
       culturas: this.culturaService.listarTodas()
     }));

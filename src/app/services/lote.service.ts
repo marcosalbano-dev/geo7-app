@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Lote } from '../models/lote';
-import { environment } from '../../environments/environment';
-import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { LoteDTO } from '../models/lote-dto';
+import { ApiService } from './api.service';
 
 export interface LoteFiltroDTO {
   proprietario?: string;
@@ -18,53 +17,39 @@ export interface LoteFiltroDTO {
 })
 export class LoteService {
 
-  private apiUrl = `${environment.apiUrl}/lotes`;
-
-  constructor(private http: HttpClient) { }
+  constructor(private apiService: ApiService) { }
 
   // Salvar lote na API
   salvar(lote: LoteDTO): Observable<LoteDTO> {
-    return this.http.post<LoteDTO>(this.apiUrl, lote);
+    return this.apiService.post<LoteDTO>('/lotes', lote);
   }
 
   // Obter todas os lotes da API
   obterTodos(): Observable<LoteDTO[]> {
-    return this.http.get<LoteDTO[]>(this.apiUrl);
+    return this.apiService.get<LoteDTO[]>('/lotes');
   }
 
   // Obter lote por ID
   obterPorId(id: number): Observable<LoteDTO> {
-    return this.http.get<LoteDTO>(`${this.apiUrl}/${id}`).pipe(
-      catchError(this.handleError)
-    );
+    return this.apiService.get<LoteDTO>(`/lotes/${id}`);
   }
 
   // Obter lote por Proprietário
   obterPorProprietario(proprietario: string): Observable<Lote[]> {
-    return this.http.get<Lote[]>(`${this.apiUrl}?proprietario=${proprietario}`);
+    return this.apiService.get<Lote[]>(`/lotes?proprietario=${proprietario}`);
   }
 
   filtrarLotes(filtro: LoteFiltroDTO): Observable<LoteDTO[]> {
-    return this.http.post<LoteDTO[]>(`${this.apiUrl}/filtrar`, filtro);
+    return this.apiService.post<LoteDTO[]>('/lotes/filtrar', filtro);
   }
 
   // Atualizar lote
   atualizar(id: number, lote: LoteDTO): Observable<LoteDTO> {
-    return this.http.put<LoteDTO>(`${this.apiUrl}/${id}`, lote).pipe(
-      catchError(this.handleError)
-    );
+    return this.apiService.put<LoteDTO>(`/lotes/${id}`, lote);
   }
 
   // Excluir lote
   deletar(id: number): Observable<LoteDTO> {
-    return this.http.delete<LoteDTO>(`${this.apiUrl}/${id}`).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Tratamento de erros
-  private handleError(error: any): Observable<never> {
-    console.error('Ocorreu um erro:', error);
-    return throwError(() => new Error('Erro ao processar a requisição. Tente novamente mais tarde.'));
+    return this.apiService.delete<LoteDTO>(`/lotes/${id}`);
   }
 }
