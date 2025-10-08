@@ -134,9 +134,10 @@
 
     <!-- TABELA -->
     <mat-card *ngIf="listaLotes.length > 0" appearance="outlined">
-      <mat-card-content>
-        <div class="table-holder">
-          <table class="custom-table">
+      <mat-card-content class="table-card-content">
+        <div class="table-wrapper">
+          <div class="table-holder table-scroll-container">
+            <table class="custom-table">
             <thead>
               <tr>
                 <th class="col-selecao">
@@ -199,6 +200,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </mat-card-content>
     </mat-card>

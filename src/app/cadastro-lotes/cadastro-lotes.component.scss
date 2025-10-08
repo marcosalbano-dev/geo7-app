@@ -1,57 +1,173 @@
-/* --- utilitárias globais para layout --- */
-.page-center { max-width: 1100px; margin: 0 auto; }
+/* ====== CONTAINER PRINCIPAL ====== */
+.cadastro-container {
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  background: #f5f5f5;
+}
+
+.cadastro-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
 
 /* ====== FORM HEADER ====== */
 .form-header {
   text-align: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 24px;
   
   h2 {
-    color: var(--color-primary-700);
-    font-size: 1.5rem;
+    color: #1976d2;
+    font-size: 1.75rem;
     font-weight: 600;
-    margin: 0 0 var(--spacing-md) 0;
+    margin: 0 0 16px 0;
   }
 }
 
-.form-grid { display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+.form-grid { 
+  display: grid; 
+  gap: 16px; 
+  grid-template-columns: repeat(12, 1fr); 
+}
+
 .col-12 { grid-column: span 12; }
 .col-9  { grid-column: span 9;  }
 .col-8  { grid-column: span 8;  }
 .col-6  { grid-column: span 6;  }
 .col-4  { grid-column: span 4;  }
 .col-3  { grid-column: span 3;  }
+
 .form-grid mat-form-field { width: 100%; }
+
+/* ====== LAYOUT RESPONSIVO MODERNO ====== */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.form-field-large {
+  flex: 2;
+  min-width: 300px;
+}
+
+.form-field-medium {
+  flex: 1.5;
+  min-width: 250px;
+}
+
+.form-field-small {
+  flex: 0.8;
+  min-width: 150px;
+}
 
 /* ====== INFO SUMMARY ====== */
 .info-summary {
-  background: var(--color-background-light, #f8f9fa);
-  border: 1px solid var(--color-border-light, #e9ecef);
-  border-radius: var(--radius-sm, 4px);
-  padding: var(--spacing-md, 16px);
-  margin-top: var(--spacing-sm, 8px);
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
   
   p {
-    margin: var(--spacing-xs, 4px) 0;
-    font-size: var(--font-size-sm, 14px);
-    line-height: var(--line-height-normal, 1.5);
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 1.5;
     
     strong {
-      color: var(--color-text-primary, #333);
-      font-weight: var(--font-weight-medium, 500);
+      color: #333;
+      font-weight: 500;
     }
   }
 }
 
-@media (max-width: 959px) { /* tablet */
-  .form-grid { grid-template-columns: repeat(6, 1fr); }
-  .md-6 { grid-column: span 6; }
+/* ====== RESPONSIVIDADE ====== */
+@media (max-width: 1200px) {
+  .cadastro-content {
+    max-width: 100%;
+    padding: 0 10px;
+  }
 }
 
-@media (max-width: 599px) { /* celular */
-  .form-grid { grid-template-columns: 1fr; }
-  .col-12, .col-9, .col-8, .col-6, .col-4, .col-3, .md-6 { grid-column: 1 / -1; }
+@media (max-width: 768px) {
+  .cadastro-container {
+    padding: 10px;
+  }
+  
+  .form-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .form-field,
+  .form-field-large,
+  .form-field-medium,
+  .form-field-small {
+    flex: 1;
+    min-width: unset;
+  }
+  
+  .form-grid { 
+    grid-template-columns: 1fr; 
+  }
+  
+  .col-12, .col-9, .col-8, .col-6, .col-4, .col-3, .md-6 { 
+    grid-column: 1 / -1; 
+  }
 }
 
-/* só estética */
-.content { padding: 16px; }
+@media (max-width: 480px) {
+  .cadastro-container {
+    padding: 5px;
+  }
+  
+  .form-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .info-summary {
+    padding: 12px;
+    
+    p {
+      font-size: 13px;
+    }
+  }
+}
+
+/* ====== MELHORIAS DE UX ====== */
+mat-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  border-radius: 12px !important;
+}
+
+mat-form-field {
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}
+
+mat-card-actions {
+  padding: 16px 24px !important;
+  gap: 12px;
+  flex-wrap: wrap;
+  
+  button {
+    min-width: 140px;
+  }
+}
+
+/* ====== BACK BUTTON ====== */
+.back-button-container {
+  margin-bottom: 20px;
+}

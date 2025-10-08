@@ -1,5 +1,5 @@
-<div fxLayout="row" fxLayoutAlign="center">
-  <div fxLayout="column" fxFlex="1000px">
+<div class="cadastro-container">
+  <div class="cadastro-content">
     <form class="mt-60" [formGroup]="formLotes" (ngSubmit)="onSubmit()">
 
       <!-- Botão Voltar -->
@@ -36,8 +36,8 @@
 
         <mat-card-content class="mt-20">
           <!-- Primeira linha: Controle de Campo, Município, Distrito -->
-          <div fxLayout="row" fxLayoutGap="16px">
-            <div fxFlex="310px">
+          <div class="form-row">
+            <div class="form-field">
               <mat-form-field class="full-width">
                 <mat-label>Controle de Campo</mat-label>
                 <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput required />
@@ -47,7 +47,7 @@
               </mat-form-field>
             </div>
 
-            <div fxFlex="310px">
+            <div class="form-field">
               <mat-form-field class="full-width">
                 <mat-label>Município</mat-label>
                 <mat-select formControlName="municipioId" (selectionChange)="loadDistritosByMunicipio($event.value)"
@@ -62,7 +62,7 @@
               </mat-form-field>
             </div>
 
-            <div fxFlex="310px">
+            <div class="form-field">
               <mat-form-field class="full-width">
                 <mat-label>Distrito</mat-label>
                 <mat-select formControlName="distritoId" [errorStateMatcher]="errorStateMatcher">
@@ -77,9 +77,9 @@
             </div>
           </div>
 
-          <!-- Segunda linha: Situação Jurídica, Área, Perímetro -->
-          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
-            <div fxFlex="470px">
+          <!-- Segunda linha: Proprietário, Situação Jurídica, Área -->
+          <div class="form-row">
+            <div class="form-field form-field-large">
               <mat-form-field class="full-width">
                 <mat-label>Proprietário</mat-label>
                 <input type="text" formControlName="proprietario" placeholder="Nome do proprietário" matInput
@@ -89,7 +89,7 @@
                 </mat-error>
               </mat-form-field>
             </div>
-            <div fxFlex="310px">
+            <div class="form-field">
               <mat-form-field class="full-width">
                 <mat-label>Situação Jurídica</mat-label>
                 <mat-select formControlName="situacaoJuridicaId" [errorStateMatcher]="errorStateMatcher">
@@ -103,7 +103,7 @@
               </mat-form-field>
             </div>
 
-            <div fxFlex="150px">
+            <div class="form-field form-field-small">
               <mat-form-field class="full-width">
                 <mat-label>Área (m²)</mat-label>
                 <input type="number" formControlName="area" placeholder="Ex: 1000" matInput required />
@@ -115,24 +115,17 @@
                 </mat-error>
               </mat-form-field>
             </div>
-
-            <!-- <div fxFlex="310px">
-              <mat-form-field class="full-width">
-                <mat-label>Perímetro (m)</mat-label>
-                <input type="number" formControlName="perimetro" placeholder="Ex: 120" matInput />
-              </mat-form-field>
-            </div> -->
           </div>
 
-          <!-- Terceira linha: Proprietário, CPF -->
-          <div fxLayout="row" fxLayoutGap="16px" class="mt-16">
-            <div fxFlex="470px">
+          <!-- Terceira linha: Denominação, CPF, SNCR -->
+          <div class="form-row">
+            <div class="form-field form-field-large">
               <mat-form-field class="full-width">
                 <mat-label>Denominação do Imóvel</mat-label>
                 <input type="text" formControlName="denominacaoImovel" placeholder="Ex: Sítio São José" matInput />
               </mat-form-field>
             </div>
-            <div fxFlex="250px">
+            <div class="form-field form-field-medium">
               <mat-form-field class="full-width">
                 <mat-label>CPF</mat-label>
                 <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput required />
@@ -144,7 +137,7 @@
                 </mat-error>
               </mat-form-field>
             </div>
-            <div fxFlex="210px">
+            <div class="form-field form-field-medium">
               <mat-form-field class="full-width">
                 <mat-label>Código do Imóvel Rural (SNCR)</mat-label>
                 <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
@@ -162,7 +155,7 @@
             } @else {
             <button mat-flat-button color="primary" type="button" (click)="atualizarLote()">
               <mat-icon fontIcon="refresh"></mat-icon>
-              Atualizar e Ir para Estrutura
+              Atualizar Imóvel
             </button>
             }
             <button mat-flat-button color="accent" class="ml-5" type="button" (click)="limparFormulario()">

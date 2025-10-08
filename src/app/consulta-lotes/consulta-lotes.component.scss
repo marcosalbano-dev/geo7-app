@@ -49,7 +49,9 @@
 .table-holder { 
   width: 100%;
   max-width: 100%;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Tabela customizada - Desktop normal */
@@ -76,7 +78,7 @@
 /* Larguras das colunas - Desktop normal */
 .col-selecao { width: 60px; }
 .col-numero { width: 120px; }
-.col-proprietario { width: 200px; }
+.col-proprietario { width: 250px; }
 .col-denominacao { width: 200px; }
 .col-area { width: 100px; }
 .col-situacao { width: 180px; }
@@ -111,17 +113,7 @@
 /* MEDIA QUERIES PARA DISPOSITIVOS MÓVEIS */
 /* =========================================== */
 
-/* Tablet (768px e abaixo) */
-@media (max-width: 768px) {
-  .table-holder {
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    border: 1px solid #ddd !important;
-    scrollbar-width: auto !important;
-    scrollbar-color: #666 #f1f1f1 !important;
-  }
+/* Tablet (768px e abaixo) - REMOVIDO - usando solução global */
 
   .custom-table {
     width: 2000px !important;
@@ -148,31 +140,33 @@
 
   /* Scrollbar customizada */
   .table-holder::-webkit-scrollbar {
-    height: 15px !important;
+    height: 12px !important;
     display: block !important;
+    background: #f1f1f1 !important;
   }
 
   .table-holder::-webkit-scrollbar-track {
     background: #f1f1f1 !important;
     border-radius: 6px !important;
+    border: 1px solid #ddd !important;
   }
 
   .table-holder::-webkit-scrollbar-thumb {
     background: #666 !important;
     border-radius: 6px !important;
+    border: 1px solid #f1f1f1 !important;
   }
 
   .table-holder::-webkit-scrollbar-thumb:hover {
     background: #555 !important;
   }
-}
 
-/* Celular (480px e abaixo) */
-@media (max-width: 480px) {
-  .table-holder {
-    overflow-x: auto !important;
-    border: 2px solid red !important; /* Debug border para mobile */
+  .table-holder::-webkit-scrollbar-corner {
+    background: #f1f1f1 !important;
   }
+
+
+/* Celular (480px e abaixo) - REMOVIDO - usando solução global */
 
   .custom-table {
     width: 2000px !important;
@@ -189,7 +183,7 @@
   .acoes-container {
     gap: 3px !important;
   }
-}
+
 
 /* =========================================== */
 /* ESTILOS PARA EXPORTAÇÃO */
@@ -294,6 +288,190 @@
 }
 
 /* =========================================== */
+/* SOLUÇÃO DEFINITIVA PARA SCROLL HORIZONTAL */
+/* =========================================== */
+
+/* Container do card da tabela */
+.table-card-content {
+  overflow: visible !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Garantir que o card não ultrapasse a página */
+mat-card:has(.table-wrapper) {
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Wrapper da tabela */
+.table-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Container da tabela - SOLUÇÃO DEFINITIVA */
+.table-holder,
+.table-scroll-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  position: relative !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #666 #f1f1f1 !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+}
+
+/* Forçar scroll em TODOS os dispositivos */
+.table-scroll-container {
+  overflow-x: scroll !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #666 #f1f1f1 !important;
+}
+
+/* SOLUÇÃO DEFINITIVA - Força scroll horizontal */
+.table-wrapper .table-holder,
+.table-wrapper .table-scroll-container {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #666 #f1f1f1 !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+}
+
+/* Desktop - Layout otimizado */
+@media (min-width: 769px) {
+  .table-wrapper .custom-table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+  }
+  
+  .table-wrapper .table-holder,
+  .table-wrapper .table-scroll-container {
+    overflow-x: auto !important;
+  }
+  
+  /* Larguras otimizadas para desktop - Total: ~1200px */
+  .col-selecao { width: 60px; }
+  .col-numero { width: 120px; }
+  .col-proprietario { width: 250px; }
+  .col-denominacao { width: 200px; }
+  .col-area { width: 100px; }
+  .col-situacao { width: 180px; }
+  .col-acoes { width: 300px; }
+  
+  /* Scrollbar mais discreta em desktop */
+  .table-wrapper .table-holder::-webkit-scrollbar,
+  .table-wrapper .table-scroll-container::-webkit-scrollbar {
+    height: 8px;
+  }
+}
+
+/* Desktop grande - Mantém scroll quando necessário */
+@media (min-width: 1400px) {
+  .table-wrapper .table-holder,
+  .table-wrapper .table-scroll-container {
+    overflow-x: auto !important;
+  }
+  
+  /* Larguras mais generosas para telas grandes */
+  .col-proprietario { width: 280px; }
+  .col-denominacao { width: 220px; }
+  .col-situacao { width: 200px; }
+  .col-acoes { width: 320px; }
+}
+
+/* Desktop pequeno - Larguras mais compactas */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .col-proprietario { width: 200px; }
+  .col-denominacao { width: 150px; }
+  .col-situacao { width: 150px; }
+  .col-acoes { width: 180px; }
+}
+
+/* Desktop muito pequeno - Larguras mínimas */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .col-proprietario { width: 180px; }
+  .col-denominacao { width: 120px; }
+  .col-situacao { width: 120px; }
+  .col-acoes { width: 160px; }
+}
+
+/* Mobile/Tablet - Força scroll horizontal */
+@media (max-width: 768px) {
+  .table-wrapper .custom-table {
+    width: max-content !important;
+    min-width: 2000px !important;
+    table-layout: fixed !important;
+  }
+  
+  .table-wrapper .table-holder,
+  .table-wrapper .table-scroll-container {
+    overflow-x: scroll !important;
+  }
+}
+
+/* Scrollbar para todos os navegadores */
+.table-holder::-webkit-scrollbar,
+.table-scroll-container::-webkit-scrollbar {
+  height: 12px;
+  background: #f1f1f1;
+}
+
+.table-holder::-webkit-scrollbar-track,
+.table-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.table-holder::-webkit-scrollbar-thumb,
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 6px;
+  border: 1px solid #f1f1f1;
+}
+
+.table-holder::-webkit-scrollbar-thumb:hover,
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.table-holder::-webkit-scrollbar-corner,
+.table-scroll-container::-webkit-scrollbar-corner {
+  background: #f1f1f1;
+}
+
+/* Indicador visual de que há mais conteúdo */
+.table-holder::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Correção específica para modo responsivo - REMOVIDO - usando solução global */
+
+/* =========================================== */
 /* ESTILOS GERAIS */
 /* =========================================== */
 
@@ -323,6 +501,20 @@ mat-card {
   margin-bottom: 20px;
 }
 
+/* Garantir que o mat-card-content não interfira com o scroll */
+mat-card-content {
+  overflow: visible !important;
+  padding: 16px !important;
+}
+
+/* Específico para o card da tabela */
+mat-card:has(.table-holder) mat-card-content {
+  overflow: visible !important;
+  padding: 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 /* Responsividade dos filtros */
 @media (max-width: 768px) {
   .filtros-grid {
@@ -332,6 +524,8 @@ mat-card {
   .consulta-lotes-container {
     padding: 10px;
   }
+  
+  /* Correção específica para scroll da tabela em mobile - REMOVIDO - usando solução global */
 }
 
 /* =========================================== */

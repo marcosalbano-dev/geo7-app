@@ -403,7 +403,7 @@
       <div class="form-actions">
         <button mat-flat-button color="primary" type="submit">
           <mat-icon [fontIcon]="atualizando ? 'refresh' : 'save'"></mat-icon>
-          {{ atualizando ? 'Atualizar' : (modoAdicionarNova ? 'Salvar Nova Pessoa' : 'Salvar') }} Dados Pessoais{{ modoAdicionarNova ? '' : ' e ir para Dados de Uso' }}
+          {{ atualizando ? 'Atualizar' : (modoAdicionarNova ? 'Salvar Nova Pessoa' : 'Salvar') }} Dados Pessoais{{ modoAdicionarNova ? '' : '' }}
         </button>
 
         <button mat-flat-button color="accent" class="ml-5" type="button" (click)="onLimpar()">
