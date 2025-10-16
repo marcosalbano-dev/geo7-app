@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/api',
+  //apiUrl: '/api', // Proxy não está funcionando
+  apiUrl: 'http://localhost:8080/api', // URL direta do backend
   //apiUrl: 'https://api.geo7.com.br/api', // URL de produção
   appName: 'Geo7 Engenharia',
   version: '1.0.0',

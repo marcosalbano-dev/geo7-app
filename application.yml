@@ -1,0 +1,37 @@
+# Configuração do Spring Boot para usar schema public
+# Adicione este arquivo em: src/main/resources/application.yml
+# (Use este OU o application.properties, não ambos)
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/geo7?currentSchema=public
+    username: seu_usuario
+    password: sua_senha
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+        format_sql: true
+  
+  web:
+    cors:
+      allowed-origins: http://localhost:4200
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.geo7: DEBUG
+
