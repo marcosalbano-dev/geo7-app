@@ -1,7 +1,8 @@
 export const environment = {
   production: false,
-  //apiUrl: '/api', // Proxy não está funcionando
-  apiUrl: 'http://localhost:8080/api', // URL direta do backend
+  //apiUrl: '/api', // Usar proxy do Nginx
+  apiUrl: 'http://localhost:8080/api', // URL local para desenvolvimento
+  //apiUrl: 'http://18-228-94-6.sslip.io:8080/api', // URL do servidor EC2
   //apiUrl: 'https://api.geo7.com.br/api', // URL de produção
   appName: 'Geo7 Engenharia',
   version: '1.0.0',

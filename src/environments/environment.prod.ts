@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'http://localhost:8080/api',
   appName: 'Geo7 Engenharia',
   version: '1.0.0',
   

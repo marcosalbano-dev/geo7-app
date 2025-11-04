@@ -332,18 +332,58 @@ export class ItemDadosUsoDialogComponent implements OnInit {
   ngOnInit(): void {
     // carrega tudo em paralelo, mas com fallback em caso de erro
     forkJoin({
-      culturas: this.culturaSrv.listarTodas().pipe(catchError(() => of([]))),
-      unidades: this.unidadeSrv.listarTodas().pipe(catchError(() => of([]))),
-      indicadores: this.indicadorSrv.listarTodas().pipe(catchError(() => of([]))),
-      outrosUsos: this.outroUsoSrv.listarTodas().pipe(catchError(() => of([]))),
-      categorias: this.catAnimalSrv.listarTodas().pipe(catchError(() => of([]))),
-      granjeiras: this.granjeiraSrv.listarTodas().pipe(catchError(() => of([]))),
+      culturas: this.culturaSrv.listarTodas().pipe(
+        catchError((err) => {
+          console.error('Erro ao carregar culturas:', err);
+          return of([]);
+        })
+      ),
+      unidades: this.unidadeSrv.listarTodas().pipe(
+        catchError((err) => {
+          console.error('Erro ao carregar unidades de produção:', err);
+          console.error('Erro completo:', JSON.stringify(err, null, 2));
+          return of([]);
+        })
+      ),
+      indicadores: this.indicadorSrv.listarTodas().pipe(
+        catchError((err) => {
+          console.error('Erro ao carregar indicadores:', err);
+          return of([]);
+        })
+      ),
+      outrosUsos: this.outroUsoSrv.listarTodas().pipe(
+        catchError((err) => {
+          console.error('Erro ao carregar outros usos:', err);
+          return of([]);
+        })
+      ),
+      categorias: this.catAnimalSrv.listarTodas().pipe(
+        catchError((err) => {
+          console.error('Erro ao carregar categorias animal:', err);
+          return of([]);
+        })
+      ),
+      granjeiras: this.granjeiraSrv.listarTodas().pipe(
+        catchError((err) => {
+          console.error('Erro ao carregar granjeiras:', err);
+          return of([]);
+        })
+      ),
     })
       .pipe(finalize(() => {
           this.carregando = false; 
           this.cdr.markForCheck();
         }))
       .subscribe(res => {
+        console.log('Dados carregados:', {
+          culturas: res.culturas?.length ?? 0,
+          unidades: res.unidades?.length ?? 0,
+          indicadores: res.indicadores?.length ?? 0,
+          outrosUsos: res.outrosUsos?.length ?? 0,
+          categorias: res.categorias?.length ?? 0,
+          granjeiras: res.granjeiras?.length ?? 0,
+        });
+        console.log('Unidades carregadas:', res.unidades);
         this.culturas = res.culturas ?? [];
         this.unidades = res.unidades ?? [];
         this.indicadores = res.indicadores ?? [];
