@@ -38,10 +38,7 @@
           <div class="col-3 md-6">
             <mat-form-field class="full-width">
               <mat-label>Controle de Campo</mat-label>
-              <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput required />
-              <mat-error *ngIf="formEstrutura.get('numero')?.hasError('required')">
-                O Controle de Campo é obrigatório
-              </mat-error>
+              <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput />
             </mat-form-field>
           </div>
           <div class="col-6 md-6">
@@ -63,9 +60,6 @@
             <mat-form-field class="full-width">
               <mat-label>Área Ha</mat-label>
               <input type="number" matInput formControlName="area" placeholder="Ex: 2.0000" readonly />
-              <mat-error *ngIf="formEstrutura.get('area')?.hasError('required') && formEstrutura.get('area')?.touched">
-                A área é obrigatória
-              </mat-error>
             </mat-form-field>
           </div>
           <div class="col-3 md-6">

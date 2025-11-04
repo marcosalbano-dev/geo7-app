@@ -40,10 +40,7 @@
             <div class="form-field">
               <mat-form-field class="full-width">
                 <mat-label>Controle de Campo</mat-label>
-                <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput required />
-                <mat-error *ngIf="formLotes.get('numero')?.hasError('required')">
-                  O Controle de Campo é obrigatório
-                </mat-error>
+                <input type="text" formControlName="numero" placeholder="Ex: 00001" matInput />
               </mat-form-field>
             </div>
 
@@ -56,9 +53,6 @@
                     {{ municipio.nome }}
                   </mat-option>
                 </mat-select>
-                <mat-error *ngIf="formLotes.get('municipioId')?.hasError('required')">
-                  Município é obrigatório
-                </mat-error>
               </mat-form-field>
             </div>
 
@@ -70,9 +64,6 @@
                     {{ distrito.nomeDistrito }}
                   </mat-option>
                 </mat-select>
-                <mat-error *ngIf="formLotes.get('distritoId')?.hasError('required')">
-                  Distrito é obrigatório
-                </mat-error>
               </mat-form-field>
             </div>
           </div>
@@ -82,11 +73,7 @@
             <div class="form-field form-field-large">
               <mat-form-field class="full-width">
                 <mat-label>Proprietário</mat-label>
-                <input type="text" formControlName="proprietario" placeholder="Nome do proprietário" matInput
-                  required />
-                <mat-error *ngIf="formLotes.get('proprietario')?.hasError('required')">
-                  Proprietário é obrigatório
-                </mat-error>
+                <input type="text" formControlName="proprietario" placeholder="Nome do proprietário" matInput />
               </mat-form-field>
             </div>
             <div class="form-field">
@@ -97,19 +84,13 @@
                     {{ situacao.viewValue }}
                   </mat-option>
                 </mat-select>
-                <mat-error *ngIf="formLotes.get('situacaoJuridicaId')?.hasError('required')">
-                  Situação Jurídica é obrigatória
-                </mat-error>
               </mat-form-field>
             </div>
 
             <div class="form-field form-field-small">
               <mat-form-field class="full-width">
                 <mat-label>Área (m²)</mat-label>
-                <input type="number" formControlName="area" placeholder="Ex: 1000" matInput required />
-                <mat-error *ngIf="formLotes.get('area')?.hasError('required')">
-                  Área é obrigatória
-                </mat-error>
+                <input type="number" formControlName="area" placeholder="Ex: 1000" matInput />
                 <mat-error *ngIf="formLotes.get('area')?.hasError('min')">
                   Área deve ser maior que zero
                 </mat-error>
@@ -128,10 +109,7 @@
             <div class="form-field form-field-medium">
               <mat-form-field class="full-width">
                 <mat-label>CPF</mat-label>
-                <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput required />
-                <mat-error *ngIf="formLotes.get('cpf')?.hasError('required')">
-                  CPF é obrigatório
-                </mat-error>
+                <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput />
                 <mat-error *ngIf="formLotes.get('cpf')?.hasError('pattern')">
                   CPF deve ter formato válido
                 </mat-error>

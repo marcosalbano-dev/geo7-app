@@ -44,7 +44,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <ng-container *ngIf="data.grupo === 'Q06_ISOLADO'">
         <div class="grid g3">
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Cultura*</mat-label>
+            <mat-label>Cultura</mat-label>
             <mat-select formControlName="culturaId">
               <mat-option *ngFor="let c of culturas" [value]="c.id">
                 {{ c.nomeCultura }}
@@ -53,7 +53,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Unidade*</mat-label>
+            <mat-label>Unidade</mat-label>
             <mat-select formControlName="unidadeProducaoId">
               <mat-option *ngFor="let u of unidades" [value]="u.id">
                 {{ u.codigoUnidade }} - {{ u.unidade }}
@@ -82,7 +82,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Indicador de Restrição*</mat-label>
+          <mat-label>Indicador de Restrição</mat-label>
           <mat-select formControlName="areasRestricoesId">
             <mat-option *ngFor="let i of indicadores" [value]="i.id">
               {{ i.codigo }} - {{ i.tipoAreaRestricao }}
@@ -95,7 +95,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <ng-container *ngIf="data.grupo === 'Q07_CONSORCIO_ROTACAO'">
         <div class="grid g3">
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Cultura*</mat-label>
+            <mat-label>Cultura</mat-label>
             <mat-select formControlName="culturaId">
               <mat-option *ngFor="let c of culturas" [value]="c.id">
                 {{ c.nomeCultura }}
@@ -104,7 +104,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Unidade*</mat-label>
+            <mat-label>Unidade</mat-label>
             <mat-select formControlName="unidadeProducaoId">
               <mat-option *ngFor="let u of unidades" [value]="u.id">
                 {{ u.codigoUnidade }} - {{ u.unidade }}
@@ -113,7 +113,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Forma de Exploração*</mat-label>
+            <mat-label>Forma de Exploração</mat-label>
             <mat-select formControlName="formaExploracao">
               <mat-option value="CONSORCIO">Consórcio</mat-option>
               <mat-option value="ROTACAO">Rotação</mat-option>
@@ -158,7 +158,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <!-- Q08 - Granjeira / Aquícola -->
       <ng-container *ngIf="data.grupo === 'Q08_GRANJEIRA_AQUICOLA'">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Granjeira Agrícola*</mat-label>
+          <mat-label>Granjeira Agrícola</mat-label>
           <mat-select formControlName="granjeiraAgricolaId">
             <mat-option *ngFor="let g of granjeiras" [value]="g.id">
               {{ g.denominacao }}
@@ -173,7 +173,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Indicador de Restrição*</mat-label>
+            <mat-label>Indicador de Restrição</mat-label>
             <mat-select formControlName="areasRestricoesId">
               <mat-option *ngFor="let i of indicadores" [value]="i.id">
                 {{ i.codigo }} - {{ i.tipoAreaRestricao }}
@@ -186,7 +186,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <!-- Q09 - Outros usos -->
       <ng-container *ngIf="data.grupo === 'Q09_OUTROS_USOS'">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Área com Outro Uso*</mat-label>
+          <mat-label>Área com Outro Uso</mat-label>
           <mat-select formControlName="areaComOutroUsoId">
             <mat-option *ngFor="let a of outrosUsos" [value]="a.id">
               {{ a.codigo }} - {{ a.denominacao }}
@@ -201,7 +201,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Indicador de Restrição*</mat-label>
+            <mat-label>Indicador de Restrição</mat-label>
             <mat-select formControlName="areasRestricoesId">
               <mat-option *ngFor="let i of indicadores" [value]="i.id">
                 {{ i.codigo }} - {{ i.tipoAreaRestricao }}
@@ -214,7 +214,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <!-- Q10 - Áreas com Restrição -->
       <ng-container *ngIf="data.grupo === 'Q10_RESTRICAO'">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Áreas Restrições*</mat-label>
+          <mat-label>Áreas Restrições</mat-label>
           <mat-select formControlName="areasRestricoesId">
             <mat-option *ngFor="let i of indicadores" [value]="i.id">
               {{ i.codigo }} - {{ i.tipoAreaRestricao }}
@@ -232,7 +232,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <ng-container *ngIf="data.grupo === 'Q11_PASTAGEM'">
         <div class="grid g2">
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Tipo Pastagem*</mat-label>
+            <mat-label>Tipo Pastagem</mat-label>
             <input matInput formControlName="tipoPastagem">
           </mat-form-field>
 
@@ -243,7 +243,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Indicador de Restrição*</mat-label>
+          <mat-label>Indicador de Restrição</mat-label>
           <mat-select formControlName="areasRestricoesId">
             <mat-option *ngFor="let i of indicadores" [value]="i.id">
               {{ i.codigo }} - {{ i.tipoAreaRestricao }}
@@ -256,7 +256,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <ng-container *ngIf="data.grupo === 'Q12_INFO_PECUARIA'">
         <div class="grid g2">
           <mat-form-field appearance="outline" class="full">
-            <mat-label>Categoria Animal*</mat-label>
+            <mat-label>Categoria Animal</mat-label>
             <mat-select formControlName="categoriaAnimalId">
               <mat-option *ngFor="let c of categoriasAnimal" [value]="c.id">
                 {{ c.codigo }} - {{ c.denominaoCategoriaAnimal }}
@@ -427,45 +427,34 @@ export class ItemDadosUsoDialogComponent implements OnInit {
       this.form.get('formaExploracao')!.setValue('CONSORCIO');
     }
 
-    // validações por grupo
+    // validações por grupo - todos os campos são opcionais
+    // Mantém apenas validações de mínimo para valores numéricos quando informados
     switch (this.data.grupo) {
       case 'Q06_ISOLADO':
-        this.form.get('culturaId')?.addValidators([Validators.required]);
-        this.form.get('unidadeProducaoId')?.addValidators([Validators.required]);
-        this.form.get('areasRestricoesId')?.addValidators([Validators.required]);
+        // Todos opcionais - sem validações obrigatórias
         break;
 
       case 'Q07_CONSORCIO_ROTACAO':
-        this.form.get('culturaId')?.addValidators([Validators.required]);
-        this.form.get('formaExploracao')?.addValidators([Validators.required]);
-        this.form.get('unidadeProducaoId')?.addValidators([Validators.required]);
+        // Todos opcionais - sem validações obrigatórias
         break;
 
       case 'Q08_GRANJEIRA_AQUICOLA':
-        this.form.get('granjeiraAgricolaId')?.addValidators([Validators.required]);
         this.form.get('areaExploradaGranjeiraAgricola')?.addValidators([Validators.min(0)]);
-        this.form.get('areasRestricoesId')?.addValidators([Validators.required]);
         break;
 
       case 'Q09_OUTROS_USOS':
-        this.form.get('areaComOutroUsoId')?.addValidators([Validators.required]);
         this.form.get('areaUtilizada')?.addValidators([Validators.min(0)]);
-        this.form.get('areasRestricoesId')?.addValidators([Validators.required]);
         break;
 
       case 'Q10_RESTRICAO':
-        this.form.get('areasRestricoesId')?.addValidators([Validators.required]);
         this.form.get('areaUtilizadaRestricao')?.addValidators([Validators.min(0)]);
         break;
 
       case 'Q11_PASTAGEM':
-        this.form.get('tipoPastagem')?.addValidators([Validators.required]);
         this.form.get('areaPastagem')?.addValidators([Validators.min(0)]);
-        this.form.get('areasRestricoesId')?.addValidators([Validators.required]);
         break;
 
       case 'Q12_INFO_PECUARIA':
-        this.form.get('categoriaAnimalId')?.addValidators([Validators.required]);
         this.form.get('quantidadeAnimal')?.addValidators([Validators.min(0)]);
         break;
 
@@ -476,14 +465,16 @@ export class ItemDadosUsoDialogComponent implements OnInit {
 
     this.form.updateValueAndValidity({ emitEvent: false });
 
-    // regra: Sequência obrigatória quando CONSÓRCIO
+    // Sequência produto vegetal é opcional - sem validação obrigatória
+    // Mantém apenas validação de mínimo quando informado
     this.form.get('formaExploracao')!.valueChanges.subscribe(v => {
       const ctrl = this.form.get('sequenciaProdutoVegetal')!;
       if (v === 'CONSORCIO') {
-        ctrl.addValidators([Validators.required, Validators.min(1)]);
+        // Opcional - apenas validação de mínimo se informado
+        ctrl.addValidators([Validators.min(1)]);
       } else {
         ctrl.clearValidators();
-        ctrl.setValue(null);
+        // Não limpa o valor - permite manter o valor mesmo mudando de CONSÓRCIO
       }
       ctrl.updateValueAndValidity();
     });

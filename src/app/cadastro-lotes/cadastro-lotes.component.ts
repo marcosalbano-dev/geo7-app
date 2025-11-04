@@ -119,16 +119,16 @@ export class CadastroLotesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Formulário completo com todos os campos obrigatórios
+    // Formulário completo - todos os campos são opcionais
     this.formLotes = this.fb.group({
       id: [null],
-      numero: ['', Validators.required], // Controle de Campo - OBRIGATÓRIO
-      municipioId: [null, Validators.required], // OBRIGATÓRIO
-      distritoId: [null, Validators.required], // OBRIGATÓRIO
-      situacaoJuridicaId: [null, Validators.required], // OBRIGATÓRIO
-      area: [null, [Validators.required, Validators.min(0.01)]], // OBRIGATÓRIO - deve ser maior que zero
-      proprietario: ['', Validators.required], // OBRIGATÓRIO
-      cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]], // OBRIGATÓRIO com validação de CPF
+      numero: [''], // Opcional
+      municipioId: [null], // Opcional
+      distritoId: [null], // Opcional
+      situacaoJuridicaId: [null], // Opcional
+      area: [null, Validators.min(0.01)], // Opcional - se informado, deve ser maior que zero
+      proprietario: [''], // Opcional
+      cpf: ['', Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)], // Opcional - se informado, deve ter formato válido
       
       // Campos opcionais
       perimetro: [null],

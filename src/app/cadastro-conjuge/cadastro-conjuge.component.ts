@@ -110,9 +110,9 @@ export class CadastroConjugeComponent implements OnInit {
 
   private createForm(): FormGroup {
     return this.fb.group({
-      // Dados pessoais
-      nome: ['', [Validators.required, Validators.maxLength(120)]],
-      cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
+      // Dados pessoais - todos opcionais
+      nome: ['', Validators.maxLength(120)], // Opcional
+      cpf: ['', Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)], // Opcional - se informado, deve ter formato válido
       dataNascimento: [''],
       sexoPessoa: [''],
       racaCor: [''],

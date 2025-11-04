@@ -286,9 +286,9 @@ export class CadastroPessoasComponent implements OnInit {
     });
 
     this.formPessoas = this.fb.group({
-      municipioId: [null, Validators.required],
-      loteId: [null, Validators.required],
-      nome: ['', Validators.required],
+      municipioId: [null], // Opcional
+      loteId: [null], // Opcional
+      nome: [''], // Opcional
       endereco: [''],
       numero: [''],
       complemento: [''],
@@ -677,8 +677,8 @@ export class CadastroPessoasComponent implements OnInit {
       toggleControls(this.formDocumentoPessoa, this.PF_DOC_KEYS, true);
       toggleControls(this.formDocumentoPessoa, this.PJ_DOC_KEYS, false, true);
 
-      // validações chave
-      this.formDocumentoPessoa.get('cpf')?.addValidators(Validators.required);
+      // Campos opcionais - sem validação obrigatória
+      this.formDocumentoPessoa.get('cpf')?.clearValidators();
       this.formDocumentoPessoa.get('cnpj')?.clearValidators();
     } else {
       this.formJuridica.enable({ emitEvent: false });
@@ -688,7 +688,8 @@ export class CadastroPessoasComponent implements OnInit {
       toggleControls(this.formDocumentoPessoa, this.PJ_DOC_KEYS, true);
       toggleControls(this.formDocumentoPessoa, this.PF_DOC_KEYS, false, true);
 
-      this.formDocumentoPessoa.get('cnpj')?.addValidators(Validators.required);
+      // Campos opcionais - sem validação obrigatória
+      this.formDocumentoPessoa.get('cnpj')?.clearValidators();
       this.formDocumentoPessoa.get('cpf')?.clearValidators();
     }
 

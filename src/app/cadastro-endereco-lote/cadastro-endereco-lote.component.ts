@@ -83,10 +83,10 @@ export class CadastroEnderecoLoteComponent implements OnInit {
   ngOnInit(): void {
     this.formEnderecoLote = this.fb.group({
       id: [null],
-      loteId: [null, Validators.required],
-      numero: ['', Validators.required],
-      municipioId: [null, Validators.required],
-      distritoId: [null, Validators.required], 
+      loteId: [null], // Opcional
+      numero: [''], // Opcional
+      municipioId: [null], // Opcional
+      distritoId: [null], // Opcional 
       pontoDeReferencia: [''],
       codImoReceita: [''],
       areaUrbana: [0],

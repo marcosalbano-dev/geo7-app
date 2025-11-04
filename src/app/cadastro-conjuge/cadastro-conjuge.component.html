@@ -17,22 +17,16 @@
         <div class="form-grid">
           <div class="col-6">
             <mat-form-field appearance="fill" class="full-width">
-              <mat-label>Nome do Cônjuge *</mat-label>
+              <mat-label>Nome do Cônjuge</mat-label>
               <input matInput formControlName="nome" placeholder="Nome completo do cônjuge" />
-              <mat-error *ngIf="formConjuge.get('nome')?.hasError('required') && formConjuge.get('nome')?.touched">
-                Nome é obrigatório
-              </mat-error>
             </mat-form-field>
           </div>
           
           <div class="col-6">
             <mat-form-field appearance="fill" class="full-width">
-              <mat-label>CPF *</mat-label>
+              <mat-label>CPF</mat-label>
               <input matInput formControlName="cpf" placeholder="000.000.000-00" 
                      (input)="formatCpf($event)" maxlength="14" />
-              <mat-error *ngIf="formConjuge.get('cpf')?.hasError('required') && formConjuge.get('cpf')?.touched">
-                CPF é obrigatório
-              </mat-error>
               <mat-error *ngIf="formConjuge.get('cpf')?.hasError('pattern') && formConjuge.get('cpf')?.touched">
                 CPF deve ter 11 dígitos
               </mat-error>

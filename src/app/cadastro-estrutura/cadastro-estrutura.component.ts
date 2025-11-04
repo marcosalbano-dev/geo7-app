@@ -200,17 +200,17 @@ export class CadastroEstruturaComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // form base
+    // form base - todos os campos são opcionais
     this.formEstrutura = this.fb.group({
       id: [null],
-      loteId: [null, Validators.required],
-      municipioId: [null, Validators.required],
-      distritoId: [null, Validators.required],
+      loteId: [null], // Opcional
+      municipioId: [null], // Opcional
+      distritoId: [null], // Opcional
       numero: [''],
       denominacaoImovel: [''],
-      area: [null, Validators.required],
+      area: [null], // Opcional
       sncr: [''],
-      situacaoJuridicaId: [null, Validators.required],
+      situacaoJuridicaId: [null], // Opcional
       
       // Campos de localização
       localidade: [''],
