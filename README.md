@@ -36,6 +36,21 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Docker (Frontend Angular)
+
+The Dockerfile now uses a multi-stage build to ensure the container always includes the latest Angular build artifacts.
+
+Recommended build:
+
+```bash
+docker build -t geo7-web:latest .
+```
+
+Notes:
+- The first stage installs dependencies and runs `npm run build`.
+- The second stage (Nginx) serves files from `/usr/share/nginx/html`.
+- Static assets (JS/CSS) are cached aggressively via filename hashing, but `index.html` is served with `Cache-Control: no-store` to avoid stale deployments.
+
 ## Running unit tests
 
 To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
