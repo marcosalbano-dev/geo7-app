@@ -1,6 +1,9 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8080/api',
+  // Usar URL relativa - será convertida para absoluta com HTTP em runtime pelo helper
+  // O helper ensureHttpProtocol garante que URLs relativas sejam convertidas para
+  // URLs absolutas com HTTP quando a página foi carregada via HTTP
+  apiUrl: '/api',
   appName: 'Geo7 Engenharia',
   version: '1.0.0',
   
