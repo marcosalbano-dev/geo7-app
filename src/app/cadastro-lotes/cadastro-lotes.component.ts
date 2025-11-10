@@ -306,23 +306,23 @@ export class CadastroLotesComponent implements OnInit {
             this.snackBar.open('Lote atualizado com sucesso!', 'Fechar', { duration: 3000 });
             console.log('🚦 Lote atualizado:', res);
             
-            // Navegar para cadastro de estrutura com dados atualizados do lote
-            // this.router.navigate(['/cadastro-estrutura'], {
-            //   queryParams: {
-            //     loteId: loteDTO.id,
-            //     numero: loteDTO.numero,
-            //     municipioId: loteDTO.municipioId,
-            //     distritoId: loteDTO.distritoId,
-            //     situacaoJuridicaId: loteDTO.situacaoJuridicaId,
-            //     area: loteDTO.area,
-            //     proprietario: loteDTO.proprietario,
-            //     cpf: loteDTO.cpf,
-            //     perimetro: loteDTO.perimetro,
-            //     dataTerminoPeriodoDeUso: loteDTO.dataTerminoPeriodoDeUso,
-            //     denominacaoImovel: loteDTO.denominacaoImovel, // ✅ ADICIONADO
-            //     sncr: loteDTO.sncr // ✅ ADICIONADO
-            //   }
-            // });
+            //Navegar para cadastro de estrutura com dados atualizados do lote
+            this.router.navigate(['/cadastro-estrutura'], {
+              queryParams: {
+                loteId: loteDTO.id,
+                numero: loteDTO.numero,
+                municipioId: loteDTO.municipioId,
+                distritoId: loteDTO.distritoId,
+                situacaoJuridicaId: loteDTO.situacaoJuridicaId,
+                area: loteDTO.area,
+                proprietario: loteDTO.proprietario,
+                cpf: loteDTO.cpf,
+                perimetro: loteDTO.perimetro,
+                dataTerminoPeriodoDeUso: loteDTO.dataTerminoPeriodoDeUso,
+                denominacaoImovel: loteDTO.denominacaoImovel, // ✅ ADICIONADO
+                sncr: loteDTO.sncr // ✅ ADICIONADO
+              }
+            });
           },
           error: (err) => {
             console.error('❌ Erro ao atualizar lote:', err);

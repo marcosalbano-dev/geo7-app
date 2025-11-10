@@ -311,8 +311,8 @@ export function estruturaDTOToFormValue(
   
   const formValue = {
     // Identificadores principais
-    id: dto.id,
-    loteId: dto.loteId,
+    id: dto.id ? Number(dto.id) : null,
+    loteId: dto.loteId ? Number(dto.loteId) : null,
 
     // Situação Jurídica e Forma de Obtenção
     situacaoSelecionada: dto.situacaoSelecionada ?? null,

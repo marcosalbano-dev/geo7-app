@@ -176,11 +176,12 @@ export class CadastroEstruturaComponent implements OnInit {
     private location: Location
   ) { }
 
-  /** Modo edição é derivado do form (se tem id ou loteId, atualiza) */
+  /** Modo edição é derivado do form (se tem id da estrutura, atualiza) */
   get isAtualizando(): boolean {
-    const hasId = !!this.formEstrutura?.get('id')?.value;
-    const hasLoteId = !!this.formEstrutura?.get('loteId')?.value;
-    return hasId || hasLoteId;
+    const estruturaId = this.formEstrutura?.get('id')?.value;
+    // Só está em modo atualização se tiver um ID válido da estrutura
+    // Ter loteId não significa que a estrutura já existe
+    return !!(estruturaId && estruturaId !== null && estruturaId !== undefined);
   }
 
   /** Número do lote para exibição */
@@ -510,7 +511,14 @@ export class CadastroEstruturaComponent implements OnInit {
                 // Aplica apenas os campos que não estão preenchidos
                 if (Object.keys(loteData).length > 0) {
                   console.log('[Estrutura] Aplicando dados do lote que não estão na estrutura:', loteData);
+                  // Preserva o ID da estrutura antes de aplicar os dados do lote
+                  const estruturaId = this.formEstrutura.get('id')?.value;
                   this.formEstrutura.patchValue(loteData);
+                  // Restaura o ID da estrutura se foi perdido
+                  if (estruturaId && !this.formEstrutura.get('id')?.value) {
+                    this.formEstrutura.patchValue({ id: estruturaId });
+                    console.log('[Estrutura] ID da estrutura restaurado após aplicar dados do lote:', estruturaId);
+                  }
                 } else {
                   console.log('[Estrutura] Nenhum dado do lote será aplicado - todos os campos já estão preenchidos na estrutura');
                 }
@@ -535,6 +543,9 @@ export class CadastroEstruturaComponent implements OnInit {
       error: (err) => {
         if (err?.status === 404) {
           console.warn('[Estrutura] 404: ainda não existe estrutura para este lote. Modo SALVAR.');
+          // Garante que o ID seja null para manter o modo de salvamento
+          this.formEstrutura.patchValue({ id: null });
+          console.log('[Estrutura] ID da estrutura definido como null - modo SALVAR ativado');
         } else {
           console.error('❌ Erro ao carregar estrutura:', err);
         }
@@ -809,7 +820,52 @@ export class CadastroEstruturaComponent implements OnInit {
       return;
     }
 
+    // Obtém o ID diretamente do formulário antes de mapear
+    let estruturaId = this.formEstrutura.get('id')?.value;
+    
+    // Se o ID não estiver presente, tenta buscar a estrutura pelo loteId
+    if (!estruturaId || estruturaId === null || estruturaId === undefined) {
+      const loteId = this.formEstrutura.get('loteId')?.value;
+      
+      if (loteId) {
+        console.warn('[Estrutura] ⚠️ ID da estrutura não encontrado no formulário. Buscando pelo loteId:', loteId);
+        
+        // Busca a estrutura pelo loteId para obter o ID
+        this.estruturaService.buscarPorLoteId(loteId).subscribe({
+          next: (estruturaDTO) => {
+            if (estruturaDTO && estruturaDTO.id) {
+              // Atualiza o formulário com o ID encontrado
+              this.formEstrutura.patchValue({ id: estruturaDTO.id });
+              estruturaId = estruturaDTO.id;
+              console.log('[Estrutura] ✅ ID da estrutura encontrado pelo loteId:', estruturaId);
+              // Chama novamente o método de atualização com o ID encontrado
+              this.executarAtualizacao(estruturaId);
+            } else {
+              console.error('[Estrutura] ❌ Estrutura não encontrada para o loteId:', loteId);
+              this.snackBar.open('Erro: Estrutura não encontrada para este lote.', 'Fechar', { duration: 4000 });
+            }
+          },
+          error: (err) => {
+            console.error('[Estrutura] ❌ Erro ao buscar estrutura pelo loteId:', err);
+            this.snackBar.open('Erro: Não foi possível encontrar a estrutura para atualização.', 'Fechar', { duration: 4000 });
+          }
+        });
+        return; // Retorna aqui e continua no callback
+      } else {
+        console.error('[Estrutura] ❌ ID da estrutura e loteId não encontrados no formulário');
+        this.snackBar.open('Erro: ID da estrutura não encontrado. Não é possível atualizar.', 'Fechar', { duration: 4000 });
+        return;
+      }
+    }
+    
+    // Se o ID foi encontrado, executa a atualização
+    this.executarAtualizacao(estruturaId);
+  }
+
+  private executarAtualizacao(estruturaId: number): void {
+
     console.log('[Estrutura] 🔍 Formulário antes de mapear para DTO:', this.formEstrutura.getRawValue());
+    console.log('[Estrutura] 🔍 ID da estrutura obtido do formulário:', estruturaId);
     console.log('[Estrutura] 🔍 Campos de forma de obtenção no form:');
     console.log('[Estrutura] 🔍 - formaObtencaoId:', this.formEstrutura.get('formaObtencaoId')?.value);
     console.log('[Estrutura] 🔍 - descricaoFormaDeObtencao:', this.formEstrutura.get('descricaoFormaDeObtencao')?.value);
@@ -827,7 +883,11 @@ export class CadastroEstruturaComponent implements OnInit {
     console.log('[Estrutura] 🔍 - localidade:', dto.localidade);
     console.log('[Estrutura] 🔍 - comunidade:', dto.comunidade);
 
-    this.estruturaService.atualizar(dto.id, dto).subscribe({
+    // Garante que o ID está no DTO
+    dto.id = estruturaId;
+
+    // Usa o ID obtido diretamente do formulário em vez do DTO
+    this.estruturaService.atualizar(estruturaId, dto).subscribe({
       next: () => {
         this.snackBar.open('Estrutura atualizada com sucesso!', 'Fechar', { duration: 3000 });
         this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId: dto.loteId } });
