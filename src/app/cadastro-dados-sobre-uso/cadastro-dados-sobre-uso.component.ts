@@ -378,9 +378,9 @@ export class CadastroDadosSobreUsoComponent implements OnInit {
     const culturaId = raw.culturaId ?? raw.cultura_id ?? raw.culturaID ?? raw.cultura?.id ?? null;
     const unidProdId = raw.unidadeProducaoId ?? raw.unidade_producao_id ?? raw.unidadeProducaoID ?? raw.unidade?.id ?? null;
     const restrId = raw.areasRestricoesId ?? raw.areas_restricoes_id ?? raw.indicadorRestricaoId ?? raw.restricaoId ?? null;
-    const granjId = raw.granjeiraAgricolaId ?? raw.granjeira_agricola_id ?? raw.granjeiraId ?? null;
+    const granjId = raw.granjeiraAgricolaId ?? raw.granjeira_agricola_id ?? raw.granjeiraId ?? raw.granjeiraAgricola?.id ?? null;
     const outroUsoId = raw.areaComOutroUsoId ?? raw.area_com_outro_uso_id ?? raw.outroUsoId ?? null;
-    const catAnimalId = raw.categoriaAnimalId ?? raw.categoria_animal_id ?? raw.categoriaId ?? null;
+    const catAnimalId = raw.categoriaAnimalId ?? raw.categoria_animal_id ?? raw.categoriaId ?? raw.categoriaAnimal?.id ?? null;
 
     const areaPlant = n(raw.areaPlantada ?? raw.area_plantada);
     const areaColh = n(raw.areaColhida ?? raw.area_colhida);
