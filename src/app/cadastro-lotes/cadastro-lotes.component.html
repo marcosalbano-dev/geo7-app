@@ -90,7 +90,7 @@
             <div class="form-field form-field-small">
               <mat-form-field class="full-width">
                 <mat-label>Área (m²)</mat-label>
-                <input type="number" formControlName="area" placeholder="Ex: 1000" matInput />
+                <input type="text" formControlName="area" placeholder="Ex: 0.0000" matInput appAreaMask />
                 <mat-error *ngIf="formLotes.get('area')?.hasError('min')">
                   Área deve ser maior que zero
                 </mat-error>
@@ -109,7 +109,7 @@
             <div class="form-field form-field-medium">
               <mat-form-field class="full-width">
                 <mat-label>CPF</mat-label>
-                <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput />
+                <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput appCpfMask />
                 <mat-error *ngIf="formLotes.get('cpf')?.hasError('pattern')">
                   CPF deve ter formato válido
                 </mat-error>
@@ -118,7 +118,7 @@
             <div class="form-field form-field-medium">
               <mat-form-field class="full-width">
                 <mat-label>Código do Imóvel Rural (SNCR)</mat-label>
-                <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
+                <input type="text" formControlName="sncr" placeholder="Ex: 951.099.138.622-0" matInput appSncrMask />
               </mat-form-field>
             </div>
           </div>

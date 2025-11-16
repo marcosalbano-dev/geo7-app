@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { ItemDadosUsoDTO } from '../models/item-dados-sobre-uso.dto';
+import { AreaMaskDirective } from '../shared/directives/area-mask.directive';
 import { Cultura, CulturaService } from '../services/cultura.service';
 import { UnidadeProducao } from '../models/unidade-producao';
 import { AreasRestricoes, AreasRestricoesService } from '../services/areas-restricoes.service';
@@ -30,6 +31,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
     MatSelectModule,
     MatButtonModule,
     MatDialogModule,
+    AreaMaskDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -67,12 +69,12 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
         <div class="grid g3">
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Plantada</mat-label>
-            <input matInput type="number" formControlName="areaPlantada">
+            <input matInput type="text" formControlName="areaPlantada" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Colhida</mat-label>
-            <input matInput type="number" formControlName="areaColhida">
+            <input matInput type="text" formControlName="areaColhida" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
@@ -124,12 +126,12 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
         <div class="grid g3">
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Plantada</mat-label>
-            <input matInput type="number" formControlName="areaPlantada">
+            <input matInput type="text" formControlName="areaPlantada" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Colhida</mat-label>
-            <input matInput type="number" formControlName="areaColhida">
+            <input matInput type="text" formControlName="areaColhida" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
@@ -169,7 +171,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
         <div class="grid g2">
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Explorada</mat-label>
-            <input matInput type="number" formControlName="areaExploradaGranjeiraAgricola">
+            <input matInput type="text" formControlName="areaExploradaGranjeiraAgricola" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
@@ -197,7 +199,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
         <div class="grid g2">
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Utilizada</mat-label>
-            <input matInput type="number" formControlName="areaUtilizada">
+            <input matInput type="text" formControlName="areaUtilizada" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
@@ -224,7 +226,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Área com Restrição</mat-label>
-          <input matInput type="number" formControlName="areaUtilizadaRestricao">
+          <input matInput type="text" formControlName="areaUtilizadaRestricao" placeholder="Ex: 0.0000" appAreaMask>
         </mat-form-field>
       </ng-container>
 
@@ -238,7 +240,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
 
           <mat-form-field appearance="outline" class="full">
             <mat-label>Área Pastagem</mat-label>
-            <input matInput type="number" formControlName="areaPastagem">
+            <input matInput type="text" formControlName="areaPastagem" placeholder="Ex: 0.0000" appAreaMask>
           </mat-form-field>
         </div>
 
@@ -275,7 +277,7 @@ type DialogData = { grupo: ItemDadosUsoDTO['grupo']; item?: ItemDadosUsoDTO };
       <ng-container *ngIf="data.grupo === 'Q13_SEM_RESTRICAO_SEM_USO'">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Área Aproveitável Não Utilizada</mat-label>
-          <input matInput type="number" formControlName="areaAproveitavelNaoUtilizada">
+          <input matInput type="text" formControlName="areaAproveitavelNaoUtilizada" placeholder="Ex: 0.0000" appAreaMask>
         </mat-form-field>
       </ng-container>
 

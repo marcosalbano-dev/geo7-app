@@ -14,6 +14,9 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
+import { CpfMaskDirective } from '../shared/directives/cpf-mask.directive';
+import { SncrMaskDirective } from '../shared/directives/sncr-mask.directive';
+import { AreaMaskDirective } from '../shared/directives/area-mask.directive';
 
 import { LoteDTO } from '../models/lote-dto';
 import { Municipio } from '../models/municipio';
@@ -53,7 +56,10 @@ import { Location } from '@angular/common';
     MatProgressSpinnerModule,
     ReactiveFormsModule,
     CommonModule,
-    BackButtonComponent
+    BackButtonComponent,
+    CpfMaskDirective,
+    SncrMaskDirective,
+    AreaMaskDirective
 ]
 })
 export class CadastroLotesComponent implements OnInit {

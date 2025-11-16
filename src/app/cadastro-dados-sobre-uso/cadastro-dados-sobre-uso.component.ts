@@ -24,6 +24,7 @@ import { forkJoin, of } from 'rxjs';
 import { Location } from '@angular/common';
 import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
 import { LoteService } from '../services/lote.service';
+import { AreaMaskDirective } from '../shared/directives/area-mask.directive';
 
 type ItemExt = ItemDadosUsoDTO & { meta?: { label: string } };
 type ItemView = ItemExt & { _k: number };
@@ -42,7 +43,8 @@ type ItemView = ItemExt & { _k: number };
     MatDialogModule,
     MatExpansionModule,
     MatSnackBarModule,
-    BackButtonComponent
+    BackButtonComponent,
+    AreaMaskDirective
   ],
   templateUrl: './cadastro-dados-sobre-uso.component.html',
   styleUrl: './cadastro-dados-sobre-uso.component.scss',

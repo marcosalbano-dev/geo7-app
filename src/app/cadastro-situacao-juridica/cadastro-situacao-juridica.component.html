@@ -54,10 +54,10 @@
           <mat-label>Área da Posse</mat-label>
           <input
             matInput
-            type="number"
-            step="0.0001"
+            type="text"
             formControlName="areaPosse"
-            placeholder="Ex: 2.0000"
+            placeholder="Ex: 0.0000"
+            appAreaMask
           />
         </mat-form-field>
       </div>
@@ -78,8 +78,9 @@
             <input
               matInput
               formControlName="areaRegistrada"
-              type="number"
-              step="0.0001"
+              type="text"
+              placeholder="Ex: 0.0000"
+              appAreaMask
             />
           </mat-form-field>
         </div>

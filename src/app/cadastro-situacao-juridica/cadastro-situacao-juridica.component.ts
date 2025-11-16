@@ -20,6 +20,7 @@ import { DistritoService } from '../services/distrito.service';
 import { Distrito } from '../models/distrito';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Municipio } from '../models/municipio';
+import { AreaMaskDirective } from '../shared/directives/area-mask.directive';
 
 @Component({
   selector: 'app-cadastro-situacao-juridica',
@@ -38,7 +39,8 @@ import { Municipio } from '../models/municipio';
     MatButtonModule,
     MatIconModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    AreaMaskDirective
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cadastro-situacao-juridica.component.html',

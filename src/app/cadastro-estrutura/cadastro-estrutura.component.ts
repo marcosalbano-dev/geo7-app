@@ -30,6 +30,8 @@ import { MatButtonToggleModule } from "@angular/material/button-toggle";
 
 import { Location } from '@angular/common';
 import { BackButtonComponent } from '../shared/components/back-button/back-button.component';
+import { SncrMaskDirective } from '../shared/directives/sncr-mask.directive';
+import { AreaMaskDirective } from '../shared/directives/area-mask.directive';
 
 
 type SelectOption<T = any> = { value: T; viewValue: string };
@@ -54,7 +56,9 @@ type SelectOption<T = any> = { value: T; viewValue: string };
     // Seu componente filho
     CadastroSituacaoJuridicaComponent,
     MatButtonToggleModule,
-    BackButtonComponent
+    BackButtonComponent,
+    SncrMaskDirective,
+    AreaMaskDirective
   ],
   templateUrl: './cadastro-estrutura.component.html',
   styleUrl: './cadastro-estrutura.component.scss',

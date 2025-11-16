@@ -50,7 +50,7 @@
           <div class="col-3 md-6">
             <mat-form-field class="full-width">
               <mat-label>Código do Imóvel Rural (SNCR)</mat-label>
-              <input type="text" formControlName="sncr" placeholder="Ex: 1234567890" matInput />
+              <input type="text" formControlName="sncr" placeholder="Ex: 951.099.138.622-0" matInput appSncrMask />
             </mat-form-field>
           </div>
         </div>
@@ -59,7 +59,7 @@
           <div class="col-3 md-6">
             <mat-form-field class="full-width">
               <mat-label>Área Ha</mat-label>
-              <input type="number" matInput formControlName="area" placeholder="Ex: 2.0000" readonly />
+              <input type="text" matInput formControlName="area" placeholder="Ex: 0.0000" readonly appAreaMask />
             </mat-form-field>
           </div>
           <div class="col-3 md-6">
@@ -497,7 +497,7 @@
           <div class="col-4 md-6">
             <mat-form-field class="full-width">
               <mat-label>Área Irrigada</mat-label>
-              <input type="number" formControlName="areaIrrigada" matInput />
+              <input type="text" formControlName="areaIrrigada" matInput appAreaMask />
             </mat-form-field>
           </div>
           

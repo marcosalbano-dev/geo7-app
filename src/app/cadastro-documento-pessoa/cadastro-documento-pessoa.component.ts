@@ -13,6 +13,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { Municipio } from '../models/municipio';
 import { MunicipioService } from '../services/municipio.service';
+import { CpfMaskDirective } from '../shared/directives/cpf-mask.directive';
 
 interface tipoDocumento {
   value: string;
@@ -40,7 +41,8 @@ interface estadoCivil {
     MatDividerModule,
     FlexLayoutModule,
     MatListModule,
-    MatButtonModule
+    MatButtonModule,
+    CpfMaskDirective
   ],
   templateUrl: './cadastro-documento-pessoa.component.html',
   styleUrl: './cadastro-documento-pessoa.component.scss'
