@@ -3,7 +3,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, ValidationErrors } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
@@ -74,6 +74,18 @@ export class CadastroLotesComponent implements OnInit {
     isErrorState: (control) => !!(control && control.invalid && control.touched),
   };
 
+  // Validador customizado para CPF: permite vazio ou valida 11 dígitos numéricos
+  cpfValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value || control.value === '') {
+      return null; // Campo vazio é válido (campo opcional)
+    }
+    const cpfValue = control.value.toString().replace(/\D/g, ''); // Remove caracteres não numéricos
+    if (cpfValue.length === 11) {
+      return null; // CPF válido (11 dígitos)
+    }
+    return { cpfInvalid: true }; // CPF inválido
+  }
+
   formLotes!: FormGroup;
 
   municipios: Municipio[] = [];
@@ -134,7 +146,7 @@ export class CadastroLotesComponent implements OnInit {
       situacaoJuridicaId: [null], // Opcional
       area: [null, Validators.min(0.01)], // Opcional - se informado, deve ser maior que zero
       proprietario: [''], // Opcional
-      cpf: ['', Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)], // Opcional - se informado, deve ter formato válido
+      cpf: ['', this.cpfValidator], // Opcional - se informado, deve ter 11 dígitos numéricos
       
       // Campos opcionais
       perimetro: [null],

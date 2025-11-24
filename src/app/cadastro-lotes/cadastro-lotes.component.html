@@ -110,8 +110,8 @@
               <mat-form-field class="full-width">
                 <mat-label>CPF</mat-label>
                 <input type="text" formControlName="cpf" placeholder="000.000.000-00" matInput appCpfMask />
-                <mat-error *ngIf="formLotes.get('cpf')?.hasError('pattern')">
-                  CPF deve ter formato válido
+                <mat-error *ngIf="formLotes.get('cpf')?.hasError('cpfInvalid')">
+                  CPF deve ter 11 dígitos
                 </mat-error>
               </mat-form-field>
             </div>
