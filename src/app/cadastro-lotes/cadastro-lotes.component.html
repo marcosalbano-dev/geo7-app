@@ -89,7 +89,7 @@
 
             <div class="form-field form-field-small">
               <mat-form-field class="full-width">
-                <mat-label>Área (m²)</mat-label>
+                <mat-label>Área (ha)</mat-label>
                 <input type="text" formControlName="area" placeholder="Ex: 0.0000" matInput appAreaMask />
                 <mat-error *ngIf="formLotes.get('area')?.hasError('min')">
                   Área deve ser maior que zero

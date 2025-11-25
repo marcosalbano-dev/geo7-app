@@ -144,7 +144,7 @@ export class CadastroLotesComponent implements OnInit {
       municipioId: [null], // Opcional
       distritoId: [null], // Opcional
       situacaoJuridicaId: [null], // Opcional
-      area: [null, Validators.min(0.01)], // Opcional - se informado, deve ser maior que zero
+      area: [null], // Opcional - se informado, deve ser maior que zero
       proprietario: [''], // Opcional
       cpf: ['', this.cpfValidator], // Opcional - se informado, deve ter 11 dígitos numéricos
       
