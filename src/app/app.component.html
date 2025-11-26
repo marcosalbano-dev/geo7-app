@@ -77,15 +77,25 @@
 
       <!-- Linha 2: links (somente em telas grandes) -->
       <mat-toolbar-row class="toolbar-row-2" *ngIf="!(isHandset$ | async)">
-        <a mat-button routerLink="/cadastro-lotes"><mat-icon>home</mat-icon><span class="ml-5">Imóveis</span></a>
-        <a mat-button routerLink="/cadastro-estrutura"><mat-icon>settings</mat-icon><span class="ml-5">Estrutura</span></a>
-        <a mat-button routerLink="/cadastro-pessoas"><mat-icon>person</mat-icon><span class="ml-5">Dados
-            Pessoais</span></a>
-        <!-- <a mat-button routerLink="/cadastro-endereco-lote"><mat-icon>place</mat-icon><span class="ml-5">Endereço do
-            Imóvel</span></a> -->
-        <a mat-button routerLink="/cadastro-dados-sobre-uso"><mat-icon>eco</mat-icon><span class="ml-5">Dados Sobre
-            Uso</span></a>
-        <a mat-button routerLink="/consulta-lotes"><mat-icon>search</mat-icon><span class="ml-5">Consulta</span></a>
+        <!-- Links condicionais: mostram apenas quando há município selecionado -->
+        <ng-container *ngIf="showNavigationLinks$ | async">
+          <a mat-button [routerLink]="['/cadastro-lotes']" [queryParams]="getQueryParams()">
+            <mat-icon>home</mat-icon><span class="ml-5">Imóveis</span>
+          </a>
+          <a mat-button [routerLink]="['/cadastro-estrutura']" [queryParams]="getQueryParams()">
+            <mat-icon>settings</mat-icon><span class="ml-5">Estrutura</span>
+          </a>
+          <a mat-button [routerLink]="['/cadastro-pessoas']" [queryParams]="getQueryParams()">
+            <mat-icon>person</mat-icon><span class="ml-5">Dados Pessoais</span>
+          </a>
+          <a mat-button [routerLink]="['/cadastro-dados-sobre-uso']" [queryParams]="getQueryParams()">
+            <mat-icon>eco</mat-icon><span class="ml-5">Dados Sobre Uso</span>
+          </a>
+        </ng-container>
+        <!-- Link de Consulta sempre visível -->
+        <a mat-button routerLink="/consulta-lotes">
+          <mat-icon>search</mat-icon><span class="ml-5">Consulta</span>
+        </a>
       </mat-toolbar-row>
     </mat-toolbar>
 

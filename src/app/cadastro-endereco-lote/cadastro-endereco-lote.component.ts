@@ -307,18 +307,12 @@ export class CadastroEnderecoLoteComponent implements OnInit {
     const dto = mapFormToEnderecoLoteDTO(this.formEnderecoLote);
     
     this.enderecoLoteService.salvar(dto).subscribe({
-      next: res => {
+      next: (res) => {
         this.snackBar.open('Endereço do lote salvo!', 'Fechar', { duration: 3000 });
         this.formEnderecoLote.patchValue({ id: res.id }, { emitEvent: false });
         this.atualizando = true; // muda para modo atualização
-        const loteId =  this.formEnderecoLote.get('loteId')?.value;
-        if (loteId) {
-        this.router.navigate(
-          ['/cadastro-dados-sobre-uso'],
-          { queryParams: { loteId }, queryParamsHandling: 'merge' }
-        );
-      }
-    },
+        // Não navega automaticamente - usuário escolhe o próximo passo
+      },
       error: () => this.snackBar.open('Erro ao salvar.', 'Fechar', { duration: 4000 })
     });
   }
@@ -334,19 +328,13 @@ export class CadastroEnderecoLoteComponent implements OnInit {
 
     const dto = mapFormToEnderecoLoteDTO(this.formEnderecoLote);
     this.enderecoLoteService.atualizar(id, dto).subscribe({
-      next: res => {
+      next: (res) => {
         this.snackBar.open('Endereço do lote atualizado!', 'Fechar', { duration: 3000 });
         this.formEnderecoLote.patchValue({ id: res.id }, { emitEvent: false });
         this.atualizando = true;
 
-        const loteId =  this.formEnderecoLote.get('loteId')?.value;
-        if (loteId) {
-        this.router.navigate(
-          ['/cadastro-dados-sobre-uso'],
-          { queryParams: { loteId }, queryParamsHandling: 'merge' }
-        );
-      }
-    },
+        // Não navega automaticamente - usuário escolhe o próximo passo
+      },
       error: () => this.snackBar.open('Erro ao atualizar.', 'Fechar', { duration: 4000 })
     });
   }

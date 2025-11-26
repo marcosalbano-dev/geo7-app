@@ -30,6 +30,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { mapFormToLoteDTO, mapLoteDTOToForm } from '../helpers/lote-mapper';
+import { NavigationStateService } from '../services/navigation-state.service';
 
 import { Location } from '@angular/common';
 
@@ -133,7 +134,8 @@ export class CadastroLotesComponent implements OnInit {
     private snackBar: MatSnackBar,
     private router: Router,
     private route: ActivatedRoute,
-    private location: Location// Captura dados da rota que foi acessada
+    private location: Location,
+    private navigationStateService: NavigationStateService
   ) { }
 
   ngOnInit(): void {
@@ -260,26 +262,26 @@ export class CadastroLotesComponent implements OnInit {
 
     this.loteService.salvar(loteDTO).subscribe({
       next: (saved) => {
-        this.snackBar.open('Lote cadastrado com sucesso!', 'Fechar', { duration: 3000 });
+        const mensagem = this.atualizando ? 'Lote atualizado com sucesso!' : 'Lote cadastrado com sucesso!';
+        this.snackBar.open(mensagem, 'Fechar', { duration: 3000 });
         console.log('🚦 Lote salvo:', saved);
         
-        // Navegar para cadastro de estrutura com dados do lote
-        this.router.navigate(['/cadastro-estrutura'], {
-          queryParams: {
-            loteId: saved.id,
-            numero: saved.numero,
-            municipioId: saved.municipioId,
-            distritoId: saved.distritoId,
-            situacaoJuridicaId: saved.situacaoJuridicaId,
-            area: saved.area,
-            proprietario: saved.proprietario,
-            cpf: saved.cpf,
-            perimetro: saved.perimetro,
-            dataTerminoPeriodoDeUso: saved.dataTerminoPeriodoDeUso,
-            denominacaoImovel: saved.denominacaoImovel, // ✅ ADICIONADO
-            sncr: saved.sncr // ✅ ADICIONADO
+        // Atualiza o loteId no serviço de navegação para que os links da barra superior funcionem
+        if (saved.id) {
+          this.navigationStateService.setLoteId(saved.id);
+          // Se houver município no lote salvo, também atualiza o município
+          if (saved.municipioId) {
+            this.navigationStateService.setMunicipioId(saved.municipioId);
           }
-        });
+        }
+        
+        // Atualiza o formulário com o ID salvo para permitir edição
+        if (saved.id) {
+          this.formLotes.patchValue({ id: saved.id });
+          this.atualizando = true;
+        }
+        
+        // Não navega automaticamente - usuário escolhe o próximo passo
       },
       error: (err) => {
         console.error('❌ Erro ao salvar lote:', err);
@@ -324,23 +326,16 @@ export class CadastroLotesComponent implements OnInit {
             this.snackBar.open('Lote atualizado com sucesso!', 'Fechar', { duration: 3000 });
             console.log('🚦 Lote atualizado:', res);
             
-            //Navegar para cadastro de estrutura com dados atualizados do lote
-            this.router.navigate(['/cadastro-estrutura'], {
-              queryParams: {
-                loteId: loteDTO.id,
-                numero: loteDTO.numero,
-                municipioId: loteDTO.municipioId,
-                distritoId: loteDTO.distritoId,
-                situacaoJuridicaId: loteDTO.situacaoJuridicaId,
-                area: loteDTO.area,
-                proprietario: loteDTO.proprietario,
-                cpf: loteDTO.cpf,
-                perimetro: loteDTO.perimetro,
-                dataTerminoPeriodoDeUso: loteDTO.dataTerminoPeriodoDeUso,
-                denominacaoImovel: loteDTO.denominacaoImovel, // ✅ ADICIONADO
-                sncr: loteDTO.sncr // ✅ ADICIONADO
+            // Atualiza o loteId no serviço de navegação para que os links da barra superior funcionem
+            if (res.id) {
+              this.navigationStateService.setLoteId(res.id);
+              // Se houver município no lote atualizado, também atualiza o município
+              if (res.municipioId) {
+                this.navigationStateService.setMunicipioId(res.municipioId);
               }
-            });
+            }
+            
+            // Não navega automaticamente - usuário escolhe o próximo passo
           },
           error: (err) => {
             console.error('❌ Erro ao atualizar lote:', err);

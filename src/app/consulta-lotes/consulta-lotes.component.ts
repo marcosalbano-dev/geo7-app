@@ -28,6 +28,7 @@ import { MunicipioService } from '../services/municipio.service';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
 import { ExportacaoDpService } from '../exportacao-dp/exportacao-dp.service';
 import { LoteDeleteService } from '../services/lote-delete.service';
+import { NavigationStateService } from '../services/navigation-state.service';
 
 // Importando os modelos
 import { LoteDTO } from '../models/lote-dto';
@@ -103,7 +104,8 @@ export class ConsultaLotesComponent implements OnInit {
     private municipioService: MunicipioService,
     private situacaoJuridicaService: SituacaoJuridicaService,
     private exportacaoDpService: ExportacaoDpService,
-    private loteDeleteService: LoteDeleteService
+    private loteDeleteService: LoteDeleteService,
+    private navigationStateService: NavigationStateService
   ) {
     this.filtrosForm = this.createForm();
   }
@@ -115,6 +117,8 @@ export class ConsultaLotesComponent implements OnInit {
       this.route.queryParams.subscribe(params => {
         const loteId = params['loteId'];
         if (loteId) {
+          // Atualiza o loteId no serviço de navegação
+          this.navigationStateService.setLoteId(+loteId);
           // Carregar lote específico
           this.carregarLoteEspecifico(+loteId);
         } else {
@@ -128,9 +132,15 @@ export class ConsultaLotesComponent implements OnInit {
       this.loadLotes();
     });
     
-    // Monitora mudanças no filtro de município
+    // Monitora mudanças no filtro de município apenas para atualizar estado local
+    // NÃO atualiza o serviço de navegação aqui - apenas quando pesquisar
     this.filtrosForm.get('municipioId')?.valueChanges.subscribe(municipioId => {
       this.municipioIdSelecionado = municipioId;
+      // Limpa o estado de navegação quando o município é desmarcado
+      if (!municipioId) {
+        this.navigationStateService.setMunicipioId(null);
+        this.navigationStateService.setLoteId(null);
+      }
     });
   }
 
@@ -285,6 +295,14 @@ export class ConsultaLotesComponent implements OnInit {
           denominacaoImovel: lote.denominacaoImovel
         });
         
+        // Atualiza o município e loteId no serviço de navegação
+        if (lote.municipioId) {
+          this.navigationStateService.setMunicipioId(lote.municipioId);
+        }
+        if (lote.id) {
+          this.navigationStateService.setLoteId(lote.id);
+        }
+        
         this.snackBar.open(`Lote ${lote.numero} carregado com sucesso!`, 'Fechar', { duration: 3000 });
       },
       error: (error) => {
@@ -305,8 +323,15 @@ export class ConsultaLotesComponent implements OnInit {
     if (filtros.municipioId) {
       const municipio = this.municipios.find(m => m.id === filtros.municipioId);
       this.municipioSelecionadoNome = municipio ? municipio.nome : '';
+      // Notifica o serviço de navegação sobre a mudança do município APENAS quando pesquisar
+      this.navigationStateService.setMunicipioId(filtros.municipioId);
+      this.municipioIdSelecionado = filtros.municipioId;
     } else {
       this.municipioSelecionadoNome = '';
+      // Limpa o município no serviço de navegação
+      this.navigationStateService.setMunicipioId(null);
+      this.navigationStateService.setLoteId(null);
+      this.municipioIdSelecionado = null;
     }
     
     this.loteService.filtrarLotes(filtros).subscribe({
@@ -340,7 +365,11 @@ export class ConsultaLotesComponent implements OnInit {
   }
 
   novoImovel(): void {
-    this.router.navigate(['/cadastro-lotes']);
+    // Limpa o loteId ao criar novo imóvel, mas mantém o município se estiver selecionado
+    this.navigationStateService.setLoteId(null);
+    this.router.navigate(['/cadastro-lotes'], {
+      queryParams: this.municipioIdSelecionado ? { municipioId: this.municipioIdSelecionado } : {}
+    });
   }
 
   voltar(): void {
@@ -446,6 +475,8 @@ export class ConsultaLotesComponent implements OnInit {
 
   preparaEditarEstrutura(loteId: number | undefined): void {
     if (loteId) {
+      // Atualiza o loteId no serviço de navegação
+      this.navigationStateService.setLoteId(loteId);
       this.router.navigate(['/cadastro-estrutura'], { 
         queryParams: { loteId: loteId } 
       });
@@ -454,6 +485,8 @@ export class ConsultaLotesComponent implements OnInit {
 
   preparaEditarLote(loteId: number | undefined): void {
     if (loteId) {
+      // Atualiza o loteId no serviço de navegação
+      this.navigationStateService.setLoteId(loteId);
       this.router.navigate(['/cadastro-lotes'], { 
         queryParams: { loteId: loteId, mode: 'edit' } 
       });
@@ -462,6 +495,8 @@ export class ConsultaLotesComponent implements OnInit {
 
   preparaEditarDadosPessoais(loteId: number | undefined): void {
     if (loteId) {
+      // Atualiza o loteId no serviço de navegação
+      this.navigationStateService.setLoteId(loteId);
       this.router.navigate(['/cadastro-pessoas'], { 
         queryParams: { loteId: loteId } 
       });
@@ -470,6 +505,8 @@ export class ConsultaLotesComponent implements OnInit {
 
   preparaEditarDadosUso(loteId: number | undefined): void {
     if (loteId) {
+      // Atualiza o loteId no serviço de navegação
+      this.navigationStateService.setLoteId(loteId);
       this.router.navigate(['/cadastro-dados-sobre-uso'], { 
         queryParams: { loteId: loteId } 
       });

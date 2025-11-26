@@ -24,6 +24,7 @@ import { EstruturaService } from '../services/estrutura.service';
 import { EnderecoLoteService } from '../services/endereco-lote.service';
 import { FormaObtencaoService } from '../services/forma-obtencao.service';
 import { SituacaoJuridicaService } from '../services/situacao-juridica.service';
+import { NavigationStateService } from '../services/navigation-state.service';
 import { CadastroSituacaoJuridicaComponent } from '../cadastro-situacao-juridica/cadastro-situacao-juridica.component';
 import { estruturaDTOToFormValue, mapFormToEstruturaDTO } from '../helpers/estrutura-mapper';
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
@@ -177,7 +178,8 @@ export class CadastroEstruturaComponent implements OnInit {
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private navigationStateService: NavigationStateService
   ) { }
 
   /** Modo edição é derivado do form (se tem id da estrutura, atualiza) */
@@ -297,15 +299,22 @@ export class CadastroEstruturaComponent implements OnInit {
       const fromSnap = this.route.snapshot.queryParamMap.get('loteId')
         ?? this.route.snapshot.queryParamMap.get('id');
       const fromNav = (this.router.getCurrentNavigation()?.extras.state as any)?.loteId;
+      // Se não houver loteId nos queryParams, tenta buscar do serviço de navegação
+      const fromNavigationService = this.navigationStateService.getLoteIdValue();
 
-      const loteId = Number(fromQP ?? fromSnap ?? fromNav ?? this.formEstrutura.get('loteId')?.value)
-      console.log('[Estrutura] loteId resolvido:', loteId, { fromQP, fromSnap, fromNav })
+      const loteId = Number(fromQP ?? fromSnap ?? fromNav ?? fromNavigationService ?? this.formEstrutura.get('loteId')?.value)
+      console.log('[Estrutura] loteId resolvido:', loteId, { fromQP, fromSnap, fromNav, fromNavigationService })
 
       if (Number.isFinite(loteId) && loteId > 0) {
         // mantém sincronizado no form (útil em navegações em cadeia)
         this.formEstrutura.patchValue({ loteId });
         this.carregarNumeroLote(loteId);
         this.carregarEstruturaPorLoteId(loteId);
+        
+        // Se não havia queryParams mas encontrou loteId no serviço, carrega dados do lote
+        if (!fromQP && !fromSnap && fromNavigationService) {
+          this.carregarDadosDoLote(loteId);
+        }
       } else {
         console.warn('[Estrutura] loteId não encontrado na URL/estado de navegação.');
       }
@@ -550,9 +559,56 @@ export class CadastroEstruturaComponent implements OnInit {
           // Garante que o ID seja null para manter o modo de salvamento
           this.formEstrutura.patchValue({ id: null });
           console.log('[Estrutura] ID da estrutura definido como null - modo SALVAR ativado');
+          
+          // Se não existe estrutura, carrega dados do lote para preencher o formulário
+          if (loteId) {
+            this.carregarDadosDoLote(loteId);
+          }
         } else {
           console.error('❌ Erro ao carregar estrutura:', err);
         }
+      }
+    });
+  }
+
+  /**
+   * Carrega dados do lote e preenche o formulário de estrutura
+   * Usado quando não há estrutura cadastrada mas há um loteId disponível
+   */
+  private carregarDadosDoLote(loteId: number): void {
+    console.log('[Estrutura] Carregando dados do lote para preencher formulário:', loteId);
+    this.loteService.obterPorId(loteId).subscribe({
+      next: (lote) => {
+        console.log('[Estrutura] Dados do lote carregados:', lote);
+        
+        // Preenche os campos do formulário com os dados do lote
+        const loteData: any = {
+          loteId: lote.id,
+          numero: lote.numero,
+          municipioId: lote.municipioId,
+          distritoId: lote.distritoId,
+          denominacaoImovel: lote.denominacaoImovel,
+          sncr: lote.sncr,
+          situacaoJuridicaId: lote.situacaoJuridicaId,
+          area: lote.area
+        };
+        
+        // Carrega distritos se houver município
+        if (lote.municipioId) {
+          this.loadDistritosByMunicipio(lote.municipioId).then(() => {
+            this.formEstrutura.patchValue(loteData);
+            console.log('[Estrutura] Formulário preenchido com dados do lote:', this.formEstrutura.getRawValue());
+          });
+        } else {
+          this.formEstrutura.patchValue(loteData);
+          console.log('[Estrutura] Formulário preenchido com dados do lote:', this.formEstrutura.getRawValue());
+        }
+        
+        // Carrega o número do lote para exibição
+        this.carregarNumeroLote(loteId);
+      },
+      error: (err) => {
+        console.error('[Estrutura] Erro ao carregar dados do lote:', err);
       }
     });
   }
@@ -894,7 +950,7 @@ export class CadastroEstruturaComponent implements OnInit {
     this.estruturaService.atualizar(estruturaId, dto).subscribe({
       next: () => {
         this.snackBar.open('Estrutura atualizada com sucesso!', 'Fechar', { duration: 3000 });
-        this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId: dto.loteId } });
+        // Não navega automaticamente - usuário escolhe o próximo passo
       },
       error: (err) => {
         console.error('❌ Erro ao atualizar estrutura:', err);
@@ -917,10 +973,8 @@ export class CadastroEstruturaComponent implements OnInit {
     this.estruturaService.salvar(dto).subscribe({
       next: () => {
         this.snackBar.open('Estrutura salva com sucesso!', 'Fechar', { duration: 3000 });
-        const loteId = this.formEstrutura.get('loteId')?.value;
-        if (loteId) {
-          this.router.navigate(['/cadastro-pessoas'], { queryParams: { loteId: dto.loteId } });
-        }
+        // Não navega automaticamente - usuário escolhe o próximo passo
+        // O loteId já está no serviço de navegação, então os links da barra superior funcionarão
       },
       error: (err) => {
         console.error('❌ Erro ao salvar estrutura:', err);

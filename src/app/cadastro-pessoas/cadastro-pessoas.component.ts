@@ -880,10 +880,8 @@ export class CadastroPessoasComponent implements OnInit {
           }
         });
         
-        // Navegar para próxima página apenas se não estiver em modo adicionar nova
-        if (!this.modoAdicionarNova) {
-          this.router.navigate(['/cadastro-dados-sobre-uso'], { queryParams: { loteId } });
-        }
+        // Não navega automaticamente - usuário escolhe o próximo passo
+        // O loteId já está no serviço de navegação, então os links da barra superior funcionarão
       },
       error: (e) => {
         console.error('Erro ao salvar pessoa:', e);
